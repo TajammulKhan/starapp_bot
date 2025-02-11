@@ -20,6 +20,7 @@ app.post("/", (req, res) => {
         const greetings = ["hi", "hello", "hey", "start"];
 
         if (greetings.includes(userMessage)) {
+            console.log("Sending greeting card response"); // Debugging log
             return res.json({
                 text: "👋 Hello, Tajammul! StarApp Bot is here to assist you. How can I help you today?",
                 cardsV2: [
@@ -87,6 +88,7 @@ app.post("/", (req, res) => {
             });
         }
 
+        console.log("Sending default response"); // Debugging log
         return res.json({
             text: "I'm here to help! Type 'hi' or 'hello' to get started."
         });
@@ -96,7 +98,6 @@ app.post("/", (req, res) => {
         return res.status(500).json({ text: "⚠️ Oops! Something went wrong. Please try again later." });
     }
 });
-
 
 // Start the server
 const PORT = process.env.PORT || 8080;
