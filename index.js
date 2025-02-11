@@ -11,19 +11,26 @@ app.get("/", (req, res) => {
 app.post("/", (req, res) => {
     console.log("Received request body:", JSON.stringify(req.body, null, 2));
 
-    const userMessage = req.body?.argumentText?.trim().toLowerCase() || "";
-
+    let userMessage = req.body?.argumentText?.trim();
+    
+    // Remove surrounding quotes if present
+    if (userMessage.startsWith('"') && userMessage.endsWith('"')) {
+        userMessage = userMessage.slice(1, -1);
+    }
+    
+    userMessage = userMessage.toLowerCase();
     console.log("User message received:", userMessage); // Debugging log
 
-    // Check if user has sent a greeting
+    // List of greetings
     const greetings = ["hi", "hello", "hey", "start"];
+
     if (greetings.includes(userMessage)) {
         return res.json({
             text: "👋 Hello, Tajammul! StarApp Bot is here to assist you. How can I help you today?",
             "cardsV2": [
                 {
                     "cardId": "greeting_card",
-                    "card"  : {
+                    "card": {
                         "header": {
                             "title": "🌟 Star Bot",
                             "subtitle": "Welcome, Tajammul!",
@@ -39,37 +46,37 @@ app.post("/", (req, res) => {
                                         }
                                     },
                                     {
-                                        decoratedText: {
-                                            startIcon: {
-                                                knownIcon: "STAR"
+                                        "decoratedText": {
+                                            "startIcon": {
+                                                "knownIcon": "STAR"
                                             },
-                                            text: "**Impressive!**\nYou've earned *50 ⬆ coins more* than yesterday! 🎉"
+                                            "text": "**Impressive!**\nYou've earned *50 ⬆ coins more* than yesterday! 🎉"
                                         }
                                     },
                                     {
-                                        columns: {
-                                            columnItems: [
+                                        "columns": {
+                                            "columnItems": [
                                                 {
-                                                    horizontalAlignment: "CENTER",
-                                                    text: "**🪙 120**",
-                                                    subtext: "Total Coins"
+                                                    "horizontalAlignment": "CENTER",
+                                                    "text": "**🪙 120**",
+                                                    "subtext": "Total Coins"
                                                 },
                                                 {
-                                                    horizontalAlignment: "CENTER",
-                                                    text: "**🏅 4/9**",
-                                                    subtext: "Badges Completed"
+                                                    "horizontalAlignment": "CENTER",
+                                                    "text": "**🏅 4/9**",
+                                                    "subtext": "Badges Completed"
                                                 }
                                             ]
                                         }
                                     },
                                     {
-                                        buttonList: {
-                                            buttons: [
+                                        "buttonList": {
+                                            "buttons": [
                                                 {
-                                                    text: "Go to Star App →",
-                                                    onClick: {
-                                                        openLink: {
-                                                            url: "https://www.google.com/"
+                                                    "text": "Go to Star App →",
+                                                    "onClick": {
+                                                        "openLink": {
+                                                            "url": "https://www.google.com/"
                                                         }
                                                     }
                                                 }
