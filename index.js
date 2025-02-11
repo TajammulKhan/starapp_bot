@@ -15,10 +15,7 @@ app.post("/", (req, res) => {
         console.log("📩 Received request body:", JSON.stringify(req.body, null, 2));
 
         // Extracting the correct message text
-        let userMessage = req.body?.message?.text?.trim().toLowerCase();
-        if (!userMessage) {
-            userMessage = req.body?.argumentText?.trim().toLowerCase();
-        }
+        let userMessage = req.body?.message?.text?.trim().toLowerCase() || req.body?.argumentText?.trim().toLowerCase();
 
         console.log("📢 Extracted User Message:", userMessage);
 
@@ -27,7 +24,6 @@ app.post("/", (req, res) => {
         if (greetings.includes(userMessage)) {
             console.log("✅ Greeting detected, responding...");
             return res.status(200).json({
-                text: "👋 Hello, Tajammul! StarApp Bot is here to assist you. How can I help you today?",
                 cardsV2: [
                     {
                         cardId: "greeting_card",
@@ -105,7 +101,7 @@ app.post("/", (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8080;  
 app.listen(PORT, () => {
     console.log(`✅ StarApp Bot is running on port ${PORT}`);
 });
