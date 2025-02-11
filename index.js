@@ -13,10 +13,8 @@ app.get("/", (req, res) => {
 app.post("/", (req, res) => {
     console.log("Received request body:", JSON.stringify(req.body, null, 2));
 
-    // Extract the user's message correctly
-    const userMessage = req.body?.message?.argumentText?.trim().toLowerCase() ||
-                        req.body?.message?.text?.trim().toLowerCase() || "";
-
+    // Extract user's message (handle both direct messages and commands)
+    const userMessage = req.body?.message?.text?.trim().toLowerCase() || "";
     console.log("User message received:", userMessage); // Debugging log
 
     // Define greeting keywords
