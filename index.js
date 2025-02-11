@@ -14,7 +14,7 @@ app.post("/", (req, res) => {
     try {
         console.log("📩 Received request body:", JSON.stringify(req.body, null, 2));
 
-        // Extracting the correct message text
+        // Extracting user message safely
         let userMessage = req.body?.message?.text?.trim().toLowerCase() || req.body?.argumentText?.trim().toLowerCase();
 
         console.log("📢 Extracted User Message:", userMessage);
@@ -22,8 +22,10 @@ app.post("/", (req, res) => {
         const greetings = ["hi", "hello", "hey", "start"];
 
         if (greetings.includes(userMessage)) {
-            console.log("✅ Greeting detected, responding...");
+            console.log("✅ Greeting detected, responding with card data...");
+            
             return res.status(200).json({
+                text: "👋 Hello, Tajammul! Welcome to StarApp Bot! 🌟",  // Text fallback
                 cardsV2: [
                     {
                         cardId: "greeting_card",
