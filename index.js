@@ -4,104 +4,170 @@ const bodyParser = require("body-parser");
 const app = express();
 app.use(bodyParser.json());
 
-// Root endpoint to check if the bot is running
+// Health check route (optional but useful)
 app.get("/", (req, res) => {
     res.json({ status: "ok", message: "StarApp Bot is running!" });
 });
 
-// Endpoint to handle Google Chat messages
-app.post("/", async (req, res) => {
-    try {
-        console.log("📩 Received request body:", JSON.stringify(req.body, null, 2));
+// Bot message handling
+app.post("/", (req, res) => {
+    console.log("Received message:", req.body);
 
-        // Extracting the correct message text
-        let userMessage = req.body?.message?.text?.trim().toLowerCase() || req.body?.argumentText?.trim().toLowerCase();
-        console.log("📢 Extracted User Message:", userMessage);
+    const userName = req.body.user || "User"; // Default to "User" if not provided
 
-        const greetings = ["hi", "hello", "hey", "start"];
-
-        if (greetings.includes(userMessage)) {
-            console.log("✅ Greeting detected, responding with card data...");
-
-            return res.status(200).json({
-                "cardsV2": [
+    const response = {
+        text: `Good morning, ${userName}!`,
+        cards: [
+            {
+                header: {
+                    title: "✨ Stars don’t shine without darkness. Embrace the journey and illuminate your path! ✨",
+                },
+                sections: [
                     {
-                        "cardId": "greeting_card",
-                        "card": {
-                            "header": {
-                                "title": "🌟 Star Bot",
-                                "subtitle": "Welcome, Tajammul!",
-                                "imageUrl": "https://imgur.com/8ghPwci.png",
-                                "imageType": "CIRCLE"
+                        widgets: [
+                            {
+                                textParagraph: {
+                                    text: "**Impressive!** You’ve earned **50↑** coins more than yesterday! 🎉",
+                                },
                             },
-                            "sections": [
-                                {
-                                    "widgets": [
+                            {
+                                keyValue: {
+                                    topLabel: "Total Coins",
+                                    content: "120 🪙",
+                                },
+                            },
+                            {
+                                keyValue: {
+                                    topLabel: "Badges Completed",
+                                    content: "4/9 🏅",
+                                },
+                            },
+                            {
+                                buttonList: {
+                                    buttons: [
                                         {
-                                            "textParagraph": {
-                                                "text": "*✨ Stars don’t shine without darkness. Embrace the journey and illuminate your path! ✨*"
-                                            }
-                                        },
-                                        {
-                                            "decoratedText": {
-                                                "startIcon": {
-                                                    "knownIcon": "STAR"
+                                            text: "Go to Star App →",
+                                            onClick: {
+                                                openLink: {
+                                                    url: "https://starapp.example.com",
                                                 },
-                                                "text": "**Impressive!**\nYou've earned *50 ⬆ coins more* than yesterday! 🎉"
-                                            }
+                                            },
                                         },
-                                        {
-                                            "columns": {
-                                                "columnItems": [
-                                                    {
-                                                        "horizontalAlignment": "CENTER",
-                                                        "text": "**🪙 120**",
-                                                        "subtext": "Total Coins"
-                                                    },
-                                                    {
-                                                        "horizontalAlignment": "CENTER",
-                                                        "text": "**🏅 4/9**",
-                                                        "subtext": "Badges Completed"
-                                                    }
-                                                ]
-                                            }
+                                    ],
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                header: {
+                    title: "📌 Set your outcomes for the day",
+                },
+                sections: [
+                    {
+                        header: "📖 Learning",
+                        widgets: [
+                            {
+                                textParagraph: {
+                                    text: "**Mathematics Badge**",
+                                },
+                            },
+                            {
+                                keyValue: {
+                                    content: "✔ Algebra basics (Complete by: 12 Feb 25)",
+                                    bottomLabel: "10 🪙",
+                                },
+                            },
+                            {
+                                keyValue: {
+                                    content: "◻ Inequalities",
+                                },
+                            },
+                            {
+                                keyValue: {
+                                    content: "◻ Solving equations",
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        header: "💰 Earning",
+                        widgets: [
+                            {
+                                textParagraph: {
+                                    text: "**Yesterday’s pending outcomes**",
+                                },
+                            },
+                            {
+                                keyValue: {
+                                    content: "✔ Create user specs for Dashboard screen for Mobile SoundBox (Complete by: EOD)",
+                                    bottomLabel: "10 🪙",
+                                },
+                            },
+                            {
+                                keyValue: {
+                                    content: "◻ Design chat view for Star App",
+                                },
+                            },
+                            {
+                                textParagraph: {
+                                    text: "**Today’s new outcomes**",
+                                },
+                            },
+                            {
+                                keyValue: {
+                                    content: "◻ <new outcome typed here>",
+                                    bottomLabel: "10 🪙",
+                                },
+                            },
+                            {
+                                keyValue: {
+                                    content: "◻ <new outcome typed here>",
+                                    bottomLabel: "10 🪙",
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        header: "🏅 Contribution",
+                        widgets: [
+                            {
+                                keyValue: {
+                                    content: "✔ Create quizzes for Basics of Design lesson assessment",
+                                    bottomLabel: "10 🪙",
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                widgets: [
+                    {
+                        buttonList: {
+                            buttons: [
+                                {
+                                    text: "SUBMIT",
+                                    onClick: {
+                                        action: {
+                                            actionMethodName: "submitOutcomes",
                                         },
-                                        {
-                                            "buttonList": {
-                                                "buttons": [
-                                                    {
-                                                        "text": "Go to Star App →",
-                                                        "onClick": {
-                                                            "openLink": {
-                                                                "url": "https://www.google.com/"
-                                                            }
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    }
-                ]
-            });
-        }
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            },
+        ],
+    };
 
-        console.log("ℹ️ Message not recognized, sending default response.");
-        return res.status(200).json({
-            "text": "I'm here to help! Type 'hi' or 'hello' to get started."
-        });
-
-    } catch (error) {
-        console.error("🚨 Error processing request:", error);
-        return res.status(500).json({ "text": "⚠️ Oops! Something went wrong. Please try again later." });
-    }
+    res.json(response); // Google Chat expects a JSON response with cards
 });
 
 // Start the server
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`✅ StarApp Bot is running on port ${PORT}`);
 });
