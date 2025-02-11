@@ -13,8 +13,10 @@ app.get("/", (req, res) => {
 app.post("/", (req, res) => {
     console.log("Received request body:", JSON.stringify(req.body, null, 2));
 
-    // Extract the user's message
-    const userMessage = req.body?.message?.argumentText?.trim().toLowerCase() || "";
+    // Extract the user's message correctly
+    const userMessage = req.body?.message?.argumentText?.trim().toLowerCase() ||
+                        req.body?.message?.text?.trim().toLowerCase() || "";
+
     console.log("User message received:", userMessage); // Debugging log
 
     // Define greeting keywords
@@ -96,7 +98,7 @@ app.post("/", (req, res) => {
 });
 
 // Start the server
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`✅ StarApp Bot is running on port ${PORT}`);
 });
