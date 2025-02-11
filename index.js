@@ -14,7 +14,8 @@ app.post("/", (req, res) => {
     try {
         console.log("Received request body:", JSON.stringify(req.body, null, 2));
 
-        const userMessage = req.body?.message?.text?.trim().toLowerCase();
+        // Extract the user message properly
+        const userMessage = req.body?.message?.text?.trim().toLowerCase() || req.body?.message?.argumentText?.trim().toLowerCase();
         console.log("User message received:", userMessage);
 
         const greetings = ["hi", "hello", "hey", "start"];
@@ -87,6 +88,7 @@ app.post("/", (req, res) => {
             });
         }
 
+        // Default response for unknown messages
         return res.status(200).json({
             text: "I'm here to help! Type 'hi' or 'hello' to get started."
         });
@@ -96,93 +98,6 @@ app.post("/", (req, res) => {
         return res.status(500).json({ text: "⚠️ Oops! Something went wrong. Please try again later." });
     }
 });
-app.post("/", (req, res) => {
-    try {
-        console.log("Received request body:", JSON.stringify(req.body, null, 2));
-
-        const userMessage = req.body?.message?.text?.trim().toLowerCase();
-        console.log("User message received:", userMessage);
-
-        const greetings = ["hi", "hello", "hey", "start"];
-
-        if (greetings.includes(userMessage)) {
-            return res.status(200).json({
-                text: "👋 Hello, Tajammul! StarApp Bot is here to assist you. How can I help you today?",
-                cardsV2: [
-                    {
-                        cardId: "greeting_card",
-                        card: {
-                            header: {
-                                title: "🌟 Star Bot",
-                                subtitle: "Welcome, Tajammul!",
-                                imageUrl: "https://imgur.com/8ghPwci.png",
-                                imageType: "CIRCLE"
-                            },
-                            sections: [
-                                {
-                                    widgets: [
-                                        {
-                                            textParagraph: {
-                                                text: "*✨ Stars don’t shine without darkness. Embrace the journey and illuminate your path! ✨*"
-                                            }
-                                        },
-                                        {
-                                            decoratedText: {
-                                                startIcon: {
-                                                    knownIcon: "STAR"
-                                                },
-                                                text: "**Impressive!**\nYou've earned *50 ⬆ coins more* than yesterday! 🎉"
-                                            }
-                                        },
-                                        {
-                                            columns: {
-                                                columnItems: [
-                                                    {
-                                                        horizontalAlignment: "CENTER",
-                                                        text: "**🪙 120**",
-                                                        subtext: "Total Coins"
-                                                    },
-                                                    {
-                                                        horizontalAlignment: "CENTER",
-                                                        text: "**🏅 4/9**",
-                                                        subtext: "Badges Completed"
-                                                    }
-                                                ]
-                                            }
-                                        },
-                                        {
-                                            buttonList: {
-                                                buttons: [
-                                                    {
-                                                        text: "Go to Star App →",
-                                                        onClick: {
-                                                            openLink: {
-                                                                url: "https://www.google.com/"
-                                                            }
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    }
-                ]
-            });
-        }
-
-        return res.status(200).json({
-            text: "I'm here to help! Type 'hi' or 'hello' to get started."
-        });
-
-    } catch (error) {
-        console.error("Error processing request:", error);
-        return res.status(500).json({ text: "⚠️ Oops! Something went wrong. Please try again later." });
-    }
-});
-
 
 // Start the server
 const PORT = process.env.PORT || 8080;
