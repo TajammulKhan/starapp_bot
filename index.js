@@ -11,7 +11,7 @@ app.get("/", (req, res) => {
 app.post("/", (req, res) => {
     console.log("Received request body:", JSON.stringify(req.body, null, 2));
 
-    const userMessage = req.body.message?.toLowerCase() || "";
+    const userMessage = (req.body.text || req.body.argumentText || "").toLowerCase();
 
     // Check if user has sent a greeting or opened the bot
     const greetings = ["hi", "hello", "hey", "start"];
@@ -23,7 +23,7 @@ app.post("/", (req, res) => {
                     "card": {
                         "header": {
                             "title": "🌟 Star Bot",
-                            "subtitle": "Good morning, Muthu!",
+                            "subtitle": "Good morning, Tajammul!",
                             "imageUrl": "https://imgur.com/8ghPwci",
                             "imageType": "CIRCLE"
                         },
@@ -74,86 +74,6 @@ app.post("/", (req, res) => {
                                         }
                                     }
                                 ]
-                            }
-                        ]
-                    }
-                },
-                {
-                    "cardId": "daily_outcomes",
-                    "card": {
-                        "header": {
-                            "title": "🎯 Set your outcomes for the day",
-                            "subtitle": "Let's get your day started!",
-                            "imageUrl": "https://imgur.com/8ghPwci",
-                            "imageType": "CIRCLE"
-                        },
-                        "sections": [
-                            {
-                                "header": "📚 Learning",
-                                "widgets": [
-                                    {
-                                        "textParagraph": {
-                                            "text": "**Mathematics Badge**\n✔️ Algebra basics _(Complete by: 12 Feb 25)_\n✔️ Inequalities\n✔️ Solving equations"
-                                        }
-                                    },
-                                    {
-                                        "decoratedText": {
-                                            "startIcon": { "knownIcon": "STAR" },
-                                            "text": "**+10 Coins**"
-                                        }
-                                    }
-                                ]
-                            },
-                            {
-                                "header": "💰 Earning",
-                                "widgets": [
-                                    {
-                                        "textParagraph": {
-                                            "text": "**Yesterday's pending outcomes:**\n✔️ Create user specs for Dashboard _(Complete by: EOD)_\n✔️ Design chat view for Star App"
-                                        }
-                                    },
-                                    {
-                                        "textParagraph": {
-                                            "text": "**Today's new outcomes:**\n🔲 <new outcome typed here>\n🔲 <new outcome typed here>"
-                                        }
-                                    },
-                                    {
-                                        "decoratedText": {
-                                            "startIcon": { "knownIcon": "STAR" },
-                                            "text": "**+10 Coins each**"
-                                        }
-                                    }
-                                ]
-                            },
-                            {
-                                "header": "🤝 Contribution",
-                                "widgets": [
-                                    {
-                                        "textParagraph": {
-                                            "text": "✔️ Create quizzes for Basics of Design lesson assessment"
-                                        }
-                                    },
-                                    {
-                                        "decoratedText": {
-                                            "startIcon": { "knownIcon": "STAR" },
-                                            "text": "**+10 Coins**"
-                                        }
-                                    }
-                                ]
-                            },
-                            {
-                                "buttonList": {
-                                    "buttons": [
-                                        {
-                                            "text": "SUBMIT",
-                                            "onClick": {
-                                                "action": {
-                                                    "function": "submitOutcomes"
-                                                }
-                                            }
-                                        }
-                                    ]
-                                }
                             }
                         ]
                     }
