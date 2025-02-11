@@ -12,17 +12,20 @@ app.get("/", (req, res) => {
 // Endpoint to handle Google Chat messages
 app.post("/", (req, res) => {
     try {
-        console.log("📩 Received request:", JSON.stringify(req.body, null, 2));
+        console.log("📩 Received request body:", JSON.stringify(req.body, null, 2));
 
-        // Extract user message properly
-        const userMessage = req.body?.message?.text?.trim().toLowerCase();
-        console.log("💬 User Message:", userMessage);
+        // Extracting the correct message text
+        let userMessage = req.body?.message?.text?.trim().toLowerCase();
+        if (!userMessage) {
+            userMessage = req.body?.argumentText?.trim().toLowerCase();
+        }
+
+        console.log("📢 Extracted User Message:", userMessage);
 
         const greetings = ["hi", "hello", "hey", "start"];
 
         if (greetings.includes(userMessage)) {
-            console.log("✅ Recognized greeting message!");
-
+            console.log("✅ Greeting detected, responding...");
             return res.status(200).json({
                 text: "👋 Hello, Tajammul! StarApp Bot is here to assist you. How can I help you today?",
                 cardsV2: [
@@ -90,9 +93,9 @@ app.post("/", (req, res) => {
             });
         }
 
-        console.log("❌ Unrecognized message, sending default response.");
+        console.log("ℹ️ Message not recognized, sending default response.");
         return res.status(200).json({
-            text: "Hey I'm here to help! Type 'hi' or 'hello' to get started."
+            text: "I'm here to help! Type 'hi' or 'hello' to get started."
         });
 
     } catch (error) {
@@ -100,7 +103,6 @@ app.post("/", (req, res) => {
         return res.status(500).json({ text: "⚠️ Oops! Something went wrong. Please try again later." });
     }
 });
-
 
 // Start the server
 const PORT = process.env.PORT || 8080;
