@@ -11,7 +11,7 @@ app.get("/", (req, res) => {
 app.post("/", (req, res) => {
     console.log("Received request body:", JSON.stringify(req.body, null, 2));
 
-    const userMessage = req.body?.message?.argumentText?.trim().toLowerCase() || "";
+    const userMessage = req.body?.argumentText?.trim().toLowerCase() || "";
 
     console.log("User message received:", userMessage); // Debugging log
 
@@ -20,22 +20,22 @@ app.post("/", (req, res) => {
     if (greetings.includes(userMessage)) {
         return res.json({
             text: "👋 Hello, Tajammul! StarApp Bot is here to assist you. How can I help you today?",
-            cardsV2: [
+            "cardsV2": [
                 {
-                    cardId: "greeting_card",
-                    card: {
-                        header: {
-                            title: "🌟 Star Bot",
-                            subtitle: "Welcome, Tajammul!",
-                            imageUrl: "https://imgur.com/8ghPwci.png",
-                            imageType: "CIRCLE"
+                    "cardId": "greeting_card",
+                    "card"  : {
+                        "header": {
+                            "title": "🌟 Star Bot",
+                            "subtitle": "Welcome, Tajammul!",
+                            "imageUrl": "https://imgur.com/8ghPwci.png",
+                            "imageType": "CIRCLE"
                         },
-                        sections: [
+                        "sections": [
                             {
-                                widgets: [
+                                "widgets": [
                                     {
-                                        textParagraph: {
-                                            text: "*✨ Stars don’t shine without darkness. Embrace the journey and illuminate your path! ✨*"
+                                        "textParagraph": {
+                                            "text": "*✨ Stars don’t shine without darkness. Embrace the journey and illuminate your path! ✨*"
                                         }
                                     },
                                     {
@@ -91,7 +91,7 @@ app.post("/", (req, res) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
     console.log(`✅ StarApp Bot is running on port ${PORT}`);
 });
