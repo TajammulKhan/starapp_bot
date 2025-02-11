@@ -11,9 +11,8 @@ app.get("/", (req, res) => {
 app.post("/", (req, res) => {
     console.log("Received request body:", JSON.stringify(req.body, null, 2));
 
-    const userMessage = (req.body.text || req.body.argumentText || "").toLowerCase();
+    const userMessage = (req.body.text || req.body.argumentText || "").toLowerCase().trim();
 
-    // Check if user has sent a greeting or opened the bot
     const greetings = ["hi", "hello", "hey", "start"];
     if (greetings.includes(userMessage)) {
         return res.json({
@@ -24,7 +23,7 @@ app.post("/", (req, res) => {
                         "header": {
                             "title": "🌟 Star Bot",
                             "subtitle": "Good morning, Tajammul!",
-                            "imageUrl": "https://imgur.com/8ghPwci",
+                            "imageUrl": "https://i.imgur.com/8ghPwci.png",  // Ensure correct image URL
                             "imageType": "CIRCLE"
                         },
                         "sections": [
