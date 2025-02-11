@@ -11,17 +11,10 @@ app.get("/", (req, res) => {
 app.post("/", (req, res) => {
     console.log("Received request body:", JSON.stringify(req.body, null, 2));
 
-    let userMessage = req.body?.argumentText?.trim();
-    
-    // Remove surrounding quotes if present
-    if (userMessage.startsWith('"') && userMessage.endsWith('"')) {
-        userMessage = userMessage.slice(1, -1);
-    }
-    
-    userMessage = userMessage.toLowerCase();
+    const userMessage = req.body?.message?.argumentText?.trim().toLowerCase() || "";
     console.log("User message received:", userMessage); // Debugging log
 
-    // List of greetings
+    // Define greeting keywords
     const greetings = ["hi", "hello", "hey", "start"];
 
     if (greetings.includes(userMessage)) {
