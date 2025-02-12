@@ -1,58 +1,57 @@
 {
     "defaultMessage": "Hello {{userName}}! I'm your StarApp bot. You can ask me about your progress, tasks, or achievements. Type 'progress' to see your current status.",
     "progressMessage": {
-      "title": "📊 Your Progress Report",
-      "sections": [
-        {
-          "category": "📖 Learning",
-          "items": [
+        "title": "📊 Your Progress Report",
+        "sections": [
             {
-              "status": "✔",
-              "text": "Algebra basics",
-              "completeBy": "12 Feb 25",
-              "coins": 10
+                "category": "📖 Learning",
+                "items": [
+                    {
+                        "status": "✔",
+                        "text": "Algebra basics",
+                        "completeBy": "12 Feb 25",
+                        "coins": 10
+                    },
+                    {
+                        "status": "◻",
+                        "text": "Inequalities"
+                    },
+                    {
+                        "status": "◻",
+                        "text": "Solving equations"
+                    }
+                ]
             },
             {
-              "status": "◻",
-              "text": "Inequalities"
+                "category": "💰 Earning",
+                "items": [
+                    {
+                        "status": "✔",
+                        "text": "Create user specs for Dashboard screen",
+                        "completeBy": "EOD",
+                        "coins": 10
+                    },
+                    {
+                        "status": "◻",
+                        "text": "Design chat view for Star App"
+                    },
+                    {
+                        "status": "◻",
+                        "text": "<new outcome typed here>",
+                        "coins": 10
+                    }
+                ]
             },
             {
-              "status": "◻",
-              "text": "Solving equations"
+                "category": "🏅 Contribution",
+                "items": [
+                    {
+                        "status": "✔",
+                        "text": "Create quizzes for Basics of Design lesson assessment",
+                        "coins": 10
+                    }
+                ]
             }
-          ]
-        },
-        {
-          "category": "💰 Earning",
-          "items": [
-            {
-              "status": "✔",
-              "text": "Create user specs for Dashboard screen",
-              "completeBy": "EOD",
-              "coins": 10
-            },
-            {
-              "status": "◻",
-              "text": "Design chat view for Star App"
-            },
-            {
-              "status": "◻",
-              "text": "<new outcome typed here>",
-              "coins": 10
-            }
-          ]
-        },
-        {
-          "category": "🏅 Contribution",
-          "items": [
-            {
-              "status": "✔",
-              "text": "Create quizzes for Basics of Design lesson assessment",
-              "coins": 10
-            }
-          ]
-        }
-      ]
+        ]
     }
-  }
-  
+}

@@ -40,6 +40,28 @@ app.post("/remove-outcome", (req, res) => {
     }
 });
 
+// Handle adding a new outcome
+app.post("/add-outcome", (req, res) => {
+    console.log("➕ Add Outcome Request:", JSON.stringify(req.body, null, 2));
+
+    const { category, text, completeBy, coins } = req.body;
+    let responses = loadResponses();
+
+    const section = responses.progressMessage.sections.find(sec => sec.category === category);
+    if (section) {
+        section.items.push({
+            status: "◻",
+            text,
+            completeBy,
+            coins
+        });
+        saveResponses(responses);
+        res.json({ status: "success", message: `✅ Outcome added to **${category}**` });
+    } else {
+        res.status(400).json({ status: "error", message: "Category not found" });
+    }
+});
+
 // Bot message handling
 app.post("/", (req, res) => {
     console.log("📩 Received Request:", JSON.stringify(req.body, null, 2));
