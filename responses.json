@@ -1,54 +1,46 @@
 {
-    "defaultMessage": "Good morning, {{userName}}! ☀️\n\n✨ *Stars don’t shine without darkness. Embrace the journey and illuminate your path!* ✨\n\n🎉 **Impressive!** You’ve earned **50↑** coins more than yesterday!\n🪙 **Total Coins:** 120\n🏅 **Badges Completed:** 4/9\n\n🔗 [Go to Star App](https://starapp.example.com)",
+    "defaultMessage": "Hello {{userName}}! I'm your StarApp bot. You can ask me about your progress, tasks, or achievements. Type 'progress' to see your current status.",
     "progressMessage": {
-      "title": "Let's get your day started! 🚀",
+      "title": "📊 Your Progress Report",
       "sections": [
         {
-          "category": "📖 Learning",
+          "category": "Earning",
           "items": [
             {
-              "text": "Algebra basics",
-              "completeBy": "12 Feb 25",
-              "coins": 10,
-              "status": "✔"
-            },
-            {
-              "text": "Inequalities",
-              "status": "◻"
-            },
-            {
-              "text": "Solving equations",
-              "status": "◻"
-            }
-          ]
-        },
-        {
-          "category": "💰 Earning",
-          "items": [
-            {
+              "status": "✔",
               "text": "Create user specs for Dashboard screen",
               "completeBy": "EOD",
-              "coins": 10,
-              "status": "✔"
+              "coins": 10
             },
             {
+              "status": "◻",
               "text": "Design chat view for Star App",
-              "status": "◻"
-            },
-            {
-              "text": "<new outcome typed here>",
-              "coins": 10,
-              "status": "◻"
+              "coins": 5
             }
           ]
         },
         {
-          "category": "🏅 Contribution",
+          "category": "Learning",
           "items": [
             {
-              "text": "Create quizzes for Basics of Design lesson assessment",
-              "coins": 10,
-              "status": "✔"
+              "status": "✔",
+              "text": "Complete Nest.js authentication module",
+              "completeBy": "Friday",
+              "coins": 15
+            },
+            {
+              "status": "◻",
+              "text": "Read about Angular Directives"
+            }
+          ]
+        },
+        {
+          "category": "Recognition",
+          "items": [
+            {
+              "status": "✔",
+              "text": "Received 'Star Performer' badge",
+              "coins": 20
             }
           ]
         }
