@@ -1,8 +1,17 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const fs = require("fs");
 
 const app = express();
 app.use(bodyParser.json());
+
+const responsesFile = "./responses.json";
+
+// Function to load responses from JSON file
+const loadResponses = () => {
+    const data = fs.readFileSync(responsesFile, "utf8");
+    return JSON.parse(data);
+};
 
 // Health check route
 app.get("/", (req, res) => {
@@ -13,33 +22,32 @@ app.get("/", (req, res) => {
 app.post("/", (req, res) => {
     console.log("📩 Received Request:", JSON.stringify(req.body, null, 2));
 
+    const responses = loadResponses();
     const userName = req.body.user?.displayName || "User";
     const userMessage = req.body.message?.text?.toLowerCase() || "";
 
     let responseText = "";
 
-    // If user asks for "progress", send the second message
+    // If user asks for "progress", send the detailed structured response
     if (userMessage.includes("progress")) {
-        responseText = `Let's get your day started! 🚀\n\n` +
-            `📌 **Set your outcomes for the day:**\n\n` +
-            `📖 **Learning:**\n` +
-            `✔ Algebra basics (Complete by: 12 Feb 25) - *10 coins*\n` +
-            `◻ Inequalities\n` +
-            `◻ Solving equations\n\n` +
-            `💰 **Earning:**\n` +
-            `✔ Create user specs for Dashboard screen (EOD) - *10 coins*\n` +
-            `◻ Design chat view for Star App\n\n` +
-            `🏅 **Contribution:**\n` +
-            `✔ Create quizzes for Basics of Design lesson - *10 coins*\n\n` +
-            `🔗 [Go to Star App](https://starapp.example.com)`;
+        let progressData = responses.progressMessage;
+
+        responseText = `**${progressData.title}**\n\n`;
+
+        progressData.sections.forEach(section => {
+            responseText += `**${section.category}**\n`;
+            section.items.forEach(item => {
+                let coinsText = item.coins ? ` - *${item.coins} coins*` : "";
+                let completeText = item.completeBy ? `(Complete by: ${item.completeBy}) ` : "";
+                responseText += `${item.status} ${item.text} ${completeText}${coinsText}\n`;
+            });
+            responseText += `\n`;
+        });
+
+        responseText += `🔗 [Go to Star App](https://starapp.example.com)`;
     } else {
-        // Default response (first message)
-        responseText = `Good morning, ${userName}! ☀️\n\n` +
-            `✨ *Stars don’t shine without darkness. Embrace the journey and illuminate your path!* ✨\n\n` +
-            `🎉 **Impressive!** You’ve earned **50↑** coins more than yesterday!\n` +
-            `🪙 **Total Coins:** 120\n` +
-            `🏅 **Badges Completed:** 4/9\n\n` +
-            `🔗 [Go to Star App](https://starapp.example.com)`;
+        // Default greeting message
+        responseText = responses.defaultMessage.replace("{{userName}}", userName);
     }
 
     res.json({ text: responseText });
