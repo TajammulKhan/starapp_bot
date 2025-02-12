@@ -4,7 +4,26 @@
       "title": "📊 Your Progress Report",
       "sections": [
         {
-          "category": "Earning",
+          "category": "📖 Learning",
+          "items": [
+            {
+              "status": "✔",
+              "text": "Algebra basics",
+              "completeBy": "12 Feb 25",
+              "coins": 10
+            },
+            {
+              "status": "◻",
+              "text": "Inequalities"
+            },
+            {
+              "status": "◻",
+              "text": "Solving equations"
+            }
+          ]
+        },
+        {
+          "category": "💰 Earning",
           "items": [
             {
               "status": "✔",
@@ -14,33 +33,22 @@
             },
             {
               "status": "◻",
-              "text": "Design chat view for Star App",
-              "coins": 5
-            }
-          ]
-        },
-        {
-          "category": "Learning",
-          "items": [
-            {
-              "status": "✔",
-              "text": "Complete Nest.js authentication module",
-              "completeBy": "Friday",
-              "coins": 15
+              "text": "Design chat view for Star App"
             },
             {
               "status": "◻",
-              "text": "Read about Angular Directives"
+              "text": "<new outcome typed here>",
+              "coins": 10
             }
           ]
         },
         {
-          "category": "Recognition",
+          "category": "🏅 Contribution",
           "items": [
             {
               "status": "✔",
-              "text": "Received 'Star Performer' badge",
-              "coins": 20
+              "text": "Create quizzes for Basics of Design lesson assessment",
+              "coins": 10
             }
           ]
         }
