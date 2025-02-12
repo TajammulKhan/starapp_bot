@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
     res.json({ status: "ok", message: "StarApp Bot is running!" });
 });
 
-// Handle removing an outcome
+// Handle removing an outcome interactively
 app.post("/remove-outcome", (req, res) => {
     console.log("🗑️ Remove Outcome Request:", JSON.stringify(req.body, null, 2));
 
@@ -34,35 +34,13 @@ app.post("/remove-outcome", (req, res) => {
     if (section && section.items[index]) {
         section.items.splice(index, 1); // Remove the item
         saveResponses(responses);
-        res.json({ status: "success", message: `✅ Outcome removed from **${category}**` });
+        res.json({ status: "success", message: `✅ Outcome removed from **${category}**`, updatedProgress: responses.progressMessage });
     } else {
         res.status(400).json({ status: "error", message: "Outcome not found" });
     }
 });
 
-// Handle adding a new outcome
-app.post("/add-outcome", (req, res) => {
-    console.log("➕ Add Outcome Request:", JSON.stringify(req.body, null, 2));
-
-    const { category, text, completeBy, coins } = req.body;
-    let responses = loadResponses();
-
-    const section = responses.progressMessage.sections.find(sec => sec.category === category);
-    if (section) {
-        section.items.push({
-            status: "◻",
-            text,
-            completeBy,
-            coins
-        });
-        saveResponses(responses);
-        res.json({ status: "success", message: `✅ Outcome added to **${category}**` });
-    } else {
-        res.status(400).json({ status: "error", message: "Category not found" });
-    }
-});
-
-// Bot message handling
+// Handle bot interactions
 app.post("/", (req, res) => {
     console.log("📩 Received Request:", JSON.stringify(req.body, null, 2));
 
@@ -72,11 +50,28 @@ app.post("/", (req, res) => {
 
     let responseText = "";
 
+    // Check if the user is trying to remove an outcome
+    if (userMessage.startsWith("remove_outcome_")) {
+        const parts = userMessage.split("_");
+        const category = parts.slice(2, parts.length - 1).join(" ");
+        const index = parseInt(parts[parts.length - 1]);
+
+        let section = responses.progressMessage.sections.find(sec => sec.category === category);
+        if (section && section.items[index]) {
+            section.items.splice(index, 1); // Remove the outcome
+            saveResponses(responses);
+
+            responseText = `✅ Outcome removed from **${category}**.\n\n`;
+        } else {
+            responseText = `⚠️ Could not find the outcome in **${category}**.\n\n`;
+        }
+    }
+
     // If user asks for "progress", send the structured response
-    if (userMessage.includes("progress")) {
+    if (userMessage.includes("progress") || userMessage.startsWith("remove_outcome_")) {
         let progressData = responses.progressMessage;
 
-        responseText = `**${progressData.title}**\n\n`;
+        responseText += `**${progressData.title}**\n\n`;
 
         progressData.sections.forEach(section => {
             responseText += `**${section.category}**\n`;
