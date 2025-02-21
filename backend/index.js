@@ -1,9 +1,10 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const fs = require("fs");
+const cors = require("cors");
+
 const app = express();
 app.use(bodyParser.json());
-const cors = require("cors");
 app.use(cors());
 
 const responsesFile = "./db.json";
@@ -24,51 +25,34 @@ app.post("/", (req, res) => {
     const userName = req.body.user?.displayName || "User";
     const userMessage = req.body.message?.text?.toLowerCase() || "";
 
-    let responseText = "";
+    let response = { type: "text", text: "I didn't understand that. Type 'hi' or 'progress'." };
 
-    // Check user input
     if (userMessage.includes("hi") || userMessage.includes("hello")) {
-        responseText = responses.defaultMessage.replace("{{userName}}", userName);
-        responseText = responseText.replace("{{badges}}", responses.badges.join("\n"));
+        response = {
+            type: "welcome",
+            userName: userName,
+            badges: responses.badges
+        };
     } 
     else if (userMessage.includes("progress")) {
-        let progressData = responses.progressMessage;
-        responseText = `**${progressData.title}**\n\n`;
-
-        progressData.sections.forEach(section => {
-            responseText += `**${section.category}**\n`;
-            section.items.forEach((item, index) => {
-                let coinsText = item.coins ? ` - *${item.coins} coins*` : "";
-                let completeText = item.completeBy ? `(Complete by: ${item.completeBy})` : "";
-                responseText += `${item.status} ${item.text} ${completeText} ${coinsText} [➖ Remove](remove_outcome_${section.category}_${index})\n`;
-            });
-            responseText += "\n";
-        });
-    } 
-    else {
-        responseText = "I didn't understand that. Type 'hi' to see your badges or 'progress' to see your progress.";
+        response = {
+            type: "progress",
+            title: responses.progressMessage.title,
+            sections: responses.progressMessage.sections
+        };
     }
 
-    res.json({ text: responseText });
+    res.json(response);
 });
 
 // Fetch progress
 app.get("/progress", (req, res) => {
     const responses = loadResponses();
-    let progressData = responses.progressMessage;
-    let responseText = `**${progressData.title}**\n\n`;
-
-    progressData.sections.forEach(section => {
-        responseText += `**${section.category}**\n`;
-        section.items.forEach((item, index) => {
-            let coinsText = item.coins ? ` - *${item.coins} coins*` : "";
-            let completeText = item.completeBy ? `(Complete by: ${item.completeBy})` : "";
-            responseText += `${item.status} ${item.text} ${completeText} ${coinsText} [➖ Remove](remove_outcome_${section.category}_${index})\n`;
-        });
-        responseText += "\n";
+    res.json({
+        type: "progress",
+        title: responses.progressMessage.title,
+        sections: responses.progressMessage.sections
     });
-
-    res.json({ text: responseText });
 });
 
 // Remove Outcome
@@ -80,7 +64,7 @@ app.post("/remove-outcome", (req, res) => {
     if (section && section.items[index]) {
         section.items.splice(index, 1);
         saveResponses(responses);
-        res.json({ status: "success", message: `✅ Outcome removed from **${category}**` });
+        res.json({ status: "success", message: "Outcome removed successfully" });
     } else {
         res.status(400).json({ status: "error", message: "Outcome not found" });
     }
@@ -95,7 +79,7 @@ app.post("/add-outcome", (req, res) => {
     if (section) {
         section.items.push({ status: "◻", text, coins });
         saveResponses(responses);
-        res.json({ status: "success", message: `✅ Outcome added to **${category}**` });
+        res.json({ status: "success", message: "Outcome added successfully" });
     } else {
         res.status(400).json({ status: "error", message: "Category not found" });
     }
