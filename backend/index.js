@@ -23,8 +23,30 @@ app.post("/", (req, res) => {
     const userName = req.body.user?.displayName || "User";
     const userMessage = req.body.message?.text?.toLowerCase() || "";
 
-    let responseText = responses.defaultMessage.replace("{{userName}}", userName);
-    responseText = responseText.replace("{{badges}}", responses.badges.join("\n"));
+    let responseText = "";
+
+    // Check user input
+    if (userMessage.includes("hi") || userMessage.includes("hello")) {
+        responseText = responses.defaultMessage.replace("{{userName}}", userName);
+        responseText = responseText.replace("{{badges}}", responses.badges.join("\n"));
+    } 
+    else if (userMessage.includes("progress")) {
+        let progressData = responses.progressMessage;
+        responseText = `**${progressData.title}**\n\n`;
+
+        progressData.sections.forEach(section => {
+            responseText += `**${section.category}**\n`;
+            section.items.forEach((item, index) => {
+                let coinsText = item.coins ? ` - *${item.coins} coins*` : "";
+                let completeText = item.completeBy ? `(Complete by: ${item.completeBy})` : "";
+                responseText += `${item.status} ${item.text} ${completeText} ${coinsText} [➖ Remove](remove_outcome_${section.category}_${index})\n`;
+            });
+            responseText += "\n";
+        });
+    } 
+    else {
+        responseText = "I didn't understand that. Type 'hi' to see your badges or 'progress' to see your progress.";
+    }
 
     res.json({ text: responseText });
 });
