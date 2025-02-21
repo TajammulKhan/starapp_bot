@@ -5,7 +5,7 @@ const fs = require("fs");
 const app = express();
 app.use(bodyParser.json());
 
-const responsesFile = "./responses.json";
+const responsesFile = "./db.json";
 
 // Function to load responses from JSON file
 const loadResponses = () => {
