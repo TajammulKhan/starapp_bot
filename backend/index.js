@@ -45,6 +45,26 @@ app.post("/", (req, res) => {
     res.json(response);
 });
 
+app.post("/bot", (req, res) => {
+    const event = req.body;
+    
+    console.log("📩 Received Request:", event);
+    
+    if (event.type === "MESSAGE") {
+        const messageText = event.message.text;
+        console.log(`User sent message: ${messageText}`);
+        
+        const response = {
+            text: `Hello, ${event.message.sender.displayName}! You said: "${messageText}"`,
+        };
+
+        res.json(response);
+    } else {
+        res.sendStatus(200);
+    }
+});
+
+
 // Fetch progress
 app.get("/progress", (req, res) => {
     const responses = loadResponses();
