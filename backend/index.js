@@ -54,7 +54,7 @@ app.post("/", (req, res) => {
                           "widgets": [
                             {
                               "image": {
-                                "imageUrl": "https://postimg.cc/MnZz0Jsn",
+                                "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png",
                                 "altText": "Impressive Emoji"
                               }
                             },
@@ -81,7 +81,7 @@ app.post("/", (req, res) => {
                                     "widgets": [
                                       {
                                         "image": {
-                                          "imageUrl": "https://imgur.com/XAPW56r",
+                                          "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
                                           "altText": "Coin Icon"
                                         }
                                       },
