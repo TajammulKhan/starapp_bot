@@ -4,7 +4,6 @@ const fs = require("fs");
 const cors = require('cors');
 const app = express();
 app.use(cors());
-
 app.use(bodyParser.json());
 
 const responsesFile = "./db.json";
@@ -36,7 +35,7 @@ app.post("/", (req, res) => {
                     "cardId": "daily-progress-card",
                     "card": {
                       "header": {
-                        "title": "Good morning, Muthu!",
+                        "title": `Good morning, ${userName}!`,
                         "imageType": "CIRCLE",
                         "imageAltText": "Morning Icon"
                       },
@@ -45,7 +44,7 @@ app.post("/", (req, res) => {
                           "widgets": [
                             {
                               "textParagraph": {
-                                "text": "<b><font color='#D4A017' size='14'>“ Stars don’t shine without darkness. Embrace the journey and illuminate your path! ”</font></b>"
+                                "text": "<b><font color='#D4A017' size='14'>“Stars don’t shine without darkness. Embrace the journey and illuminate your path!”</font></b>"
                               }
                             }
                           ]
@@ -55,7 +54,8 @@ app.post("/", (req, res) => {
                             {
                               "image": {
                                 "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png",
-                                "altText": "Impressive Emoji"
+                                "altText": "Impressive Emoji",
+                                "imageType": "SQUARE"
                               }
                             },
                             {
@@ -82,7 +82,8 @@ app.post("/", (req, res) => {
                                       {
                                         "image": {
                                           "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
-                                          "altText": "Coin Icon"
+                                          "altText": "Coin Icon",
+                                          "imageType": "SQUARE"
                                         }
                                       },
                                       {
@@ -99,7 +100,8 @@ app.post("/", (req, res) => {
                                       {
                                         "image": {
                                           "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
-                                          "altText": "Badge Icon"
+                                          "altText": "Badge Icon",
+                                          "imageType": "CIRCLE"
                                         }
                                       },
                                       {
@@ -136,8 +138,8 @@ app.post("/", (req, res) => {
                     }
                   }
                 ]
-              }              
-              );
+              }
+            );
         } else {
             res.json({
                 text: "I didn't understand that. Type **'hi'** to see your progress."
@@ -149,8 +151,6 @@ app.post("/", (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 });
-
-
 
 // Fetch progress
 app.get("/progress", (req, res) => {
@@ -165,7 +165,7 @@ app.get("/progress", (req, res) => {
                     header: {
                         title: "Set your outcomes for the day",
                         subtitle: "📌 05",
-                        imageUrl: "https://example.com/task-icon.png", // Replace with actual icon
+                        imageUrl: "https://example.com/task-icon.png", 
                         imageType: "SQUARE"
                     },
                     sections: progressData.sections.map(section => ({
@@ -183,7 +183,6 @@ app.get("/progress", (req, res) => {
         ]
     });
 });
-
 
 // Remove Outcome
 app.post("/remove-outcome", (req, res) => {
