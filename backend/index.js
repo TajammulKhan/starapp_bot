@@ -25,32 +25,60 @@ app.post("/", (req, res) => {
     const userName = req.body.user?.displayName || "User";
     const userMessage = req.body.message?.text?.toLowerCase() || "";
 
-    let responseText = "";
+    let responseBlocks = [];
 
-    // Check user input
     if (userMessage.includes("hi") || userMessage.includes("hello")) {
-        responseText = responses.defaultMessage.replace("{{userName}}", userName);
-        responseText = responseText.replace("{{badges}}", responses.badges.join("\n"));
-    } 
-    else if (userMessage.includes("progress")) {
+        responseBlocks.push({
+            type: "section",
+            text: `**Good morning, ${userName}!**\n\n 🌟 *"Stars don’t shine without darkness. Embrace the journey and illuminate your path!"*`,
+            style: "quote"
+        });
+
+        responseBlocks.push({
+            type: "card",
+            title: "Impressive! 🎉",
+            subtitle: "You've earned **50⬆ coins** more than yesterday! ✨",
+            stats: [
+                { label: "Coins", value: "120", trend: "up" },
+                { label: "Badges", value: "4/9", trend: "down" }
+            ],
+            link: { text: "Go to Star App ➝", url: "https://starapp.example.com" }
+        });
+    } else if (userMessage.includes("progress")) {
         let progressData = responses.progressMessage;
-        responseText = `**${progressData.title}**\n\n`;
+
+        responseBlocks.push({
+            type: "section",
+            text: `**📊 Set your outcomes for the day (05)**`,
+            action: "edit"
+        });
 
         progressData.sections.forEach(section => {
-            responseText += `**${section.category}**\n`;
-            section.items.forEach((item, index) => {
-                let coinsText = item.coins ? ` - *${item.coins} coins*` : "";
-                let completeText = item.completeBy ? `(Complete by: ${item.completeBy})` : "";
-                responseText += `${item.status} ${item.text} ${completeText} ${coinsText} [➖ Remove](remove_outcome_${section.category}_${index})\n`;
+            let items = section.items.map(item => ({
+                text: `${item.status} ${item.text} ${(item.completeBy ? `(Complete by: ${item.completeBy})` : "")} - **${item.coins} coins**`,
+                action: "remove"
+            }));
+
+            responseBlocks.push({
+                type: "list",
+                title: section.category,
+                items: items
             });
-            responseText += "\n";
         });
-    } 
-    else {
-        responseText = "I didn't understand that. Type 'hi' to see your badges or 'progress' to see your progress.";
+
+        responseBlocks.push({
+            type: "button",
+            label: "SUBMIT",
+            action: "submit"
+        });
+    } else {
+        responseBlocks.push({
+            type: "text",
+            text: "I didn't understand that. Type **'hi'** to see your badges or **'progress'** to see your progress."
+        });
     }
 
-    res.json({ text: responseText });
+    res.json({ blocks: responseBlocks });
 });
 
 // Fetch progress
