@@ -1,5 +1,5 @@
 {
-    "defaultMessage": "Hello {{userName}}! 🌟 Welcome to StarApp. Here are your achievements:\n\n🏅 Badges Earned:\n{{badges}}\n\n📊 Type 'progress' to see your tasks and goals.",
+    "defaultMessage": "Hello working {{userName}}! 🌟 Welcome to StarApp. Here are your achievements:\n\n🏅 Badges Earned:\n{{badges}}\n\n📊 Type 'progress' to see your tasks and goals.",
     "badges": [
         "✅ Beginner Achiever",
         "🚀 Star Performer",
