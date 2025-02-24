@@ -19,67 +19,38 @@ app.get("/", (req, res) => {
 
 // Handle bot interactions
 app.post("/", (req, res) => {
-    console.log("📩 Received Request:", JSON.stringify(req.body, null, 2));
-    const responses = loadResponses();
+    try {
+        console.log("📩 Received Request:", JSON.stringify(req.body, null, 2));
 
-    const userName = req.body.user?.displayName || "User";
-    const userMessage = req.body.message?.text?.toLowerCase() || "";
+        // Ensure the message exists
+        const userMessage = req.body?.message?.text?.trim().toLowerCase() || "";
+        const userName = req.body?.message?.sender?.displayName || "User";
 
-    let responseBlocks = [];
+        // Check if user message exists
+        if (!userMessage) {
+            return res.status(400).json({ message: "No message found in request." });
+        }
 
-    if (userMessage.includes("hi") || userMessage.includes("hello")) {
-        responseBlocks.push({
-            type: "section",
-            text: `**Good morning, ${userName}!**\n\n 🌟 *"Stars don’t shine without darkness. Embrace the journey and illuminate your path!"*`,
-            style: "quote"
+        let responseText = "";
+
+        // Responding based on user input
+        if (userMessage === "hi" || userMessage === "hello") {
+            responseText = `Good morning, **${userName}**! 🌟\n\n*"Stars don’t shine without darkness. Keep shining!"*`;
+        } else {
+            responseText = "I didn't understand that. Type **'hi'** to see your progress.";
+        }
+
+        // Send response back to Google Chat
+        res.json({
+            text: responseText
         });
 
-        responseBlocks.push({
-            type: "card",
-            title: "Impressive! 🎉",
-            subtitle: "You've earned **50⬆ coins** more than yesterday! ✨",
-            stats: [
-                { label: "Coins", value: "120", trend: "up" },
-                { label: "Badges", value: "4/9", trend: "down" }
-            ],
-            link: { text: "Go to Star App ➝", url: "https://starapp.example.com" }
-        });
-    } else if (userMessage.includes("progress")) {
-        let progressData = responses.progressMessage;
-
-        responseBlocks.push({
-            type: "section",
-            text: `**📊 Set your outcomes for the day (05)**`,
-            action: "edit"
-        });
-
-        progressData.sections.forEach(section => {
-            let items = section.items.map(item => ({
-                text: `${item.status} ${item.text} ${(item.completeBy ? `(Complete by: ${item.completeBy})` : "")} - **${item.coins} coins**`,
-                action: "remove"
-            }));
-
-            responseBlocks.push({
-                type: "list",
-                title: section.category,
-                items: items
-            });
-        });
-
-        responseBlocks.push({
-            type: "button",
-            label: "SUBMIT",
-            action: "submit"
-        });
-    } else {
-        responseBlocks.push({
-            type: "text",
-            text: "I didn't understand that. Type **'hi'** to see your badges or **'progress'** to see your progress."
-        });
+    } catch (error) {
+        console.error("❌ Error handling request:", error);
+        res.status(500).json({ message: "Internal Server Error" });
     }
-
-    res.json({ blocks: responseBlocks });
 });
+
 
 // Fetch progress
 app.get("/progress", (req, res) => {
