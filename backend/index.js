@@ -1,8 +1,9 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const fs = require("fs");
-const cors = require('cors');
+const cors = require("cors");
 const app = express();
+
 app.use(cors());
 app.use(bodyParser.json());
 
@@ -30,151 +31,171 @@ app.post("/", (req, res) => {
 
         if (userMessage === "hi" || userMessage === "hello") {
             res.json({
-              "cardsV2": [
-                {
-                  "cardId": "daily-progress-card",
-                  "card": {
-                    "header": {
-                      "title": "Good morning, User!",
-                      "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/morning-icon.png",
-                      "imageAltText": "Morning Icon"
-                    },
-                    "sections": [
-                      {
-                        "widgets": [
-                          {
-                            "textParagraph": {
-                              "text": "<b><font color='#D4A017' size='14'>“Stars don’t shine without darkness. Embrace the journey and illuminate your path!”</font></b>"
-                            }
-                          }
-                        ]
-                      },
-                      {
-                        "widgets": [
-                          {
-                            "image": {
-                              "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png",
-                              "altText": "Impressive Emoji"
-                            }
-                          },
-                          {
-                            "textParagraph": {
-                              "text": "<b>Impressive!</b>"
-                            }
-                          },
-                          {
-                            "textParagraph": {
-                              "text": "You’ve earned <b><font color='#4CAF50'>50 ↑</font></b> coins more than yesterday! ✨"
-                            }
-                          }
-                        ]
-                      },
-                      {
-                        "widgets": [
-                          {
-                            "columns": {
-                              "columnItems": [
+                "cardsV2": [
+                    {
+                        "cardId": "daily-progress-card",
+                        "card": {
+                            "header": {
+                                "title": `Good morning, ${userName}!`,
+                                "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/morning-icon.png",
+                                "imageAltText": "Morning Icon"
+                            },
+                            "sections": [
                                 {
-                                  "horizontalAlignment": "CENTER",
-                                  "verticalAlignment": "CENTER",
-                                  "widgets": [
-                                    {
-                                      "decoratedText": {
-                                        "icon": {
-                                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
-                                          "altText": "Coin Icon"
-                                        },
-                                        "text": "<b>120</b> 🔼"
-                                      }
-                                    }
-                                  ]
+                                    "widgets": [
+                                        {
+                                            "textParagraph": {
+                                                "text": "<b><font color='#D4A017' size='14'>“Stars don’t shine without darkness. Embrace the journey and illuminate your path!”</font></b>"
+                                            }
+                                        }
+                                    ]
                                 },
                                 {
-                                  "horizontalAlignment": "CENTER",
-                                  "verticalAlignment": "CENTER",
-                                  "widgets": [
-                                    {
-                                      "decoratedText": {
-                                        "icon": {
-                                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
-                                          "altText": "Badge Icon"
+                                    "widgets": [
+                                        {
+                                            "image": {
+                                                "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png",
+                                                "altText": "Impressive Emoji"
+                                            }
                                         },
-                                        "text": "<b>4/9</b> 🔽"
-                                      }
-                                    }
-                                  ]
-                                }
-                              ]
-                            }
-                          }
-                        ]
-                      },
-                      {
-                        "widgets": [
-                          {
-                            "buttonList": {
-                              "buttons": [
+                                        {
+                                            "textParagraph": {
+                                                "text": "<b>Impressive!</b>"
+                                            }
+                                        },
+                                        {
+                                            "textParagraph": {
+                                                "text": "You’ve earned <b><font color='#4CAF50'>50 ↑</font></b> coins more than yesterday! ✨"
+                                            }
+                                        }
+                                    ]
+                                },
                                 {
-                                  "text": "Go to Star App →",
-                                  "onClick": {
-                                    "openLink": {
-                                      "url": "https://starapp.example.com"
-                                    }
-                                  }
+                                    "widgets": [
+                                        {
+                                            "columns": {
+                                                "columnItems": [
+                                                    {
+                                                        "horizontalAlignment": "CENTER",
+                                                        "verticalAlignment": "CENTER",
+                                                        "widgets": [
+                                                            {
+                                                                "decoratedText": {
+                                                                    "icon": {
+                                                                        "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                                                                        "altText": "Coin Icon"
+                                                                    },
+                                                                    "text": "<b>120</b> 🔼"
+                                                                }
+                                                            }
+                                                        ]
+                                                    },
+                                                    {
+                                                        "horizontalAlignment": "CENTER",
+                                                        "verticalAlignment": "CENTER",
+                                                        "widgets": [
+                                                            {
+                                                                "decoratedText": {
+                                                                    "icon": {
+                                                                        "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
+                                                                        "altText": "Badge Icon"
+                                                                    },
+                                                                    "text": "<b>4/9</b> 🔽"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "widgets": [
+                                        {
+                                            "buttonList": {
+                                                "buttons": [
+                                                    {
+                                                        "text": "Go to Star App →",
+                                                        "onClick": {
+                                                            "openLink": {
+                                                                "url": "https://starapp.example.com"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
                                 }
-                              ]
+                            ]
+                        }
+                    }
+                ]
+            });
+        } else if (userMessage === "progress") {
+            const responses = loadResponses();
+            const progressData = responses.progressMessage;
+
+            res.json({
+                cardsV2: [
+                    {
+                        cardId: "outcomeCard",
+                        card: {
+                            header: {
+                                title: "Set your outcomes for the day",
+                                subtitle: "📌 05",
+                                imageUrl: "https://example.com/task-icon.png",
+                                imageType: "SQUARE"
+                            },
+                            sections: progressData.sections.map(section => ({
+                                header: section.category,
+                                widgets: section.items.map((item, index) => ({
+                                    decoratedText: {
+                                        text: `✔ ${item.text}`,
+                                        bottomLabel: item.completeBy ? `Complete by: ${item.completeBy}` : "",
+                                        endIcon: item.coins
+                                            ? { iconUrl: "https://example.com/coin-icon.png", altText: `${item.coins} coins` }
+                                            : null,
+                                        button: {
+                                            text: "❌ Remove",
+                                            onClick: {
+                                                action: {
+                                                    actionMethodName: "removeOutcome",
+                                                    parameters: [
+                                                        { key: "category", value: section.category },
+                                                        { key: "index", value: index.toString() }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
+                                }))
+                            })),
+                            "fixedFooter": {
+                                "primaryButton": {
+                                    "text": "➕ Add Outcome",
+                                    "onClick": {
+                                        "action": {
+                                            "actionMethodName": "addOutcome",
+                                            "parameters": []
+                                        }
+                                    }
+                                }
                             }
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                }
-              ]
-            }            
-            );
+                        }
+                    }
+                ]
+            });
         } else {
             res.json({
                 text: "I didn't understand that. Type **'hi'** to see your progress."
             });
         }
-
     } catch (error) {
         console.error("❌ Error handling request:", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
-});
-
-// Fetch progress
-app.get("/progress", (req, res) => {
-    const responses = loadResponses();
-    const progressData = responses.progressMessage;
-
-    res.json({
-        cardsV2: [
-            {
-                cardId: "outcomeCard",
-                card: {
-                    header: {
-                        title: "Set your outcomes for the day",
-                        subtitle: "📌 05",
-                        imageUrl: "https://example.com/task-icon.png", 
-                        imageType: "SQUARE"
-                    },
-                    sections: progressData.sections.map(section => ({
-                        header: section.category,
-                        widgets: section.items.map(item => ({
-                            decoratedText: {
-                                text: `✔ ${item.text}`,
-                                bottomLabel: item.completeBy ? `Complete by: ${item.completeBy}` : "",
-                                endIcon: item.coins ? { iconUrl: "https://example.com/coin-icon.png", altText: `${item.coins} coins` } : null
-                            }
-                        }))
-                    }))
-                }
-            }
-        ]
-    });
 });
 
 // Remove Outcome
