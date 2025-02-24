@@ -22,28 +22,81 @@ app.post("/", (req, res) => {
     try {
         console.log("📩 Received Request:", JSON.stringify(req.body, null, 2));
 
-        // Ensure the message exists
         const userMessage = req.body?.message?.text?.trim().toLowerCase() || "";
         const userName = req.body?.message?.sender?.displayName || "User";
 
-        // Check if user message exists
         if (!userMessage) {
             return res.status(400).json({ message: "No message found in request." });
         }
 
-        let responseText = "";
-
-        // Responding based on user input
         if (userMessage === "hi" || userMessage === "hello") {
-            responseText = `Good morning, **${userName}**! 🌟\n\n*"Stars don’t shine without darkness. Keep shining!"*`;
+            res.json({
+                cardsV2: [
+                    {
+                        cardId: "progressCard",
+                        card: {
+                            header: {
+                                title: `Good morning, ${userName}!`,
+                                subtitle: "🌟 “Stars don’t shine without darkness. Embrace the journey and illuminate your path!”",
+                                imageUrl: "https://example.com/starbot-icon.png", // Replace with actual bot image
+                                imageType: "CIRCLE"
+                            },
+                            sections: [
+                                {
+                                    widgets: [
+                                        {
+                                            textParagraph: {
+                                                text: "**Impressive!**\n\nYou've earned **50 ⬆ coins** more than yesterday! ✨"
+                                            }
+                                        },
+                                        {
+                                            columns: {
+                                                columnItems: [
+                                                    {
+                                                        horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
+                                                        horizontalAlignment: "CENTER",
+                                                        text: {
+                                                            text: "🔸 **120**",
+                                                            textType: "SUBTITLE"
+                                                        }
+                                                    },
+                                                    {
+                                                        horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
+                                                        horizontalAlignment: "CENTER",
+                                                        text: {
+                                                            text: "🏅 **4/9**",
+                                                            textType: "SUBTITLE"
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        {
+                                            buttonList: {
+                                                buttons: [
+                                                    {
+                                                        text: "Go to Star App →",
+                                                        onClick: {
+                                                            openLink: {
+                                                                url: "https://starapp.example.com"
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            });
         } else {
-            responseText = "I didn't understand that. Type **'hi'** to see your progress.";
+            res.json({
+                text: "I didn't understand that. Type **'hi'** to see your progress."
+            });
         }
-
-        // Send response back to Google Chat
-        res.json({
-            text: responseText
-        });
 
     } catch (error) {
         console.error("❌ Error handling request:", error);
@@ -52,24 +105,39 @@ app.post("/", (req, res) => {
 });
 
 
+
 // Fetch progress
 app.get("/progress", (req, res) => {
     const responses = loadResponses();
-    let progressData = responses.progressMessage;
-    let responseText = `**${progressData.title}**\n\n`;
+    const progressData = responses.progressMessage;
 
-    progressData.sections.forEach(section => {
-        responseText += `**${section.category}**\n`;
-        section.items.forEach((item, index) => {
-            let coinsText = item.coins ? ` - *${item.coins} coins*` : "";
-            let completeText = item.completeBy ? `(Complete by: ${item.completeBy})` : "";
-            responseText += `${item.status} ${item.text} ${completeText} ${coinsText} [➖ Remove](remove_outcome_${section.category}_${index})\n`;
-        });
-        responseText += "\n";
+    res.json({
+        cardsV2: [
+            {
+                cardId: "outcomeCard",
+                card: {
+                    header: {
+                        title: "Set your outcomes for the day",
+                        subtitle: "📌 05",
+                        imageUrl: "https://example.com/task-icon.png", // Replace with actual icon
+                        imageType: "SQUARE"
+                    },
+                    sections: progressData.sections.map(section => ({
+                        header: section.category,
+                        widgets: section.items.map(item => ({
+                            decoratedText: {
+                                text: `✔ ${item.text}`,
+                                bottomLabel: item.completeBy ? `Complete by: ${item.completeBy}` : "",
+                                endIcon: item.coins ? { iconUrl: "https://example.com/coin-icon.png", altText: `${item.coins} coins` } : null
+                            }
+                        }))
+                    }))
+                }
+            }
+        ]
     });
-
-    res.json({ text: responseText });
 });
+
 
 // Remove Outcome
 app.post("/remove-outcome", (req, res) => {

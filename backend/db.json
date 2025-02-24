@@ -1,10 +1,4 @@
 {
-    "defaultMessage": "Hello working {{userName}}! 🌟 Welcome to StarApp. Here are your achievements:\n\n🏅 Badges Earned:\n{{badges}}\n\n📊 Type 'progress' to see your tasks and goals.",
-    "badges": [
-        "✅ Beginner Achiever",
-        "🚀 Star Performer",
-        "🏆 Leaderboard Topper"
-    ],
     "progressMessage": {
         "title": "📊 Your Progress Report",
         "sections": [
@@ -15,6 +9,37 @@
                         "status": "✔",
                         "text": "Algebra basics",
                         "completeBy": "12 Feb 25",
+                        "coins": 10
+                    },
+                    {
+                        "status": "◻",
+                        "text": "Inequalities",
+                        "coins": 10
+                    }
+                ]
+            },
+            {
+                "category": "💰 Earning",
+                "items": [
+                    {
+                        "status": "✔",
+                        "text": "Create user specs for Mobile SoundBox",
+                        "completeBy": "EDD",
+                        "coins": 10
+                    },
+                    {
+                        "status": "◻",
+                        "text": "Design chat view for Star App",
+                        "coins": 10
+                    }
+                ]
+            },
+            {
+                "category": "🎗 Contribution",
+                "items": [
+                    {
+                        "status": "✔",
+                        "text": "Create quizzes for Design assessment",
                         "coins": 10
                     }
                 ]
