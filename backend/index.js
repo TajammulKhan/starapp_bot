@@ -37,7 +37,6 @@ app.post("/", (req, res) => {
                     "card": {
                       "header": {
                         "title": "Good morning, Muthu!",
-                        "imageUrl": "https://example.com/morning-icon.png",
                         "imageType": "CIRCLE",
                         "imageAltText": "Morning Icon"
                       },
@@ -55,7 +54,7 @@ app.post("/", (req, res) => {
                           "widgets": [
                             {
                               "image": {
-                                "imageUrl": "https://example.com/star-impressive.png",
+                                "imageUrl": "https://postimg.cc/MnZz0Jsn",
                                 "altText": "Impressive Emoji"
                               }
                             },
