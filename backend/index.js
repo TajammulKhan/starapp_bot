@@ -54,8 +54,7 @@ app.post("/", (req, res) => {
                             {
                               "image": {
                                 "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png",
-                                "altText": "Impressive Emoji",
-                                "imageType": "SQUARE"
+                                "altText": "Impressive Emoji"
                               }
                             },
                             {
@@ -82,8 +81,7 @@ app.post("/", (req, res) => {
                                       {
                                         "image": {
                                           "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
-                                          "altText": "Coin Icon",
-                                          "imageType": "SQUARE"
+                                          "altText": "Coin Icon"
                                         }
                                       },
                                       {
@@ -100,8 +98,7 @@ app.post("/", (req, res) => {
                                       {
                                         "image": {
                                           "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
-                                          "altText": "Badge Icon",
-                                          "imageType": "CIRCLE"
+                                          "altText": "Badge Icon"
                                         }
                                       },
                                       {
