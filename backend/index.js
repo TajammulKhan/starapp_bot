@@ -31,67 +31,84 @@ app.post("/", (req, res) => {
 
         if (userMessage === "hi" || userMessage === "hello") {
             res.json({
-                cardsV2: [
-                    {
-                        cardId: "progressCard",
-                        card: {
-                            header: {
-                                title: `Good morning, ${userName}!`,
-                                subtitle: "🌟 “Stars don’t shine without darkness. Embrace the journey and illuminate your path!”",
-                                imageUrl: "https://example.com/starbot-icon.png", // Replace with actual bot image
-                                imageType: "CIRCLE"
-                            },
-                            sections: [
-                                {
-                                    widgets: [
-                                        {
-                                            textParagraph: {
-                                                text: "**Impressive!**\n\nYou've earned **50 ⬆ coins** more than yesterday! ✨"
-                                            }
-                                        },
-                                        {
-                                            columns: {
-                                                columnItems: [
-                                                    {
-                                                        horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
-                                                        horizontalAlignment: "CENTER",
-                                                        text: {
-                                                            text: "🔸 **120**",
-                                                            textType: "SUBTITLE"
-                                                        }
-                                                    },
-                                                    {
-                                                        horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
-                                                        horizontalAlignment: "CENTER",
-                                                        text: {
-                                                            text: "🏅 **4/9**",
-                                                            textType: "SUBTITLE"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        },
-                                        {
-                                            buttonList: {
-                                                buttons: [
-                                                    {
-                                                        text: "Go to Star App →",
-                                                        onClick: {
-                                                            openLink: {
-                                                                url: "https://starapp.example.com"
-                                                            }
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    ]
-                                }
-                            ]
-                        }
-                    }
+                "cardsV2": [
+                  {
+                    "cardId": "unique-card-id",
+                    "card": {
+                      "header": {
+                         "title": "Sasha",
+                         "subtitle": "Software Engineer",
+                         "imageUrl":
+                         "https://developers.google.com/workspace/chat/images/quickstart-app-avatar.png",
+                         "imageType": "CIRCLE",
+                         "imageAltText": "Avatar for Sasha"
+                       },
+                       "sections": [
+                         {
+                           "header": "Contact Info",
+                           "collapsible": true,
+                           "uncollapsibleWidgetsCount": 1,
+                           "widgets": [
+                             {
+                               "decoratedText": {
+                                 "startIcon": {
+                                   "knownIcon": "EMAIL"
+                                 },
+                                 "text": "sasha@example.com"
+                               }
+                             },
+                             {
+                               "decoratedText": {
+                                 "startIcon": {
+                                   "knownIcon": "PERSON"
+                                 },
+                                 "text": "<font color=\"#80e27e\">Online</font>"
+                               }
+                             },
+                             {
+                               "decoratedText": {
+                                 "startIcon": {
+                                   "knownIcon": "PHONE"
+                                 },
+                                 "text": "+1 (555) 555-1234"
+                               }
+                             },
+                             {
+                               "buttonList": {
+                                 "buttons": [
+                                   {
+                                     "text": "Share",
+                                     "onClick": {
+                                      "openLink": {
+                                         "url": "https://example.com/share"
+                                       }
+                                     }
+                                   },
+                                   {
+                                     "text": "Edit",
+                                     "onClick": {
+                                       "action": {
+                                         "function": "goToView",
+                                         "parameters": [
+                                           {
+                                             "key": "viewType",
+                                             "value": "EDIT"
+                                           }
+                                         ]
+                                       }
+                                     }
+                                   }
+                                 ]
+                               }
+                             }
+                           ]
+                         }
+                       ]
+                     }
+                  }
                 ]
-            });
+              }
+              );
         } else {
             res.json({
                 text: "I didn't understand that. Type **'hi'** to see your progress."
