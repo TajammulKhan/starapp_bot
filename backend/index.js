@@ -2,9 +2,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const cors = require('cors');
+const app = express();
 app.use(cors());
 
-const app = express();
 app.use(bodyParser.json());
 
 const responsesFile = "./db.json";
