@@ -33,81 +33,111 @@ app.post("/", (req, res) => {
             res.json({
                 "cardsV2": [
                   {
-                    "cardId": "unique-card-id",
+                    "cardId": "daily-progress-card",
                     "card": {
                       "header": {
-                         "title": "Sasha",
-                         "subtitle": "Software Engineer",
-                         "imageUrl":
-                         "https://developers.google.com/workspace/chat/images/quickstart-app-avatar.png",
-                         "imageType": "CIRCLE",
-                         "imageAltText": "Avatar for Sasha"
-                       },
-                       "sections": [
-                         {
-                           "header": "Contact Info",
-                           "collapsible": true,
-                           "uncollapsibleWidgetsCount": 1,
-                           "widgets": [
-                             {
-                               "decoratedText": {
-                                 "startIcon": {
-                                   "knownIcon": "EMAIL"
-                                 },
-                                 "text": "sasha@example.com"
-                               }
-                             },
-                             {
-                               "decoratedText": {
-                                 "startIcon": {
-                                   "knownIcon": "PERSON"
-                                 },
-                                 "text": "<font color=\"#80e27e\">Online</font>"
-                               }
-                             },
-                             {
-                               "decoratedText": {
-                                 "startIcon": {
-                                   "knownIcon": "PHONE"
-                                 },
-                                 "text": "+1 (555) 555-1234"
-                               }
-                             },
-                             {
-                               "buttonList": {
-                                 "buttons": [
-                                   {
-                                     "text": "Share",
-                                     "onClick": {
+                        "title": "Good morning, Muthu!",
+                        "imageUrl": "https://example.com/morning-icon.png",
+                        "imageType": "CIRCLE",
+                        "imageAltText": "Morning Icon"
+                      },
+                      "sections": [
+                        {
+                          "widgets": [
+                            {
+                              "textParagraph": {
+                                "text": "<b><font color='#D4A017' size='14'>“ Stars don’t shine without darkness. Embrace the journey and illuminate your path! ”</font></b>"
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "widgets": [
+                            {
+                              "image": {
+                                "imageUrl": "https://example.com/star-impressive.png",
+                                "altText": "Impressive Emoji"
+                              }
+                            },
+                            {
+                              "textParagraph": {
+                                "text": "<b>Impressive!</b>"
+                              }
+                            },
+                            {
+                              "textParagraph": {
+                                "text": "You’ve earned <b><font color='#4CAF50'>50 ↑</font></b> coins more than yesterday! ✨"
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "widgets": [
+                            {
+                              "columns": {
+                                "columnItems": [
+                                  {
+                                    "horizontalAlignment": "CENTER",
+                                    "verticalAlignment": "CENTER",
+                                    "widgets": [
+                                      {
+                                        "image": {
+                                          "imageUrl": "https://example.com/coin-icon.png",
+                                          "altText": "Coin Icon"
+                                        }
+                                      },
+                                      {
+                                        "textParagraph": {
+                                          "text": "<b>120</b> 🔼"
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "horizontalAlignment": "CENTER",
+                                    "verticalAlignment": "CENTER",
+                                    "widgets": [
+                                      {
+                                        "image": {
+                                          "imageUrl": "https://example.com/badge-icon.png",
+                                          "altText": "Badge Icon"
+                                        }
+                                      },
+                                      {
+                                        "textParagraph": {
+                                          "text": "<b>4/9</b> 🔽"
+                                        }
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        },
+                        {
+                          "widgets": [
+                            {
+                              "buttonList": {
+                                "buttons": [
+                                  {
+                                    "text": "Go to Star App →",
+                                    "onClick": {
                                       "openLink": {
-                                         "url": "https://example.com/share"
-                                       }
-                                     }
-                                   },
-                                   {
-                                     "text": "Edit",
-                                     "onClick": {
-                                       "action": {
-                                         "function": "goToView",
-                                         "parameters": [
-                                           {
-                                             "key": "viewType",
-                                             "value": "EDIT"
-                                           }
-                                         ]
-                                       }
-                                     }
-                                   }
-                                 ]
-                               }
-                             }
-                           ]
-                         }
-                       ]
-                     }
+                                        "url": "https://starapp.example.com"
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
                   }
                 ]
-              }
+              }              
               );
         } else {
             res.json({
