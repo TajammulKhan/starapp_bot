@@ -98,7 +98,7 @@ app.post("/", (req, res) => {
                                     "widgets": [
                                       {
                                         "image": {
-                                          "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1).png",
+                                          "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
                                           "altText": "Badge Icon"
                                         }
                                       },
