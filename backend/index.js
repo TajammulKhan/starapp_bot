@@ -81,7 +81,7 @@ app.post("/", (req, res) => {
                                     "widgets": [
                                       {
                                         "image": {
-                                          "imageUrl": "https://example.com/coin-icon.png",
+                                          "imageUrl": "https://drive.google.com/file/d/1lWu_YaDkjAp0sEjbAQnowiR4pJ_DfYJV/view?usp=drive_link",
                                           "altText": "Coin Icon"
                                         }
                                       },
@@ -98,7 +98,7 @@ app.post("/", (req, res) => {
                                     "widgets": [
                                       {
                                         "image": {
-                                          "imageUrl": "https://example.com/badge-icon.png",
+                                          "imageUrl": "https://imgur.com/K5I83rJ",
                                           "altText": "Badge Icon"
                                         }
                                       },
