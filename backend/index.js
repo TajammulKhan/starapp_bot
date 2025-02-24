@@ -132,9 +132,11 @@ app.post("/", (req, res) => {
                         }
                     }
                 ]
-            });
-        } else if (userMessage === "progress") {
+            }); 
+        } else if (userMessage === "progress" || "prog") {
+          console.log("Processing 'progress' request...");
             const responses = loadResponses();
+            console.log("🔍 Loaded Responses:", JSON.stringify(responses, null, 2));
             const progressData = responses.progressMessage;
 
             res.json({
