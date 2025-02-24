@@ -96,18 +96,15 @@ app.post("/", (req, res) => {
                                     "horizontalAlignment": "CENTER",
                                     "verticalAlignment": "CENTER",
                                     "widgets": [
-                                      {
-                                        "image": {
-                                          "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
-                                          "altText": "Badge Icon",
-                                          "imageType": "SQUARE"
+                                        {
+                                            "decoratedText": {
+                                                "icon": {
+                                                    "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
+                                                    "altText": "Badge Icon"
+                                                },
+                                                "text": "<b>4/9</b> 🔽"
+                                            }
                                         }
-                                      },
-                                      {
-                                        "textParagraph": {
-                                          "text": "<b>4/9</b> 🔽"
-                                        }
-                                      }
                                     ]
                                   }
                                 ]
