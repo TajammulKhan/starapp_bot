@@ -81,7 +81,7 @@ app.post("/", (req, res) => {
                                     "widgets": [
                                       {
                                         "image": {
-                                          "imageUrl": "https://drive.google.com/file/d/1lWu_YaDkjAp0sEjbAQnowiR4pJ_DfYJV/view?usp=drive_link",
+                                          "imageUrl": "https://imgur.com/XAPW56r",
                                           "altText": "Coin Icon"
                                         }
                                       },
@@ -96,15 +96,17 @@ app.post("/", (req, res) => {
                                     "horizontalAlignment": "CENTER",
                                     "verticalAlignment": "CENTER",
                                     "widgets": [
-                                        {
-                                            "decoratedText": {
-                                                "icon": {
-                                                    "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
-                                                    "altText": "Badge Icon"
-                                                },
-                                                "text": "<b>4/9</b> 🔽"
-                                            }
+                                      {
+                                        "image": {
+                                          "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
+                                          "altText": "Badge Icon"
                                         }
+                                      },
+                                      {
+                                        "textParagraph": {
+                                          "text": "<b>4/9</b> 🔽"
+                                        }
+                                      }
                                     ]
                                   }
                                 ]
