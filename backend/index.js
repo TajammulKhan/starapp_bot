@@ -31,108 +31,125 @@ app.post("/", (req, res) => {
 
       if (userMessage === "hi" || userMessage === "hello") {
           res.json({
-              "cardsV2": [
-                  {
-                      "cardId": "daily-progress-card",
-                      "card": {
-                          "header": {
-                              "title": `Good morning, ${userName}!`,
-                              "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/morning-icon.png",
-                              "imageAltText": "Morning Icon"
-                          },
-                          "sections": [
+            "cardsV2": [
+              {
+                "cardId": "daily-progress-card",
+                "card": {
+                  "header": {
+                    "title": `Good morning, ${userName}!`
+                  },
+                  "sections": [
+                    {
+                      "widgets": [
+                        {
+                          "textParagraph": {
+                            "text": "<b><font color='#D4A017' size='14'>“Stars don’t shine without darkness. Embrace the journey and illuminate your path!”</font></b>"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "widgets": [
+                        {
+                          "columns": {
+                            "columnItems": [
                               {
-                                  "widgets": [
-                                      {
-                                          "textParagraph": {
-                                              "text": "<b><font color='#D4A017' size='14'>“Stars don’t shine without darkness. Embrace the journey and illuminate your path!”</font></b>"
-                                          }
-                                      }
-                                  ]
+                                "horizontalAlignment": "CENTER",
+                                "verticalAlignment": "CENTER",
+                                "widgets": [
+                                  {
+                                    "image": {
+                                      "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png",
+                                      "altText": "Impressive Emoji"
+                                    }
+                                  }
+                                ]
                               },
                               {
-                                  "widgets": [
-                                      {
-                                          "image": {
-                                              "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png",
-                                              "altText": "Impressive Emoji"
-                                          }
-                                      },
-                                      {
-                                          "textParagraph": {
-                                              "text": "<b>Impressive!</b>"
-                                          }
-                                      },
-                                      {
-                                          "textParagraph": {
-                                              "text": "You’ve earned <b><font color='#4CAF50'>50 ↑</font></b> coins more than yesterday! ✨"
-                                          }
-                                      }
-                                  ]
-                              },
-                              {
-                                  "widgets": [
-                                      {
-                                          "columns": {
-                                              "columnItems": [
-                                                  {
-                                                      "horizontalAlignment": "CENTER",
-                                                      "verticalAlignment": "CENTER",
-                                                      "widgets": [
-                                                          {
-                                                              "decoratedText": {
-                                                                  "icon": {
-                                                                      "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
-                                                                      "altText": "Coin Icon"
-                                                                  },
-                                                                  "text": "<b>120</b> 🔼"
-                                                              }
-                                                          }
-                                                      ]
-                                                  },
-                                                  {
-                                                      "horizontalAlignment": "CENTER",
-                                                      "verticalAlignment": "CENTER",
-                                                      "widgets": [
-                                                          {
-                                                              "decoratedText": {
-                                                                  "icon": {
-                                                                      "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
-                                                                      "altText": "Badge Icon"
-                                                                  },
-                                                                  "text": "<b>4/9</b> 🔽"
-                                                              }
-                                                          }
-                                                      ]
-                                                  }
-                                              ]
-                                          }
-                                      }
-                                  ]
-                              },
-                              {
-                                  "widgets": [
-                                      {
-                                          "buttonList": {
-                                              "buttons": [
-                                                  {
-                                                      "text": "Go to Star App →",
-                                                      "onClick": {
-                                                          "openLink": {
-                                                              "url": "https://starapp.example.com"
-                                                          }
-                                                      }
-                                                  }
-                                              ]
-                                          }
-                                      }
-                                  ]
+                                "horizontalAlignment": "CENTER",
+                                "verticalAlignment": "CENTER",
+                                "widgets": [
+                                  {
+                                    "textParagraph": {
+                                      "text": "<b>Impressive!</b>"
+                                    }
+                                  },
+                                  {
+                                    "textParagraph": {
+                                      "text": "You’ve earned <b><font color='#4CAF50'>50 ↑</font></b> coins more than yesterday! ✨"
+                                    }
+                                  }
+                                ]
                               }
-                          ]
-                      }
-                  }
-              ]
-          });
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "widgets": [
+                        {
+                          "columns": {
+                            "columnItems": [
+                              {
+                                "horizontalAlignment": "CENTER",
+                                "verticalAlignment": "CENTER",
+                                "widgets": [
+                                  {
+                                    "decoratedText": {
+                                      "icon": {
+                                        "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                                        "altText": "Coin Icon"
+                                      },
+                                      "text": "<b>120</b> 🔼"
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "horizontalAlignment": "CENTER",
+                                "verticalAlignment": "CENTER",
+                                "widgets": [
+                                  {
+                                    "decoratedText": {
+                                      "icon": {
+                                        "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
+                                        "altText": "Badge Icon"
+                                      },
+                                      "text": "<b>4/9</b> 🔽"
+                                    }
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "widgets": [
+                        {
+                          "buttonList": {
+                            "buttons": [
+                              {
+                                "text": "Go to Star App →",
+                                "onClick": {
+                                  "openLink": {
+                                    "url": "https://starapp.example.com"
+                                  }
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+          );
       } else if (userMessage === "progress" || userMessage === "prog") {
           console.log("Processing 'progress' request...");
           const responses = loadResponses();
