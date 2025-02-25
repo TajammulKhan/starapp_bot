@@ -10,246 +10,309 @@ app.use(bodyParser.json());
 const responsesFile = "./db.json";
 
 const loadResponses = () => JSON.parse(fs.readFileSync(responsesFile, "utf8"));
-const saveResponses = (data) => fs.writeFileSync(responsesFile, JSON.stringify(data, null, 2), "utf8");
+const saveResponses = (data) =>
+  fs.writeFileSync(responsesFile, JSON.stringify(data, null, 2), "utf8");
 
 // Health Check
 app.get("/", (req, res) => {
-    res.json({ status: "ok", message: "StarApp Bot is running!" });
+  res.json({ status: "ok", message: "StarApp Bot is running!" });
 });
 
 // Handle bot interactions
 app.post("/", (req, res) => {
   try {
-      console.log("📩 Received Request:", JSON.stringify(req.body, null, 2));
+    console.log("📩 Received Request:", JSON.stringify(req.body, null, 2));
 
-      const userMessage = req.body?.message?.text?.trim().toLowerCase() || "";
-      const userName = req.body?.message?.sender?.displayName || "User";
+    const userMessage = req.body?.message?.text?.trim().toLowerCase() || "";
+    const userName = req.body?.message?.sender?.displayName || "User";
 
-      if (!userMessage) {
-          return res.status(400).json({ message: "No message found in request." });
-      }
+    if (!userMessage) {
+      return res.status(400).json({ message: "No message found in request." });
+    }
 
-      if (userMessage === "hi" || userMessage === "hello") {
-          res.json({
-            "cardsV2": [
-              {
-                "cardId": "daily-progress-card",
-                "card": {
-                  "header": {
-                    "title": `Good morning, ${userName}!`
-                  },
-                  "sections": [
+    if (userMessage === "hi" || userMessage === "hello") {
+      res.json({
+        cardsV2: [
+          {
+            cardId: "daily-progress-card",
+            card: {
+              header: {
+                title: `Good morning, ${userName}!`,
+              },
+              sections: [
+                {
+                  widgets: [
                     {
-                      "widgets": [
-                        {
-                          "textParagraph": {
-                            "text": "<b><font color='#D4A017' size='14'>“Stars don’t shine without darkness. Embrace the journey and illuminate your path!”</font></b>"
-                          }
-                        }
-                      ]
+                      textParagraph: {
+                        text: "<b><font color='#D4A017' size='14'>“Stars don’t shine without darkness. Embrace the journey and illuminate your path!”</font></b>",
+                      },
                     },
+                  ],
+                },
+                {
+                  widgets: [
                     {
-                      "widgets": [
-                        {
-                          "columns": {
-                            "columnItems": [
+                      columns: {
+                        columnItems: [
+                          {
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
                               {
-                                "horizontalAlignment": "CENTER",
-                                "verticalAlignment": "CENTER",
-                                "widgets": [
-                                  {
-                                    "image": {
-                                      "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png",
-                                      "altText": "Impressive Emoji"
-                                    }
-                                  }
-                                ]
+                                image: {
+                                  imageUrl:
+                                    "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png",
+                                  altText: "Impressive Emoji",
+                                },
                               },
-                              {
-                                "horizontalAlignment": "CENTER",
-                                "verticalAlignment": "CENTER",
-                                "widgets": [
-                                  {
-                                    "textParagraph": {
-                                      "text": "<b>Impressive!</b>"
-                                    }
-                                  },
-                                  {
-                                    "textParagraph": {
-                                      "text": "You’ve earned <b><font color='#4CAF50'>50 ↑</font></b> coins more than yesterday! ✨"
-                                    }
-                                  }
-                                ]
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "widgets": [
-                        {
-                          "columns": {
-                            "columnItems": [
-                              {
-                                "horizontalAlignment": "CENTER",
-                                "verticalAlignment": "CENTER",
-                                "widgets": [
-                                  {
-                                    "decoratedText": {
-                                      "icon": {
-                                        "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
-                                        "altText": "Coin Icon"
-                                      },
-                                      "text": "<b>120</b> 🔼"
-                                    }
-                                  }
-                                ]
-                              },
-                              {
-                                "horizontalAlignment": "CENTER",
-                                "verticalAlignment": "CENTER",
-                                "widgets": [
-                                  {
-                                    "decoratedText": {
-                                      "icon": {
-                                        "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
-                                        "altText": "Badge Icon"
-                                      },
-                                      "text": "<b>4/9</b> 🔽"
-                                    }
-                                  }
-                                ]
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    {
-                      "widgets": [
-                        {
-                          "buttonList": {
-                            "buttons": [
-                              {
-                                "text": "Go to Star App →",
-                                "onClick": {
-                                  "openLink": {
-                                    "url": "https://starapp.example.com"
-                                  }
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  ]
-                }
-              }
-            ]
-          }
-          );
-      } else if (userMessage === "progress" || userMessage === "prog") {
-          console.log("Processing 'progress' request...");
-          const responses = loadResponses();
-          console.log("🔍 Loaded Responses:", JSON.stringify(responses, null, 2));
-
-          if (!responses.progressMessage || !responses.progressMessage.sections) {
-              return res.json({ text: "No progress data available." });
-          }
-
-          res.json({
-              "cardsV2": [
-                  {
-                      "cardId": "outcomeCard",
-                      "card": {
-                          "header": {
-                              "title": "Set your outcomes for the day",
-                              "subtitle": "📌 05",
-                              "imageUrl": "https://example.com/task-icon.png"
+                            ],
                           },
-                          "sections": responses.progressMessage.sections.map(section => ({
-                              "header": section.category,
-                              "widgets": section.items.map((item, index) => ({
-                                  "decoratedText": {
-                                      "text": `✔ ${item.text}`,
-                                      "bottomLabel": item.completeBy ? `Complete by: ${item.completeBy}` : "",
-                                      "endIcon": item.coins
-                                          ? { "iconUrl": "https://example.com/coin-icon.png", "altText": `${item.coins} coins` }
-                                          : null,
-                                      "button": {
-                                          "text": "❌ Remove",
-                                          "onClick": {
-                                              "action": {
-                                                  "actionMethodName": "removeOutcome",
-                                                  "parameters": [
-                                                      { "key": "category", "value": section.category },
-                                                      { "key": "index", "value": index.toString() }
-                                                  ]
-                                              }
-                                          }
-                                      }
-                                  }
-                              }))
-                          })),
-                          "fixedFooter": {
-                              "primaryButton": {
-                                  "text": "➕ Add Outcome",
-                                  "onClick": {
-                                      "action": {
-                                          "actionMethodName": "addOutcome",
-                                          "parameters": []
-                                      }
-                                  }
-                              }
-                          }
-                      }
-                  }
-              ]
-          });
-      } else {
-          res.json({
-              text: "I didn't understand that. Type **'hi'** to see your progress."
-          });
+                          {
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                textParagraph: {
+                                  text: "<b>Impressive!</b>",
+                                },
+                              },
+                              {
+                                textParagraph: {
+                                  text: "You’ve earned <b><font color='#4CAF50'>50 ↑</font></b> coins more than yesterday! ✨",
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      columns: {
+                        columnItems: [
+                          {
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                decoratedText: {
+                                  icon: {
+                                    iconUrl:
+                                      "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                                    altText: "Coin Icon",
+                                  },
+                                  text: "<b>120</b> 🔼",
+                                },
+                              },
+                            ],
+                          },
+                          {
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                decoratedText: {
+                                  icon: {
+                                    iconUrl:
+                                      "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
+                                    altText: "Badge Icon",
+                                  },
+                                  text: "<b>4/9</b> 🔽",
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      buttonList: {
+                        buttons: [
+                          {
+                            text: "Go to Star App →",
+                            onClick: {
+                              openLink: {
+                                url: "https://starapp.example.com",
+                              },
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        ],
+      });
+    } else if (userMessage === "progress" || userMessage === "prog") {
+      console.log("Processing 'progress' request...");
+      const responses = loadResponses();
+      console.log("🔍 Loaded Responses:", JSON.stringify(responses, null, 2));
+
+      if (!responses.progressMessage || !responses.progressMessage.sections) {
+        return res.json({ text: "No progress data available." });
       }
+
+      res.json({
+        cardsV2: [
+          {
+            cardId: "outcomeCard",
+            card: {
+              header: {
+                title: "📊 Your Progress Report",
+                subtitle: "Stay on track and reach your goals!",
+              },
+              sections: [
+                {
+                  widgets: [
+                    {
+                      textParagraph: {
+                        text: "<b><font color='#D4A017' size='14'>“Small progress is still progress. Keep going!”</font></b>",
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: responses.progressMessage.sections.flatMap(
+                    (section) => [
+                      {
+                        textParagraph: {
+                          text: `<b>${section.category}</b>`,
+                        },
+                      },
+                      ...section.items.map((item, index) => ({
+                        columns: {
+                          columnItems: [
+                            {
+                              horizontalAlignment: "CENTER",
+                              verticalAlignment: "CENTER",
+                              widgets: [
+                                {
+                                  decoratedText: {
+                                    text: `${item.status} ${item.text}`,
+                                    bottomLabel: item.completeBy
+                                      ? `Complete by: ${item.completeBy}`
+                                      : "",
+                                    endIcon: item.coins
+                                      ? {
+                                          iconUrl:
+                                            "https://example.com/coin-icon.png",
+                                          altText: `${item.coins} coins`,
+                                        }
+                                      : null,
+                                    button: {
+                                      text: "❌ Remove",
+                                      onClick: {
+                                        action: {
+                                          actionMethodName: "removeOutcome",
+                                          parameters: [
+                                            {
+                                              key: "category",
+                                              value: section.category,
+                                            },
+                                            {
+                                              key: "index",
+                                              value: index.toString(),
+                                            },
+                                          ],
+                                        },
+                                      },
+                                    },
+                                  },
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      })),
+                    ]
+                  ),
+                },
+                {
+                  widgets: [
+                    {
+                      buttonList: {
+                        buttons: [
+                          {
+                            text: "➕ Add Outcome",
+                            onClick: {
+                              action: {
+                                actionMethodName: "addOutcome",
+                                parameters: [],
+                              },
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        ],
+      });
+    } else {
+      res.json({
+        text: "I didn't understand that. Type **'hi'** to see your progress.",
+      });
+    }
   } catch (error) {
-      console.error("❌ Error handling request:", error);
-      res.status(500).json({ message: "Internal Server Error" });
+    console.error("❌ Error handling request:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
 // Remove Outcome
 app.post("/remove-outcome", (req, res) => {
-    const { category, index } = req.body;
-    let responses = loadResponses();
+  const { category, index } = req.body;
+  let responses = loadResponses();
 
-    let section = responses.progressMessage.sections.find(sec => sec.category === category);
-    if (section && section.items[index]) {
-        section.items.splice(index, 1);
-        saveResponses(responses);
-        res.json({ status: "success", message: `✅ Outcome removed from **${category}**` });
-    } else {
-        res.status(400).json({ status: "error", message: "Outcome not found" });
-    }
+  let section = responses.progressMessage.sections.find(
+    (sec) => sec.category === category
+  );
+  if (section && section.items[index]) {
+    section.items.splice(index, 1);
+    saveResponses(responses);
+    res.json({
+      status: "success",
+      message: `✅ Outcome removed from **${category}**`,
+    });
+  } else {
+    res.status(400).json({ status: "error", message: "Outcome not found" });
+  }
 });
 
 // Add Outcome
 app.post("/add-outcome", (req, res) => {
-    const { category, text, coins = 0 } = req.body;
-    let responses = loadResponses();
+  const { category, text, coins = 0 } = req.body;
+  let responses = loadResponses();
 
-    let section = responses.progressMessage.sections.find(sec => sec.category === category);
-    if (section) {
-        section.items.push({ status: "◻", text, coins });
-        saveResponses(responses);
-        res.json({ status: "success", message: `✅ Outcome added to **${category}**` });
-    } else {
-        res.status(400).json({ status: "error", message: "Category not found" });
-    }
+  let section = responses.progressMessage.sections.find(
+    (sec) => sec.category === category
+  );
+  if (section) {
+    section.items.push({ status: "◻", text, coins });
+    saveResponses(responses);
+    res.json({
+      status: "success",
+      message: `✅ Outcome added to **${category}**`,
+    });
+  } else {
+    res.status(400).json({ status: "error", message: "Category not found" });
+  }
 });
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
-    console.log(`✅ StarApp Bot is running on port ${PORT}`);
+  console.log(`✅ StarApp Bot is running on port ${PORT}`);
 });
