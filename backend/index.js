@@ -181,14 +181,9 @@ app.post("/", (req, res) => {
                     },
                   ],
                 },
-                ...responses.progressMessage.sections.map((section) => ({
+                {
                   widgets: [
                     {
-                      textParagraph: {
-                        text: `<b>${section.category}</b>`,
-                      },
-                    },
-                    ...section.items.map((item) => ({
                       columns: {
                         columnItems: [
                           {
@@ -197,17 +192,64 @@ app.post("/", (req, res) => {
                             widgets: [
                               {
                                 decoratedText: {
-                                  text: `${item.status} ${item.text}`,
-                                  bottomLabel: item.completeBy
-                                    ? `Complete by: ${item.completeBy}`
-                                    : "",
-                                  endIcon: item.coins
-                                    ? {
-                                        iconUrl:
-                                          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
-                                        altText: `${item.coins} coins`,
-                                      }
-                                    : null,
+                                  icon: {
+                                    iconUrl:
+                                      "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                                    altText: "Coin Icon",
+                                  },
+                                  text: "<b>120</b> 🔼",
+                                },
+                              },
+                            ],
+                          },
+                          {
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                decoratedText: {
+                                  icon: {
+                                    iconUrl:
+                                      "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
+                                    altText: "Badge Icon",
+                                  },
+                                  text: "<b>4/9</b> 🔽",
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      textParagraph: {
+                        text: "<b>📖 Learning</b>",
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      columns: {
+                        columnItems: [
+                          {
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                decoratedText: {
+                                  text: "✔ Algebra basics",
+                                  bottomLabel: "Complete by: 12 Feb 25",
+                                  endIcon: {
+                                    iconUrl:
+                                      "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                                    altText: "10 coins",
+                                  },
                                   button: {
                                     text: "❌ Remove",
                                     onClick: {
@@ -216,13 +258,11 @@ app.post("/", (req, res) => {
                                         parameters: [
                                           {
                                             key: "category",
-                                            value: section.category,
+                                            value: "📖 Learning",
                                           },
                                           {
                                             key: "index",
-                                            value: section.items
-                                              .indexOf(item)
-                                              .toString(),
+                                            value: "0",
                                           },
                                         ],
                                       },
@@ -234,9 +274,9 @@ app.post("/", (req, res) => {
                           },
                         ],
                       },
-                    })),
+                    },
                   ],
-                })),
+                },
                 {
                   widgets: [
                     {
