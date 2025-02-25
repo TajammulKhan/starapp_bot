@@ -181,62 +181,62 @@ app.post("/", (req, res) => {
                     },
                   ],
                 },
-                {
-                  widgets: responses.progressMessage.sections.flatMap(
-                    (section) => [
-                      {
-                        textParagraph: {
-                          text: `<b>${section.category}</b>`,
-                        },
+                ...responses.progressMessage.sections.map((section) => ({
+                  widgets: [
+                    {
+                      textParagraph: {
+                        text: `<b>${section.category}</b>`,
                       },
-                      ...section.items.map((item, index) => ({
-                        columns: {
-                          columnItems: [
-                            {
-                              horizontalAlignment: "CENTER",
-                              verticalAlignment: "CENTER",
-                              widgets: [
-                                {
-                                  decoratedText: {
-                                    text: `${item.status} ${item.text}`,
-                                    bottomLabel: item.completeBy
-                                      ? `Complete by: ${item.completeBy}`
-                                      : "",
-                                    endIcon: item.coins
-                                      ? {
-                                          iconUrl:
-                                            "https://example.com/coin-icon.png",
-                                          altText: `${item.coins} coins`,
-                                        }
-                                      : null,
-                                    button: {
-                                      text: "❌ Remove",
-                                      onClick: {
-                                        action: {
-                                          actionMethodName: "removeOutcome",
-                                          parameters: [
-                                            {
-                                              key: "category",
-                                              value: section.category,
-                                            },
-                                            {
-                                              key: "index",
-                                              value: index.toString(),
-                                            },
-                                          ],
-                                        },
+                    },
+                    ...section.items.map((item) => ({
+                      columns: {
+                        columnItems: [
+                          {
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                decoratedText: {
+                                  text: `${item.status} ${item.text}`,
+                                  bottomLabel: item.completeBy
+                                    ? `Complete by: ${item.completeBy}`
+                                    : "",
+                                  endIcon: item.coins
+                                    ? {
+                                        iconUrl:
+                                          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                                        altText: `${item.coins} coins`,
+                                      }
+                                    : null,
+                                  button: {
+                                    text: "❌ Remove",
+                                    onClick: {
+                                      action: {
+                                        actionMethodName: "removeOutcome",
+                                        parameters: [
+                                          {
+                                            key: "category",
+                                            value: section.category,
+                                          },
+                                          {
+                                            key: "index",
+                                            value: section.items
+                                              .indexOf(item)
+                                              .toString(),
+                                          },
+                                        ],
                                       },
                                     },
                                   },
                                 },
-                              ],
-                            },
-                          ],
-                        },
-                      })),
-                    ]
-                  ),
-                },
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    })),
+                  ],
+                })),
                 {
                   widgets: [
                     {
