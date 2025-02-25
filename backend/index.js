@@ -30,269 +30,56 @@ app.post("/", (req, res) => {
       return res.status(400).json({ message: "No message found in request." });
     }
 
-    if (userMessage === "hi" || userMessage === "hello") {
-      res.json({
-        cardsV2: [
-          {
-            cardId: "daily-progress-card",
-            card: {
-              header: {
-                title: `Good morning, ${userName}!`,
-              },
-              sections: [
-                {
-                  widgets: [
-                    {
-                      textParagraph: {
-                        text: "<b><font color='#D4A017' size='14'>“Stars don’t shine without darkness. Embrace the journey and illuminate your path!”</font></b>",
-                      },
-                    },
-                  ],
-                },
-                {
-                  widgets: [
-                    {
-                      columns: {
-                        columnItems: [
-                          {
-                            horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
-                            widgets: [
-                              {
-                                image: {
-                                  imageUrl:
-                                    "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png",
-                                  altText: "Impressive Emoji",
-                                },
-                              },
-                            ],
-                          },
-                          {
-                            horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
-                            widgets: [
-                              {
-                                textParagraph: {
-                                  text: "<b>Impressive!</b>",
-                                },
-                              },
-                              {
-                                textParagraph: {
-                                  text: "You’ve earned <b><font color='#4CAF50'>50 ↑</font></b> coins more than yesterday! ✨",
-                                },
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                },
-                {
-                  widgets: [
-                    {
-                      columns: {
-                        columnItems: [
-                          {
-                            horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
-                            widgets: [
-                              {
-                                decoratedText: {
-                                  icon: {
-                                    iconUrl:
-                                      "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
-                                    altText: "Coin Icon",
-                                  },
-                                  text: "<b>120</b> 🔼",
-                                },
-                              },
-                            ],
-                          },
-                          {
-                            horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
-                            widgets: [
-                              {
-                                decoratedText: {
-                                  icon: {
-                                    iconUrl:
-                                      "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
-                                    altText: "Badge Icon",
-                                  },
-                                  text: "<b>4/9</b> 🔽",
-                                },
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                },
-                {
-                  widgets: [
-                    {
-                      buttonList: {
-                        buttons: [
-                          {
-                            text: "Go to Star App →",
-                            onClick: {
-                              openLink: {
-                                url: "https://starapp.example.com",
-                              },
-                            },
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-          },
-        ],
-      });
-    } else if (userMessage === "progress" || userMessage === "prog") {
+    if (userMessage === "progress" || userMessage === "prog") {
       console.log("Processing 'progress' request...");
-      const responses = loadResponses();
-      console.log("🔍 Loaded Responses:", JSON.stringify(responses, null, 2));
+      const responses = loadResponses(); // Load from db.json
 
       if (!responses.progressMessage || !responses.progressMessage.sections) {
         return res.json({ text: "No progress data available." });
       }
 
-      res.json({
-        "cardsV2": [
-          {
-            "cardId": "daily-progress-card",
-            "card": {
-              "header": {
-                "title": "Let’s get your day started!",
-                "subtitle": "Track your progress and stay motivated!",
-                "imageType": "CIRCLE"
-              },
-              "sections": [
-                {
-                  "widgets": [
-                    {
-                      "textParagraph": {
-                        "text": "<b><font size='14'>Set your outcomes for the day</font></b> <font color='#FFA500'><b>05</b></font>"
-                      }
-                    }
-                  ]
-                },
-                {
-                  "widgets": [
-                    {
-                      "textParagraph": {
-                        "text": "<b>🏅 Learning</b>"
-                      }
-                    },
-                    {
-                      "textParagraph": {
-                        "text": "<b>Mathematics Badge</b>"
-                      }
-                    },
-                    {
-                      "decoratedText": {
-                        "text": "✔ Algebra basics",
-                        "bottomLabel": "Complete by: 12 Feb 25",
-                        "endIcon": {
-                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
-                          "altText": "10 coins"
-                        }
-                      }
-                    },
-                    {
-                      "decoratedText": {
-                        "text": "✔ Inequalities"
-                      }
-                    },
-                    {
-                      "decoratedText": {
-                        "text": "✔ Solving equations"
-                      }
-                    }
-                  ]
-                },
-                {
-                  "widgets": [
-                    {
-                      "textParagraph": {
-                        "text": "<b>💰 Earning</b>"
-                      }
-                    },
-                    {
-                      "textParagraph": {
-                        "text": "<b>Yesterday’s pending outcomes</b>"
-                      }
-                    },
-                    {
-                      "decoratedText": {
-                        "text": "✔ Create user specs for Dashboard screen for Mobile SoundBox",
-                        "bottomLabel": "Complete by: EOD",
-                        "endIcon": {
-                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
-                          "altText": "10 coins"
-                        }
-                      }
-                    },
-                    {
-                      "decoratedText": {
-                        "text": "✔ Design chat view for Star App"
-                      }
-                    },
-                    {
-                      "textParagraph": {
-                        "text": "<b>Today’s new outcomes</b>"
-                      }
-                    },
-                    {
-                      "decoratedText": {
-                        "text": "✔ <new outcome typed here>",
-                        "endIcon": {
-                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
-                          "altText": "10 coins"
-                        }
-                      }
-                    },
-                    {
-                      "decoratedText": {
-                        "text": "✔ <new outcome typed here>",
-                        "endIcon": {
-                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
-                          "altText": "10 coins"
-                        }
-                      }
-                    }
-                  ]
-                },
-                {
-                  "widgets": [
-                    {
-                      "textParagraph": {
-                        "text": "<b>🎖 Contribution</b>"
-                      }
-                    },
-                    {
-                      "decoratedText": {
-                        "text": "✔ Create quizzes for Basics of Design lesson assessment",
-                        "endIcon": {
-                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
-                          "altText": "10 coins"
-                        }
-                      }
-                    }
-                  ]
+      // Dynamically construct the response
+      const progressCard = {
+        cardId: "daily-progress-card",
+        card: {
+          header: {
+            title: responses.progressMessage.title,
+            subtitle: responses.progressMessage.subtitle
+          },
+          sections: responses.progressMessage.sections.map((section) => ({
+            widgets: [
+              {
+                textParagraph: {
+                  text: `<b>🏅 ${section.category}</b>`
                 }
-              ]
-            }
-          }
-        ]
-      }
-      );
-    }  else {
+              },
+              ...(section.badge
+                ? [
+                    {
+                      textParagraph: {
+                        text: `<b>${section.badge}</b>`
+                      }
+                    }
+                  ]
+                : []),
+              ...section.items.map((item) => ({
+                decoratedText: {
+                  text: item.text,
+                  bottomLabel: item.dueDate ? `Complete by: ${item.dueDate}` : "",
+                  endIcon: {
+                    iconUrl:
+                      "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                    altText: `${item.coins} coins`
+                  }
+                }
+              }))
+            ]
+          }))
+        }
+      };
+
+      res.json({ cardsV2: [progressCard] });
+    } else {
       res.json({
         text: "I didn't understand that. Type **'hi'** to see your progress.",
       });
@@ -302,6 +89,7 @@ app.post("/", (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
 
 // Remove Outcome
 app.post("/remove-outcome", (req, res) => {

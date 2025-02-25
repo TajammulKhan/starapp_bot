@@ -1,49 +1,51 @@
 {
     "progressMessage": {
-        "title": "📊 Your Progress Report",
-        "sections": [
+      "title": "Let’s get your day started!",
+      "subtitle": "Track your progress and stay motivated!",
+      "sections": [
+        {
+          "category": "Learning",
+          "badge": "Mathematics Badge",
+          "items": [
             {
-                "category": "📖 Learning",
-                "items": [
-                    {
-                        "status": "✔",
-                        "text": "Algebra basics",
-                        "completeBy": "12 Feb 25",
-                        "coins": 10
-                    },
-                    {
-                        "status": "◻",
-                        "text": "Inequalities",
-                        "coins": 10
-                    }
-                ]
+              "text": "✔ Algebra basics",
+              "dueDate": "12 Feb 25",
+              "coins": 10
             },
             {
-                "category": "💰 Earning",
-                "items": [
-                    {
-                        "status": "✔",
-                        "text": "Create user specs for Mobile SoundBox",
-                        "completeBy": "EDD",
-                        "coins": 10
-                    },
-                    {
-                        "status": "◻",
-                        "text": "Design chat view for Star App",
-                        "coins": 10
-                    }
-                ]
+              "text": "✔ Inequalities",
+              "coins": 10
             },
             {
-                "category": "🎗 Contribution",
-                "items": [
-                    {
-                        "status": "✔",
-                        "text": "Create quizzes for Design assessment",
-                        "coins": 10
-                    }
-                ]
+              "text": "✔ Solving equations",
+              "coins": 10
             }
-        ]
+          ]
+        },
+        {
+          "category": "Earning",
+          "items": [
+            {
+              "text": "✔ Create user specs for Dashboard screen",
+              "dueDate": "EOD",
+              "coins": 10
+            },
+            {
+              "text": "✔ Design chat view for Star App",
+              "coins": 10
+            }
+          ]
+        },
+        {
+          "category": "Contribution",
+          "items": [
+            {
+              "text": "✔ Create quizzes for Basics of Design",
+              "coins": 10
+            }
+          ]
+        }
+      ]
     }
-}
+  }
+  
