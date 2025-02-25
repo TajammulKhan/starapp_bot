@@ -15,17 +15,17 @@
           "title": "Mathematics Badge",
           "items": [
             {
-              "text": "✔ Algebra basics",
+              "text": "Algebra basics",
               "deadline": "12 Feb 25",
               "coins": 10,
               "completed": false
             },
             {
-              "text": "✔ Inequalities",
+              "text": "Inequalities",
               "completed": false
             },
             {
-              "text": "✔ Solving equations",
+              "text": "Solving equations",
               "completed": false
             }
           ]
@@ -35,7 +35,7 @@
           "title": "Yesterday’s pending outcomes",
           "items": [
             {
-              "text": "✔ Create user specs for Dashboard screen for Mobile SoundBox",
+              "text": "Create user specs for Dashboard screen for Mobile SoundBox",
               "deadline": "EOD",
               "coins": 10,
               "completed": false
@@ -45,7 +45,18 @@
               "completed": false
             }
           ]
-        }
+        },
+        {
+            "category": "Contribution",
+            "items": [
+              {
+                "text": "Create quizzes for Basics of Design lesson assessment",
+                "deadline": "20 Mar 25",
+                "coins": 10,
+                "completed": false
+              }
+            ]
+          }
       ]
     }
   }
