@@ -165,18 +165,56 @@ app.post("/", (req, res) => {
       res.json({
         cardsV2: [
           {
-            cardId: "outcomeCard",
+            cardId: "daily-progress-card",
             card: {
               header: {
-                title: "📊 Your Progress Report",
-                subtitle: "Stay on track and reach your goals!",
+                title: `Let’s get your day started!`,
               },
               sections: [
                 {
                   widgets: [
                     {
                       textParagraph: {
-                        text: "<b><font color='#D4A017' size='14'>“Small progress is still progress. Keep going!”</font></b>",
+                        text: "<b><font size='14'>Set your outcomes for the day</font></b>",
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      columns: {
+                        columnItems: [
+                          {
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                image: {
+                                  imageUrl:
+                                    "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png",
+                                  altText: "Impressive Emoji",
+                                },
+                              },
+                            ],
+                          },
+                          {
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                textParagraph: {
+                                  text: "<b>Impressive!</b>",
+                                },
+                              },
+                              {
+                                textParagraph: {
+                                  text: "You’ve earned <b><font color='#4CAF50'>50 ↑</font></b> coins more than yesterday! ✨",
+                                },
+                              },
+                            ],
+                          },
+                        ],
                       },
                     },
                   ],
@@ -226,68 +264,13 @@ app.post("/", (req, res) => {
                 {
                   widgets: [
                     {
-                      textParagraph: {
-                        text: "<b>📖 Learning</b>",
-                      },
-                    },
-                  ],
-                },
-                {
-                  widgets: [
-                    {
-                      columns: {
-                        columnItems: [
-                          {
-                            horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
-                            widgets: [
-                              {
-                                decoratedText: {
-                                  text: "✔ Algebra basics",
-                                  bottomLabel: "Complete by: 12 Feb 25",
-                                  endIcon: {
-                                    iconUrl:
-                                      "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
-                                    altText: "10 coins",
-                                  },
-                                  button: {
-                                    text: "❌ Remove",
-                                    onClick: {
-                                      action: {
-                                        actionMethodName: "removeOutcome",
-                                        parameters: [
-                                          {
-                                            key: "category",
-                                            value: "📖 Learning",
-                                          },
-                                          {
-                                            key: "index",
-                                            value: "0",
-                                          },
-                                        ],
-                                      },
-                                    },
-                                  },
-                                },
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                    },
-                  ],
-                },
-                {
-                  widgets: [
-                    {
                       buttonList: {
                         buttons: [
                           {
-                            text: "➕ Add Outcome",
+                            text: "Go to Star App →",
                             onClick: {
-                              action: {
-                                actionMethodName: "addOutcome",
-                                parameters: [],
+                              openLink: {
+                                url: "https://starapp.example.com",
                               },
                             },
                           },
