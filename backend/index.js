@@ -113,59 +113,43 @@ app.post("/", (req, res) => {
       console.log("Processing 'progress' request...");
       
       const progressData = responses.progressMessage;
-      if (!progressData) {
-        return res.json({ text: "No progress data available." });
+      console.log("Loaded progress data:", progressData);
+  
+      if (!progressData || !progressData.outcomes) {
+          return res.json({ text: "No progress data available." });
       }
-
+  
       return res.json({
-        cardsV2: [
-          {
-            cardId: "daily-progress-card",
-            card: {
-              header: {
-                title: progressData.title,
-                subtitle: progressData.subtitle,
-                imageType: "CIRCLE"
-              },
-              sections: progressData.outcomes.map(category => ({
-                widgets: [
-                  { textParagraph: { text: `<b>🏅 ${category.category}</b>` } },
-                  { textParagraph: { text: `<b>${category.title}</b>` } },
-                  {
-                    selectionInput: {
-                      name: `completed_tasks_${category.category}`, 
-                      type: "CHECKBOX",
-                      items: category.items.map(item => ({
-                        text: item.text,
-                        value: item.text,  // Checkbox value
-                        selected: false  // Default unchecked
+          cardsV2: [
+              {
+                  cardId: "daily-progress-card",
+                  card: {
+                      header: {
+                          title: progressData.title || "Progress Summary",
+                          subtitle: progressData.subtitle || "Your achievements",
+                          imageType: "CIRCLE"
+                      },
+                      sections: progressData.outcomes.map(category => ({
+                          widgets: [
+                              { textParagraph: { text: `<b>🏅 ${category.category}</b>` } },
+                              { textParagraph: { text: `<b>${category.title}</b>` } },
+                              ...category.items.map(item => ({
+                                  decoratedText: {
+                                      text: item.text || "No text available",
+                                      bottomLabel: item.deadline ? `Complete by: ${item.deadline}` : undefined,
+                                      endIcon: item.coins 
+                                          ? { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png", altText: `${item.coins} coins` }
+                                          : undefined
+                                  }
+                              }))
+                          ]
                       }))
-                    }
-                  },
-                  {
-                    buttonList: {
-                      buttons: [
-                        {
-                          text: "Submit Selections",
-                          onClick: {
-                            action: {
-                              function: "markCompleted",  // This function will handle checkbox submission
-                              parameters: [
-                                { key: "category", value: category.category }
-                              ]
-                            }
-                          }
-                        }
-                      ]
-                    }
-                  }                  
-                ]
-              }))
-            }
-          }
-        ]
+                  }
+              }
+          ]
       });
-    } else {
+  }
+   else {
       return res.json({ text: "I didn't understand that. Type **'hi'** to see your progress." });
     }
   } catch (error) {
