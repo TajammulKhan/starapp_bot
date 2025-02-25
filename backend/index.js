@@ -139,7 +139,7 @@ app.post("/", (req, res) => {
                                 type: "CHECK_BOX",
                                 items: category.items.map(item => ({
                                     text: item.deadline
-                                        ? `${item.text} <font color='#D4A017'>[Deadline: ${item.deadline}]</font>`
+                                        ? `${item.text} complete by: ${item.deadline}`
                                         : item.text, // Append deadline if available
                                     value: item.text,
                                     selected: item.completed || false
