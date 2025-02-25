@@ -167,8 +167,7 @@ app.post("/", (req, res) => {
                           "header": {
                               "title": "Set your outcomes for the day",
                               "subtitle": "📌 05",
-                              "imageUrl": "https://example.com/task-icon.png",
-                              "imageType": "SQUARE"
+                              "imageUrl": "https://example.com/task-icon.png"
                           },
                           "sections": responses.progressMessage.sections.map(section => ({
                               "header": section.category,
