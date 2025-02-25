@@ -134,14 +134,18 @@ app.post("/", (req, res) => {
                               { textParagraph: { text: `<b>🏅 ${category.category}</b>` } },
                               { textParagraph: { text: `<b>${category.title}</b>` } },
                               ...category.items.map(item => ({
-                                  decoratedText: {
-                                      text: item.text || "No text available",
-                                      bottomLabel: item.deadline ? `Complete by: ${item.deadline}` : undefined,
-                                      endIcon: item.coins 
-                                          ? { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png", altText: `${item.coins} coins` }
-                                          : undefined
-                                  }
-                              }))
+                                selectionInput: {
+                                    name: `item_selection_${category.category}`,
+                                    type: "CHECK_BOX",
+                                    items: [
+                                        {
+                                            text: item.text || "No text available",
+                                            value: item.text,
+                                            selected: item.completed || false  // Pre-check if completed
+                                        }
+                                    ]
+                                }
+                            }))
                           ]
                       }))
                   }
@@ -159,7 +163,7 @@ app.post("/", (req, res) => {
 });
 
 app.post("/mark-completed", (req, res) => {
-  const { category, completedItems } = req.body;
+  const { category, selectedItems } = req.body; // Selected items from checkbox input
   let responses = loadResponses();
 
   let section = responses.progressMessage.outcomes.find(sec => sec.category === category);
@@ -167,17 +171,15 @@ app.post("/mark-completed", (req, res) => {
     return res.status(400).json({ message: "Category not found" });
   }
 
-  // Mark selected items as completed
   section.items.forEach(item => {
-    if (completedItems.includes(item.text)) {
-      item.completed = true;  // Add completed flag
+    if (selectedItems.includes(item.text)) {
+      item.completed = !item.completed;  // Toggle completion status
     }
   });
 
   fs.writeFileSync(responsesFile, JSON.stringify(responses, null, 2), "utf8");
-  res.json({ message: `✅ Marked ${completedItems.length} items as completed.` });
+  res.json({ message: `✅ Updated ${selectedItems.length} items in ${category}.` });
 });
-
 
 // Add Outcome
 app.post("/add-outcome", (req, res) => {

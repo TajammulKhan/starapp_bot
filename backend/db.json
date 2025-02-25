@@ -17,13 +17,16 @@
             {
               "text": "✔ Algebra basics",
               "deadline": "12 Feb 25",
-              "coins": 10
+              "coins": 10,
+              "completed": false
             },
             {
-              "text": "✔ Inequalities"
+              "text": "✔ Inequalities",
+              "completed": false
             },
             {
-              "text": "✔ Solving equations"
+              "text": "✔ Solving equations",
+              "completed": false
             }
           ]
         },
@@ -34,10 +37,12 @@
             {
               "text": "✔ Create user specs for Dashboard screen for Mobile SoundBox",
               "deadline": "EOD",
-              "coins": 10
+              "coins": 10,
+              "completed": false
             },
             {
-              "text": "✔ Design chat view for Star App"
+              "text": "✔ Design chat view for Star App",
+              "completed": false
             }
           ]
         }
