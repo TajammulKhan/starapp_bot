@@ -168,7 +168,10 @@ app.post("/", (req, res) => {
             "cardId": "daily-progress-card",
             "card": {
               "header": {
-                "title": "Let’s get your day started!"
+                "title": "Let’s get your day started!",
+                "subtitle": "Track your progress and stay motivated!",
+                "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                "imageType": "CIRCLE"
               },
               "sections": [
                 {
@@ -264,11 +267,7 @@ app.post("/", (req, res) => {
                       "textParagraph": {
                         "text": "<b>🏅 Learning</b>"
                       }
-                    }
-                  ]
-                },
-                {
-                  "widgets": [
+                    },
                     {
                       "textParagraph": {
                         "text": "<b>Mathematics Badge</b>"
@@ -278,7 +277,7 @@ app.post("/", (req, res) => {
                       "decoratedText": {
                         "text": "✔ Algebra basics",
                         "bottomLabel": "Complete by: 12 Feb 25",
-                        "startIcon": {
+                        "endIcon": {
                           "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
                           "altText": "10 coins"
                         }
@@ -316,7 +315,7 @@ app.post("/", (req, res) => {
                       "decoratedText": {
                         "text": "✔ Create user specs for Dashboard screen for Mobile SoundBox",
                         "bottomLabel": "Complete by: EOD",
-                        "startIcon": {
+                        "endIcon": {
                           "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
                           "altText": "10 coins"
                         }
@@ -326,11 +325,7 @@ app.post("/", (req, res) => {
                       "decoratedText": {
                         "text": "✔ Design chat view for Star App"
                       }
-                    }
-                  ]
-                },
-                {
-                  "widgets": [
+                    },
                     {
                       "textParagraph": {
                         "text": "<b>Today’s new outcomes</b>"
@@ -339,7 +334,7 @@ app.post("/", (req, res) => {
                     {
                       "decoratedText": {
                         "text": "✔ <new outcome typed here>",
-                        "startIcon": {
+                        "endIcon": {
                           "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
                           "altText": "10 coins"
                         }
@@ -348,7 +343,7 @@ app.post("/", (req, res) => {
                     {
                       "decoratedText": {
                         "text": "✔ <new outcome typed here>",
-                        "startIcon": {
+                        "endIcon": {
                           "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
                           "altText": "10 coins"
                         }
@@ -370,7 +365,7 @@ app.post("/", (req, res) => {
                     {
                       "decoratedText": {
                         "text": "✔ Create quizzes for Basics of Design lesson assessment",
-                        "startIcon": {
+                        "endIcon": {
                           "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
                           "altText": "10 coins"
                         }
