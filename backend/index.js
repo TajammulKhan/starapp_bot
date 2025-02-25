@@ -163,128 +163,242 @@ app.post("/", (req, res) => {
       }
 
       res.json({
-        cardsV2: [
+        "cardsV2": [
           {
-            cardId: "daily-progress-card",
-            card: {
-              header: {
-                title: `Let’s get your day started!`,
+            "cardId": "daily-progress-card",
+            "card": {
+              "header": {
+                "title": "Let’s get your day started!"
               },
-              sections: [
+              "sections": [
                 {
-                  widgets: [
+                  "widgets": [
                     {
-                      textParagraph: {
-                        text: "<b><font size='14'>Set your outcomes for the day</font></b>",
-                      },
-                    },
-                  ],
+                      "textParagraph": {
+                        "text": "<b><font size='14'>Set your outcomes for the day</font></b> <font color='#FFA500'><b>05</b></font>"
+                      }
+                    }
+                  ]
                 },
                 {
-                  widgets: [
+                  "widgets": [
                     {
-                      columns: {
-                        columnItems: [
+                      "columns": {
+                        "columnItems": [
                           {
-                            horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
-                            widgets: [
+                            "horizontalAlignment": "CENTER",
+                            "verticalAlignment": "CENTER",
+                            "widgets": [
                               {
-                                image: {
-                                  imageUrl:
-                                    "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png",
-                                  altText: "Impressive Emoji",
-                                },
-                              },
-                            ],
+                                "image": {
+                                  "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png",
+                                  "altText": "Impressive Emoji"
+                                }
+                              }
+                            ]
                           },
                           {
-                            horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
-                            widgets: [
+                            "horizontalAlignment": "CENTER",
+                            "verticalAlignment": "CENTER",
+                            "widgets": [
                               {
-                                textParagraph: {
-                                  text: "<b>Impressive!</b>",
-                                },
+                                "textParagraph": {
+                                  "text": "<b>Impressive!</b>"
+                                }
                               },
                               {
-                                textParagraph: {
-                                  text: "You’ve earned <b><font color='#4CAF50'>50 ↑</font></b> coins more than yesterday! ✨",
-                                },
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                    },
-                  ],
+                                "textParagraph": {
+                                  "text": "You’ve earned <b><font color='#4CAF50'>50 ↑</font></b> coins more than yesterday! ✨"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
                 },
                 {
-                  widgets: [
+                  "widgets": [
                     {
-                      columns: {
-                        columnItems: [
+                      "columns": {
+                        "columnItems": [
                           {
-                            horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
-                            widgets: [
+                            "horizontalAlignment": "CENTER",
+                            "verticalAlignment": "CENTER",
+                            "widgets": [
                               {
-                                decoratedText: {
-                                  icon: {
-                                    iconUrl:
-                                      "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
-                                    altText: "Coin Icon",
+                                "decoratedText": {
+                                  "icon": {
+                                    "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                                    "altText": "Coin Icon"
                                   },
-                                  text: "<b>120</b> 🔼",
-                                },
-                              },
-                            ],
+                                  "text": "<b>120</b> 🔼"
+                                }
+                              }
+                            ]
                           },
                           {
-                            horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
-                            widgets: [
+                            "horizontalAlignment": "CENTER",
+                            "verticalAlignment": "CENTER",
+                            "widgets": [
                               {
-                                decoratedText: {
-                                  icon: {
-                                    iconUrl:
-                                      "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
-                                    altText: "Badge Icon",
+                                "decoratedText": {
+                                  "icon": {
+                                    "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
+                                    "altText": "Badge Icon"
                                   },
-                                  text: "<b>4/9</b> 🔽",
-                                },
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                    },
-                  ],
+                                  "text": "<b>4/9</b> 🔽"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
                 },
                 {
-                  widgets: [
+                  "widgets": [
                     {
-                      buttonList: {
-                        buttons: [
-                          {
-                            text: "Go to Star App →",
-                            onClick: {
-                              openLink: {
-                                url: "https://starapp.example.com",
-                              },
-                            },
-                          },
-                        ],
-                      },
-                    },
-                  ],
+                      "textParagraph": {
+                        "text": "<b>🏅 Learning</b>"
+                      }
+                    }
+                  ]
                 },
-              ],
-            },
-          },
-        ],
+                {
+                  "widgets": [
+                    {
+                      "textParagraph": {
+                        "text": "<b>Mathematics Badge</b>"
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "text": "✔ Algebra basics",
+                        "bottomLabel": "Complete by: 12 Feb 25",
+                        "endIcon": {
+                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                          "altText": "10 coins"
+                        }
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "text": "✔ Inequalities"
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "text": "✔ Solving equations"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "widgets": [
+                    {
+                      "textParagraph": {
+                        "text": "<b>💰 Earning</b>"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "widgets": [
+                    {
+                      "textParagraph": {
+                        "text": "<b>Yesterday’s pending outcomes</b>"
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "text": "✔ Create user specs for Dashboard screen for Mobile SoundBox",
+                        "bottomLabel": "Complete by: EOD",
+                        "endIcon": {
+                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                          "altText": "10 coins"
+                        }
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "text": "✔ Design chat view for Star App"
+                      }
+                    },
+                    {
+                      "textParagraph": {
+                        "text": "<b>Today’s new outcomes</b>"
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "text": "✔ <new outcome typed here>",
+                        "endIcon": {
+                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                          "altText": "10 coins"
+                        }
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "text": "✔ <new outcome typed here>",
+                        "endIcon": {
+                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                          "altText": "10 coins"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "widgets": [
+                    {
+                      "textParagraph": {
+                        "text": "<b>🎖 Contribution</b>"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "widgets": [
+                    {
+                      "decoratedText": {
+                        "text": "✔ Create quizzes for Basics of Design lesson assessment",
+                        "endIcon": {
+                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                          "altText": "10 coins"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "widgets": [
+                    {
+                      "buttonList": {
+                        "buttons": [
+                          {
+                            "text": "SUBMIT",
+                            "onClick": {
+                              "action": {
+                                "actionMethodName": "submitOutcomes",
+                                "parameters": []
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
       });
-    } else {
+    }  else {
       res.json({
         text: "I didn't understand that. Type **'hi'** to see your progress.",
       });
