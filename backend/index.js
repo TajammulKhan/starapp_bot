@@ -131,13 +131,34 @@ app.post("/", (req, res) => {
                 widgets: [
                   { textParagraph: { text: `<b>🏅 ${category.category}</b>` } },
                   { textParagraph: { text: `<b>${category.title}</b>` } },
-                  ...category.items.map(item => ({
-                    decoratedText: {
-                      text: `${item.text}`,
-                      bottomLabel: item.deadline ? `Complete by: ${item.deadline}` : undefined,
-                      endIcon: item.coins ? { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png", altText: `${item.coins} coins` } : undefined
+                  {
+                    selectionInput: {
+                      name: `completed_tasks_${category.category}`, 
+                      type: "CHECKBOX",
+                      items: category.items.map(item => ({
+                        text: item.text,
+                        value: item.text,  // Checkbox value
+                        selected: false  // Default unchecked
+                      }))
                     }
-                  }))
+                  },
+                  {
+                    buttonList: {
+                      buttons: [
+                        {
+                          text: "Submit Selections",
+                          onClick: {
+                            action: {
+                              function: "markCompleted",  // This function will handle checkbox submission
+                              parameters: [
+                                { key: "category", value: category.category }
+                              ]
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }                  
                 ]
               }))
             }
@@ -152,6 +173,27 @@ app.post("/", (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
+
+app.post("/mark-completed", (req, res) => {
+  const { category, completedItems } = req.body;
+  let responses = loadResponses();
+
+  let section = responses.progressMessage.outcomes.find(sec => sec.category === category);
+  if (!section) {
+    return res.status(400).json({ message: "Category not found" });
+  }
+
+  // Mark selected items as completed
+  section.items.forEach(item => {
+    if (completedItems.includes(item.text)) {
+      item.completed = true;  // Add completed flag
+    }
+  });
+
+  fs.writeFileSync(responsesFile, JSON.stringify(responses, null, 2), "utf8");
+  res.json({ message: `✅ Marked ${completedItems.length} items as completed.` });
+});
+
 
 // Add Outcome
 app.post("/add-outcome", (req, res) => {
