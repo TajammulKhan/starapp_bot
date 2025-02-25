@@ -139,8 +139,8 @@ app.post("/", (req, res) => {
                                     type: "CHECK_BOX",
                                     items: [
                                         {
-                                            text: item.text || "No text available",
-                                            value: item.text,
+                                          text: `${item.text}${item.deadline ? ` - <i>${item.deadline}</i>` : ""}`,  // Include deadline if available
+                                          value: item.text,
                                             selected: item.completed || false  // Pre-check if completed
                                         }
                                     ]
