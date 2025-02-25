@@ -16,7 +16,7 @@
           "items": [
             {
               "text": "Algebra basics",
-              "deadline": "12 Feb 25",
+              "deadline": "Complete by: 12 Feb 25",
               "coins": 10,
               "completed": false
             },
@@ -36,7 +36,7 @@
           "items": [
             {
               "text": "Create user specs for Dashboard screen for Mobile SoundBox",
-              "deadline": "EOD",
+              "deadline": "Complete by: EOD",
               "coins": 10,
               "completed": false
             },
@@ -47,17 +47,17 @@
           ]
         },
         {
-            "category": "Contribution",
-            "items": [
-              {
-                "text": "Create quizzes for Basics of Design lesson assessment",
-                "deadline": "20 Mar 25",
-                "coins": 10,
-                "completed": false
-              }
-            ]
-          }
+          "category": "Contribution",
+          "title": "outcomes",
+          "items": [
+            {
+              "text": "Create quizzes for Basics of Design lesson assessment",
+              "deadline": "Complete by: 20 Mar 25",
+              "coins": 10,
+              "completed": false
+            }
+          ]
+        }
       ]
     }
-  }
-  
+}
