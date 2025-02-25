@@ -278,7 +278,7 @@ app.post("/", (req, res) => {
                       "decoratedText": {
                         "text": "✔ Algebra basics",
                         "bottomLabel": "Complete by: 12 Feb 25",
-                        "endIcon": {
+                        "startIcon": {
                           "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
                           "altText": "10 coins"
                         }
@@ -316,7 +316,7 @@ app.post("/", (req, res) => {
                       "decoratedText": {
                         "text": "✔ Create user specs for Dashboard screen for Mobile SoundBox",
                         "bottomLabel": "Complete by: EOD",
-                        "endIcon": {
+                        "startIcon": {
                           "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
                           "altText": "10 coins"
                         }
@@ -326,7 +326,11 @@ app.post("/", (req, res) => {
                       "decoratedText": {
                         "text": "✔ Design chat view for Star App"
                       }
-                    },
+                    }
+                  ]
+                },
+                {
+                  "widgets": [
                     {
                       "textParagraph": {
                         "text": "<b>Today’s new outcomes</b>"
@@ -335,7 +339,7 @@ app.post("/", (req, res) => {
                     {
                       "decoratedText": {
                         "text": "✔ <new outcome typed here>",
-                        "endIcon": {
+                        "startIcon": {
                           "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
                           "altText": "10 coins"
                         }
@@ -344,7 +348,7 @@ app.post("/", (req, res) => {
                     {
                       "decoratedText": {
                         "text": "✔ <new outcome typed here>",
-                        "endIcon": {
+                        "startIcon": {
                           "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
                           "altText": "10 coins"
                         }
@@ -366,7 +370,7 @@ app.post("/", (req, res) => {
                     {
                       "decoratedText": {
                         "text": "✔ Create quizzes for Basics of Design lesson assessment",
-                        "endIcon": {
+                        "startIcon": {
                           "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
                           "altText": "10 coins"
                         }
