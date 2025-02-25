@@ -130,23 +130,23 @@ app.post("/", (req, res) => {
                           imageType: "CIRCLE"
                       },
                       sections: progressData.outcomes.map(category => ({
-                          widgets: [
-                              { textParagraph: { text: `<b>🏅 ${category.category}</b>` } },
-                              { textParagraph: { text: `<b>${category.title}</b>` } },
-                              ...category.items.map(item => ({
-                                selectionInput: {
-                                    name: `item_selection_${category.category}`,
-                                    type: "CHECK_BOX",
-                                    items: category.items.map(item => ({
-                                      text: item.deadline
-                                          ? `${item.text} <font color='#D4A017'>[Deadline: ${item.deadline}]</font>`
-                                          : item.text, // Append deadline if available
-                                      value: item.text,
-                                      selected: item.completed || false
-                                  }))
-                                }
-                            }))
-                          ]
+                        widgets: [
+                          { textParagraph: { text: `<b>🏅 ${category.category}</b>` } },
+                          { textParagraph: { text: `<b>${category.title}</b>` } },
+                          {
+                            selectionInput: {
+                                name: `item_selection_${category.category}`,
+                                type: "CHECK_BOX",
+                                items: category.items.map(item => ({
+                                    text: item.deadline
+                                        ? `${item.text} <font color='#D4A017'>[Deadline: ${item.deadline}]</font>`
+                                        : item.text, // Append deadline if available
+                                    value: item.text,
+                                    selected: item.completed || false
+                                }))
+                            }
+                          }
+                      ]
                       }))
                   }
               }
