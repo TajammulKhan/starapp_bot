@@ -1,47 +1,43 @@
 {
+    "dailyProgress": {
+      "title": "Good morning",
+      "quote": "“Stars don’t shine without darkness. Embrace the journey and illuminate your path!”",
+      "coinsEarned": 50,
+      "totalCoins": 120,
+      "totalBadges": "4/9"
+    },
     "progressMessage": {
       "title": "Let’s get your day started!",
       "subtitle": "Track your progress and stay motivated!",
-      "sections": [
+      "outcomes": [
         {
           "category": "Learning",
-          "badge": "Mathematics Badge",
+          "title": "Mathematics Badge",
           "items": [
             {
               "text": "✔ Algebra basics",
-              "dueDate": "12 Feb 25",
+              "deadline": "12 Feb 25",
               "coins": 10
             },
             {
-              "text": "✔ Inequalities",
-              "coins": 10
+              "text": "✔ Inequalities"
             },
             {
-              "text": "✔ Solving equations",
-              "coins": 10
+              "text": "✔ Solving equations"
             }
           ]
         },
         {
           "category": "Earning",
+          "title": "Yesterday’s pending outcomes",
           "items": [
             {
-              "text": "✔ Create user specs for Dashboard screen",
-              "dueDate": "EOD",
+              "text": "✔ Create user specs for Dashboard screen for Mobile SoundBox",
+              "deadline": "EOD",
               "coins": 10
             },
             {
-              "text": "✔ Design chat view for Star App",
-              "coins": 10
-            }
-          ]
-        },
-        {
-          "category": "Contribution",
-          "items": [
-            {
-              "text": "✔ Create quizzes for Basics of Design",
-              "coins": 10
+              "text": "✔ Design chat view for Star App"
             }
           ]
         }
