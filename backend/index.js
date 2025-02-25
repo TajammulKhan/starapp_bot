@@ -170,7 +170,6 @@ app.post("/", (req, res) => {
               "header": {
                 "title": "Let’s get your day started!",
                 "subtitle": "Track your progress and stay motivated!",
-                "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
                 "imageType": "CIRCLE"
               },
               "sections": [
@@ -216,12 +215,83 @@ app.post("/", (req, res) => {
                       }
                     }
                   ]
+                },
+                {
+                  "widgets": [
+                    {
+                      "textParagraph": {
+                        "text": "<b>💰 Earning</b>"
+                      }
+                    },
+                    {
+                      "textParagraph": {
+                        "text": "<b>Yesterday’s pending outcomes</b>"
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "text": "✔ Create user specs for Dashboard screen for Mobile SoundBox",
+                        "bottomLabel": "Complete by: EOD",
+                        "endIcon": {
+                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                          "altText": "10 coins"
+                        }
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "text": "✔ Design chat view for Star App"
+                      }
+                    },
+                    {
+                      "textParagraph": {
+                        "text": "<b>Today’s new outcomes</b>"
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "text": "✔ <new outcome typed here>",
+                        "endIcon": {
+                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                          "altText": "10 coins"
+                        }
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "text": "✔ <new outcome typed here>",
+                        "endIcon": {
+                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                          "altText": "10 coins"
+                        }
+                      }
+                    }
+                  ]
+                },
+                {
+                  "widgets": [
+                    {
+                      "textParagraph": {
+                        "text": "<b>🎖 Contribution</b>"
+                      }
+                    },
+                    {
+                      "decoratedText": {
+                        "text": "✔ Create quizzes for Basics of Design lesson assessment",
+                        "endIcon": {
+                          "iconUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                          "altText": "10 coins"
+                        }
+                      }
+                    }
+                  ]
                 }
               ]
             }
           }
         ]
-      });
+      }
+      );
     }  else {
       res.json({
         text: "I didn't understand that. Type **'hi'** to see your progress.",
