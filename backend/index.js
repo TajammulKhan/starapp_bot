@@ -129,66 +129,64 @@ app.post("/", (req, res) => {
                   subtitle: progressData.subtitle || "",
                   imageType: "SQUARE",
                 },
-                sections: progressData.outcomes.map(category => ({
-                  widgets: [
-                    {
-                      // Category Title & Icon (Centered)
-                      columns: {
-                        columnItems: [
-                          {
-                            horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
-                            widgets: [
-                              {
-                                decoratedText: {
-                                  icon: { iconUrl: category.imageUrl, altText: category.category },
-                                  text: `<b><font color='#333' size='12'>${category.category}</font></b>`,
+                sections: [
+                  ...progressData.outcomes.map(category => ({
+                    widgets: [
+                      {
+                        columns: {
+                          columnItems: [
+                            {
+                              horizontalAlignment: "CENTER",
+                              verticalAlignment: "CENTER",
+                              widgets: [
+                                {
+                                  decoratedText: {
+                                    icon: { iconUrl: category.imageUrl, altText: category.category },
+                                    text: `<b><font color='#333' size='12'>${category.category}</font></b>`,
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        textParagraph: { text: `<b>${category.title}</b>` }
+                      },
+                      {
+                        selectionInput: {
+                          name: `item_selection_${category.category}`,
+                          type: "CHECK_BOX",
+                          items: category.items.map(item => ({
+                            text: item.deadline
+                              ? `${item.text} [Complete by: ${item.deadline}]`
+                              : item.text,
+                            value: `${category.category}::${item.text}`, // Unique value for each item
+                            selected: item.completed || false
+                          }))
+                        }
+                      }
+                    ]
+                  })),
+                  {
+                    widgets: [
+                      {
+                        buttonList: {
+                          buttons: [
+                            {
+                              text: "Submit",  // ✅ Single submit button at the bottom
+                              onClick: {
+                                action: {
+                                  function: "submitProgress",
                                 }
                               }
-                            ]
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      textParagraph: {
-                        text: `<b>${category.title}</b>`,
-                      }
-                    },
-                    {
-                      // List of tasks with deadlines properly formatted
-                      selectionInput: {
-                        name: `item_selection_${category.category}`,
-                        type: "CHECK_BOX",
-                        items: category.items.map(item => ({
-                          text: item.deadline
-                            ? `${item.text} [Complete by: ${item.deadline}]`
-                            : item.text,
-                          value: item.text,
-                          selected: item.completed || false
-                        }))
-                      }
-                    },
-                    {
-                      // Submit button for each category
-                      buttonList: {
-                        buttons: [
-                          {
-                            text: "Submit",
-                            onClick: {
-                              action: {
-                                function: "markCompleted",
-                                parameters: [
-                                  { key: "category", value: category.category }
-                                ]
-                              }
                             }
-                          }
-                        ]
+                          ]
+                        }
                       }
-                    }
-                  ]
-                }))
+                    ]
+                  }
+                ]
               }
             }
           ]
@@ -203,26 +201,30 @@ app.post("/", (req, res) => {
   }
 });
 
-app.post("/mark-completed", (req, res) => {
-  const { category, selectedItems } = req.body; // Selected items from checkbox input
+app.post("/submit-progress", (req, res) => {
+  const selectedItems = req.body.selectedItems; // Array of selected items
   let responses = loadResponses();
 
-  let section = responses.progressMessage.outcomes.find(sec => sec.category === category);
-  if (!section) {
-    return res.status(400).json({ message: "Category not found" });
+  if (!selectedItems || selectedItems.length === 0) {
+    return res.status(400).json({ message: "No items selected" });
   }
 
-  section.items.forEach(item => {
-    if (selectedItems.includes(item.text)) {
-      item.completed = true; // Mark as completed
-    } else {
-      item.completed = false; // Unmark if unchecked
+  selectedItems.forEach(itemValue => {
+    const [category, itemText] = itemValue.split("::"); // Extract category and item name
+    let section = responses.progressMessage.outcomes.find(sec => sec.category === category);
+
+    if (section) {
+      let item = section.items.find(i => i.text === itemText);
+      if (item) {
+        item.completed = !item.completed; // Toggle completion status
+      }
     }
   });
 
   fs.writeFileSync(responsesFile, JSON.stringify(responses, null, 2), "utf8");
-  res.json({ message: `✅ Updated ${selectedItems.length} items in ${category}.` });
+  res.json({ message: `✅ Submitted ${selectedItems.length} selected outcomes.` });
 });
+
 
 
 // Add Outcome
