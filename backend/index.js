@@ -122,7 +122,7 @@ app.post("/", (req, res) => {
       return res.json({
           cardsV2: [
               {
-                  cardId: "daily-progress-card",
+                  cardId: "outcome-card",
                   card: {
                       header: {
                           title: progressData.title || "Progress Summary",
