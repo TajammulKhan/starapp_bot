@@ -131,7 +131,19 @@ app.post("/", (req, res) => {
                       },
                       sections: progressData.outcomes.map(category => ({
                         widgets: [
-                          { textParagraph: { text: `<b>🏅 ${category.category}</b>` } },
+                          {
+                            columns: {
+                              columnItems: [
+                                {
+                                  horizontalAlignment: "CENTER",
+                                  verticalAlignment: "CENTER",
+                                  widgets: [
+                                    { textParagraph: { text: `<b>🏅 ${category.category}</b>` } }
+                                  ]
+                                }
+                              ]
+                            }
+                          },
                           { textParagraph: { text: `<b>${category.title}</b>` } },
                           {
                             selectionInput: {
