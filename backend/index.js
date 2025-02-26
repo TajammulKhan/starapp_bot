@@ -168,6 +168,24 @@ app.post("/", (req, res) => {
                           selected: item.completed || false
                         }))
                       }
+                    },
+                    {
+                      // Submit button for each category
+                      buttonList: {
+                        buttons: [
+                          {
+                            text: "Submit",
+                            onClick: {
+                              action: {
+                                function: "markCompleted",
+                                parameters: [
+                                  { key: "category", value: category.category }
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
                     }
                   ]
                 }))
@@ -196,13 +214,16 @@ app.post("/mark-completed", (req, res) => {
 
   section.items.forEach(item => {
     if (selectedItems.includes(item.text)) {
-      item.completed = !item.completed;  // Toggle completion status
+      item.completed = true; // Mark as completed
+    } else {
+      item.completed = false; // Unmark if unchecked
     }
   });
 
   fs.writeFileSync(responsesFile, JSON.stringify(responses, null, 2), "utf8");
   res.json({ message: `✅ Updated ${selectedItems.length} items in ${category}.` });
 });
+
 
 // Add Outcome
 app.post("/add-outcome", (req, res) => {
