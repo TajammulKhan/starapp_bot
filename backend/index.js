@@ -121,48 +121,48 @@ app.post("/", (req, res) => {
   
       return res.json({
           cardsV2: [
-              {
-                  cardId: "outcome-card",
-                  card: {
-                      header: {
-                          title: progressData.title || "Progress Summary",
-                          subtitle: progressData.subtitle || "Your achievements",
-                          imageType: "CIRCLE"
-                      },
-                      sections: progressData.outcomes.map(category => ({
-                        widgets: [
-                          {
-                            columns: {
-                              columnItems: [
-                                {
-                                  horizontalAlignment: "CENTER",
-                                  verticalAlignment: "CENTER",
-                                  widgets: [
-                                    { textParagraph: { text: `<b>🏅 ${category.category}</b>` } }
-                                  ]
-                                }
-                              ]
-                            }
-                          },
-                          { textParagraph: { text: `<b>${category.title}</b>` } },
-                          {
-                            selectionInput: {
-                                name: `item_selection_${category.category}`,
-                                type: "CHECK_BOX",
-                                items: category.items.map(item => ({
-                                    text: item.deadline
-                                        ? `${item.text} complete by: ${item.deadline}`
-                                        : item.text, // Append deadline if available
-                                    value: item.text,
-                                    selected: item.completed || false
-                                }))
-                            }
+            {
+                cardId: "outcome-card",
+                card: {
+                    header: {
+                        title: progressData.title || "Progress Summary",
+                        subtitle: progressData.subtitle || "Your achievements",
+                        imageType: "CIRCLE"
+                    },
+                    sections: progressData.outcomes.map(category => ({
+                      widgets: [
+                        {
+                          columns: {
+                            columnItems: [
+                              {
+                                horizontalAlignment: "CENTER",
+                                verticalAlignment: "CENTER",
+                                widgets: [
+                                  { image: { imageUrl: category.imageUrl, altText: category.category } }
+                                ]
+                              }
+                            ]
                           }
+                        },
+                        { textParagraph: { text: `<b>${category.title}</b>` } },
+                        {
+                          selectionInput: {
+                              name: `item_selection_${category.category}`,
+                              type: "CHECK_BOX",
+                              items: category.items.map(item => ({
+                                  text: item.deadline
+                                      ? `${item.text} complete by: ${item.deadline}`
+                                      : item.text, // Append deadline if available
+                                  value: item.text,
+                                  selected: item.completed || false
+                              }))
+                          }
+                        }
                       ]
-                      }))
-                  }
-              }
-          ]
+                    }))
+                }
+            }
+        ]
       });
   }
    else {

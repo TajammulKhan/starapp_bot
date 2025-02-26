@@ -13,6 +13,7 @@
         {
           "category": "Learning",
           "title": "Mathematics Badge",
+          "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
           "items": [
             {
               "text": "Algebra basics",
@@ -33,6 +34,7 @@
         {
           "category": "Earning",
           "title": "Yesterday’s pending outcomes",
+          "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
           "items": [
             {
               "text": "Create user specs for Dashboard screen for Mobile SoundBox",
@@ -48,7 +50,8 @@
         },
         {
           "category": "Contribution",
-          "title": "outcomes",
+          "title": "Outcomes",
+          "imageUrl": "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
           "items": [
             {
               "text": "Create quizzes for Basics of Design lesson assessment",
