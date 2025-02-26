@@ -122,56 +122,58 @@ app.post("/", (req, res) => {
       return res.json({
           cardsV2: [
             {
-                cardId: "outcome-card",
-                card: {
-                    header: {
-                        title: progressData.title || "Set your outcomes for the day",
-                        subtitle: progressData.subtitle || "",
-                        imageType: "SQUARE",
-                    },
-                    sections: progressData.outcomes.map(category => ({
-                        widgets: [
-                            {
-                                // Category Name & Icon in Center Alignment
-                                columns: {
-                                    columnItems: [
-                                        {
-                                            horizontalAlignment: "CENTER",
-                                            verticalAlignment: "CENTER",
-                                            widgets: [
-                                                {
-                                                    decoratedText: {
-                                                        icon: {
-                                                            iconUrl: category.imageUrl,
-                                                            altText: category.category
-                                                        },
-                                                        text: `<b><font size='14' color='#333'>${category.category}</font></b>`
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    ]
+              cardId: "outcome-card",
+              card: {
+                header: {
+                  title: progressData.title || "Set your outcomes for the day",
+                  subtitle: progressData.subtitle || "",
+                  imageType: "SQUARE",
+                },
+                sections: progressData.outcomes.map(category => ({
+                  widgets: [
+                    {
+                      // Category Title & Icon (Centered)
+                      columns: {
+                        columnItems: [
+                          {
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                decoratedText: {
+                                  icon: { iconUrl: category.imageUrl, altText: category.category },
+                                  text: `<b><font color='#333' size='12'>${category.category}</font></b>`,
                                 }
-                            },
-                            { textParagraph: { text: `<b>${category.title}</b>` } },
-                            {
-                                selectionInput: {
-                                    name: `item_selection_${category.category}`,
-                                    type: "CHECK_BOX",
-                                    items: category.items.map(item => ({
-                                        text: item.deadline
-                                            ? `${item.text} <font color='#888'>Complete by: ${item.deadline}</font>`
-                                            : item.text,
-                                        value: item.text,
-                                        selected: item.completed || false
-                                    }))
-                                }
-                            }
+                              }
+                            ]
+                          }
                         ]
-                    }))
-                }
+                      }
+                    },
+                    {
+                      textParagraph: {
+                        text: `<b>${category.title}</b>`,
+                      }
+                    },
+                    {
+                      // List of tasks with deadlines properly formatted
+                      selectionInput: {
+                        name: `item_selection_${category.category}`,
+                        type: "CHECK_BOX",
+                        items: category.items.map(item => ({
+                          text: item.deadline
+                            ? `${item.text} <font color='#888'>Complete by: ${item.deadline}</font>`
+                            : item.text,
+                          value: item.text,
+                          selected: item.completed || false
+                        }))
+                      }
+                    }
+                  ]
+                }))
+              }
             }
-        ]
+          ]
       });
   }
    else {
