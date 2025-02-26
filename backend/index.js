@@ -53,7 +53,7 @@ app.post("/", (req, res) => {
                             horizontalAlignment: "CENTER",
                             verticalAlignment: "CENTER",
                             widgets: [
-                              { image: { imageUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png", altText: "Impressive Emoji" } }
+                              { decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png", altText: "Impressive Emoji" } } }
                             ]
                           },
                           {
