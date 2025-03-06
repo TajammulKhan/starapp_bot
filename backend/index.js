@@ -1,47 +1,65 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const fs = require("fs");
 const cors = require("cors");
+const pool = require("./db");
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const responsesFile = "./db.json";
-
-const loadResponses = () => JSON.parse(fs.readFileSync(responsesFile, "utf8"));
-
 // Health Check
 app.get("/", (req, res) => {
-  res.json({ status: "ok", message: "StarApp Bot is running!" });
+  res.json({ status: "ok", message: "StarApp Bot is running with PostgreSQL!" });
 });
 
+// Fetch daily progress from PostgreSQL
+const getDailyProgress = async () => {
+  const result = await pool.query("SELECT * FROM daily_progress LIMIT 1");
+  return result.rows[0];
+};
+
+// Fetch outcomes from PostgreSQL
+const getOutcomes = async () => {
+  const result = await pool.query(`
+    SELECT o.id AS outcome_id, c.name AS category, o.title, o.image_url, 
+           json_agg(json_build_object(
+               'text', oi.text,
+               'deadline', oi.deadline,
+               'coins', oi.coins,
+               'completed', oi.completed
+           )) AS items
+    FROM outcomes o
+    JOIN categories c ON o.category_id = c.id
+    LEFT JOIN outcome_items oi ON o.id = oi.outcome_id
+    GROUP BY o.id, c.name, o.title, o.image_url;
+  `);
+  return result.rows;
+};
+
 // Handle bot interactions
-app.post("/", (req, res) => {
+app.post("/", async (req, res) => {
   try {
     console.log("📩 Received Request:", JSON.stringify(req.body, null, 2));
 
     const userMessage = req.body?.message?.text?.trim().toLowerCase() || "";
     const userName = req.body?.message?.sender?.displayName || "User";
-    const responses = loadResponses();
 
     if (!userMessage) {
       return res.status(400).json({ message: "No message found in request." });
     }
 
     if (userMessage === "hi" || userMessage === "hello") {
-      const { title, quote, coinsEarned, totalCoins, totalBadges } = responses.dailyProgress;
-
+      const dailyProgress = await getDailyProgress();
       return res.json({
         cardsV2: [
           {
             cardId: "daily-progress-card",
             card: {
-              header: { title: `${title}, ${userName}!` },
+              header: { title: `${dailyProgress.title}, ${userName}!` },
               sections: [
                 {
                   widgets: [
-                    { textParagraph: { text: `<b><font color='#D4A017' size='14'>${quote}</font></b>` } }
+                    { textParagraph: { text: `<b><font color='#D4A017' size='14'>${dailyProgress.quote}</font></b>` } }
                   ]
                 },
                 {
@@ -49,21 +67,8 @@ app.post("/", (req, res) => {
                     {
                       columns: {
                         columnItems: [
-                          {
-                            horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
-                            widgets: [
-                              { decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png", altText: "Impressive Emoji" } } }
-                            ]
-                          },
-                          {
-                            horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
-                            widgets: [
-                              { textParagraph: { text: "<b>Impressive!</b>" } },
-                              { textParagraph: { text: `You’ve earned <b><font color='#4CAF50'>${coinsEarned} ↑</font></b> coins more than yesterday! ✨` } }
-                            ]
-                          }
+                          { horizontalAlignment: "CENTER", verticalAlignment: "CENTER", widgets: [{ decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png", altText: "Impressive Emoji" } } }] },
+                          { horizontalAlignment: "CENTER", verticalAlignment: "CENTER", widgets: [{ textParagraph: { text: "<b>Impressive!</b>" } }, { textParagraph: { text: `You’ve earned <b><font color='#4CAF50'>${dailyProgress.coins_earned} ↑</font></b> coins more than yesterday! ✨` } }] }
                         ]
                       }
                     }
@@ -74,20 +79,8 @@ app.post("/", (req, res) => {
                     {
                       columns: {
                         columnItems: [
-                          {
-                            horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
-                            widgets: [
-                              { decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png", altText: "Coin Icon" }, text: `<b>${totalCoins}</b> 🔼` } }
-                            ]
-                          },
-                          {
-                            horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
-                            widgets: [
-                              { decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png", altText: "Badge Icon" }, text: `<b>${totalBadges}</b> 🔽` } }
-                            ]
-                          }
+                          { horizontalAlignment: "CENTER", verticalAlignment: "CENTER", widgets: [{ decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png", altText: "Coin Icon" }, text: `<b>${dailyProgress.total_coins}</b> 🔼` } }] },
+                          { horizontalAlignment: "CENTER", verticalAlignment: "CENTER", widgets: [{ decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png", altText: "Badge Icon" }, text: `<b>${dailyProgress.total_badges}</b> 🔽` } }] }
                         ]
                       }
                     }
@@ -95,13 +88,7 @@ app.post("/", (req, res) => {
                 },
                 {
                   widgets: [
-                    {
-                      buttonList: {
-                        buttons: [
-                          { text: "Go to Star App →", onClick: { openLink: { url: "https://starapp.example.com" } } }
-                        ]
-                      }
-                    }
+                    { buttonList: { buttons: [{ text: "Go to Star App →", onClick: { openLink: { url: "https://starapp.example.com" } } }] } }
                   ]
                 }
               ]
@@ -111,88 +98,48 @@ app.post("/", (req, res) => {
       });
     } else if (userMessage === "progress" || userMessage === "prog") {
       console.log("Processing 'progress' request...");
-      
-      const progressData = responses.progressMessage;
-      console.log("Loaded progress data:", progressData);
-  
-      if (!progressData || !progressData.outcomes) {
-          return res.json({ text: "No progress data available." });
-      }
-  
+      const outcomes = await getOutcomes();
       return res.json({
-          cardsV2: [
-            {
-              cardId: "outcome-card",
-              card: {
-                header: {
-                  title: progressData.title || "Set your outcomes for the day",
-                  subtitle: progressData.subtitle || "",
-                  imageType: "SQUARE",
-                },
-                sections: [
-                  ...progressData.outcomes.map(category => ({
-                    widgets: [
-                      {
-                        columns: {
-                          columnItems: [
-                            {
-                              horizontalAlignment: "CENTER",
-                              verticalAlignment: "CENTER",
-                              widgets: [
-                                {
-                                  decoratedText: {
-                                    icon: { iconUrl: category.imageUrl, altText: category.category },
-                                    text: `<b><font color='#333' size='12'>${category.category}</font></b>`,
-                                  }
-                                }
-                              ]
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        textParagraph: { text: `<b>${category.title}</b>` }
-                      },
-                      {
-                        selectionInput: {
-                          name: `item_selection_${category.category}`,
-                          type: "CHECK_BOX",
-                          items: category.items.map(item => ({
-                            text: item.deadline
-                              ? `${item.text} [Complete by: ${item.deadline}]`
-                              : item.text,
-                            value: `${category.category}::${item.text}`, // Unique value for each item
-                            selected: item.completed || false
-                          }))
-                        }
+        cardsV2: [
+          {
+            cardId: "outcome-card",
+            card: {
+              header: { title: "Set your outcomes for the day", subtitle: "Track your progress and stay motivated!" },
+              sections: [
+                ...outcomes.map(category => ({
+                  widgets: [
+                    {
+                      columns: {
+                        columnItems: [
+                          { horizontalAlignment: "CENTER", verticalAlignment: "CENTER", widgets: [{ decoratedText: { icon: { iconUrl: category.image_url, altText: category.category }, text: `<b><font color='#333' size='12'>${category.category}</font></b>` } }] }
+                        ]
                       }
-                    ]
-                  })),
-                  {
-                    widgets: [
-                      {
-                        buttonList: {
-                          buttons: [
-                            {
-                              text: "Submit",  // ✅ Single submit button at the bottom
-                              onClick: {
-                                action: {
-                                  function: "submitProgress",
-                                }
-                              }
-                            }
-                          ]
-                        }
+                    },
+                    { textParagraph: { text: `<b>${category.title}</b>` } },
+                    {
+                      selectionInput: {
+                        name: `item_selection_${category.category}`,
+                        type: "CHECK_BOX",
+                        items: category.items.map(item => ({
+                          text: item.deadline ? `${item.text} [Complete by: ${item.deadline}]` : item.text,
+                          value: `${category.category}::${item.text}`,
+                          selected: item.completed
+                        }))
                       }
-                    ]
-                  }
-                ]
-              }
+                    }
+                  ]
+                })),
+                {
+                  widgets: [
+                    { buttonList: { buttons: [{ text: "Submit", onClick: { action: { function: "submitProgress" } } }] } }
+                  ]
+                }
+              ]
             }
-          ]
+          }
+        ]
       });
-  }
-   else {
+    } else {
       return res.json({ text: "I didn't understand that. Type **'hi'** to see your progress." });
     }
   } catch (error) {
@@ -201,47 +148,7 @@ app.post("/", (req, res) => {
   }
 });
 
-app.post("/submit-progress", (req, res) => {
-  const selectedItems = req.body.selectedItems; // Array of selected items
-  let responses = loadResponses();
-
-  if (!selectedItems || selectedItems.length === 0) {
-    return res.status(400).json({ message: "No items selected" });
-  }
-
-  selectedItems.forEach(itemValue => {
-    const [category, itemText] = itemValue.split("::"); // Extract category and item name
-    let section = responses.progressMessage.outcomes.find(sec => sec.category === category);
-
-    if (section) {
-      let item = section.items.find(i => i.text === itemText);
-      if (item) {
-        item.completed = !item.completed; // Toggle completion status
-      }
-    }
-  });
-
-  fs.writeFileSync(responsesFile, JSON.stringify(responses, null, 2), "utf8");
-  res.json({ message: `✅ Submitted ${selectedItems.length} selected outcomes.` });
-});
-
-
-
-// Add Outcome
-app.post("/add-outcome", (req, res) => {
-  const { category, text, coins = 0 } = req.body;
-  let responses = loadResponses();
-
-  let section = responses.progressMessage.outcomes.find(sec => sec.category === category);
-  if (section) {
-    section.items.push({ text, coins });
-    fs.writeFileSync(responsesFile, JSON.stringify(responses, null, 2), "utf8");
-    res.json({ status: "success", message: `✅ Outcome added to **${category}**` });
-  } else {
-    res.status(400).json({ status: "error", message: "Category not found" });
-  }
-});
-
+// Start Server
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`✅ StarApp Bot is running on port ${PORT}`);
