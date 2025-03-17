@@ -12,6 +12,17 @@ app.get("/", (req, res) => {
   res.json({ status: "ok", message: "StarApp Bot is running with PostgreSQL!" });
 });
 
+app.get("/db-status", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT NOW()");
+    res.json({ status: "connected", time: result.rows[0].now });
+  } catch (error) {
+    console.error("Database connection error:", error);
+    res.status(500).json({ status: "error", message: error.message });
+  }
+});
+
+
 // Fetch user details
 const getUserDetails = async (userId) => {
   const userCoins = await pool.query("SELECT total_coins FROM user_coins WHERE user_id = $1", [userId]);
