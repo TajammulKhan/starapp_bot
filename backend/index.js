@@ -12,28 +12,46 @@ app.get("/", (req, res) => {
   res.json({ status: "ok", message: "StarApp Bot is running with PostgreSQL!" });
 });
 
-// Fetch daily progress from PostgreSQL
-const getDailyProgress = async () => {
-  const result = await pool.query("SELECT * FROM daily_progress LIMIT 1");
-  return result.rows[0];
+// Fetch user details
+const getUserDetails = async (userId) => {
+  const userCoins = await pool.query("SELECT total_coins FROM user_coins WHERE user_id = $1", [userId]);
+  const badges = await pool.query("SELECT COUNT(*) AS total_badges FROM badges WHERE user_id = $1", [userId]);
+  return {
+    total_coins: userCoins.rows[0]?.total_coins || 0,
+    total_badges: badges.rows[0]?.total_badges || 0,
+  };
 };
 
-// Fetch outcomes from PostgreSQL
-const getOutcomes = async () => {
+// Fetch quests (formerly outcomes) categorized by btype
+const getQuestsByCategory = async (userId) => {
   const result = await pool.query(`
-    SELECT o.id AS outcome_id, c.name AS category, o.title, o.image_url, 
+    SELECT q.id AS quest_id, b.btype AS category, q.qname AS quest_name,
            json_agg(json_build_object(
-               'text', oi.text,
-               'deadline', oi.deadline,
-               'coins', oi.coins,
-               'completed', oi.completed
-           )) AS items
-    FROM outcomes o
-    JOIN categories c ON o.category_id = c.id
-    LEFT JOIN outcome_items oi ON o.id = oi.outcome_id
-    GROUP BY o.id, c.name, o.title, o.image_url;
-  `);
-  return result.rows;
+               'text', t.text,
+               'deadline', t.deadline,
+               'coins', t.coins,
+               'completed', t.completed
+           )) AS tasks
+    FROM quests q
+    JOIN badges b ON q.badge_id = b.id
+    LEFT JOIN tasks t ON q.id = t.quest_id
+    WHERE b.user_id = $1
+    GROUP BY q.id, b.btype, q.qname;
+  `, [userId]);
+  
+  const categorizedQuests = {
+    Learning: [],
+    Earning: [],
+    Contribution: []
+  };
+
+  result.rows.forEach(quest => {
+    if (categorizedQuests[quest.category]) {
+      categorizedQuests[quest.category].push(quest);
+    }
+  });
+
+  return categorizedQuests;
 };
 
 // Handle bot interactions
@@ -42,48 +60,31 @@ app.post("/", async (req, res) => {
     console.log("📩 Received Request:", JSON.stringify(req.body, null, 2));
 
     const userMessage = req.body?.message?.text?.trim().toLowerCase() || "";
+    const userId = req.body?.message?.sender?.id || "";
     const userName = req.body?.message?.sender?.displayName || "User";
 
     if (!userMessage) {
       return res.status(400).json({ message: "No message found in request." });
     }
 
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is missing." });
+    }
+
+    const userProgress = await getUserDetails(userId);
+    const questsByCategory = await getQuestsByCategory(userId);
+
     if (userMessage === "hi" || userMessage === "hello") {
-      const dailyProgress = await getDailyProgress();
       return res.json({
         cardsV2: [
           {
             cardId: "daily-progress-card",
             card: {
-              header: { title: `${dailyProgress.title}, ${userName}!` },
+              header: { title: `Hello, ${userName}!` },
               sections: [
                 {
                   widgets: [
-                    { textParagraph: { text: `<b><font color='#D4A017' size='14'>${dailyProgress.quote}</font></b>` } }
-                  ]
-                },
-                {
-                  widgets: [
-                    {
-                      columns: {
-                        columnItems: [
-                          { horizontalAlignment: "CENTER", verticalAlignment: "CENTER", widgets: [{ decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png", altText: "Impressive Emoji" } } }] },
-                          { horizontalAlignment: "CENTER", verticalAlignment: "CENTER", widgets: [{ textParagraph: { text: "<b>Impressive!</b>" } }, { textParagraph: { text: `You’ve earned <b><font color='#4CAF50'>${dailyProgress.coins_earned} ↑</font></b> coins more than yesterday! ✨` } }] }
-                        ]
-                      }
-                    }
-                  ]
-                },
-                {
-                  widgets: [
-                    {
-                      columns: {
-                        columnItems: [
-                          { horizontalAlignment: "CENTER", verticalAlignment: "CENTER", widgets: [{ decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png", altText: "Coin Icon" }, text: `<b>${dailyProgress.total_coins}</b> 🔼` } }] },
-                          { horizontalAlignment: "CENTER", verticalAlignment: "CENTER", widgets: [{ decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png", altText: "Badge Icon" }, text: `<b>${dailyProgress.total_badges}</b> 🔽` } }] }
-                        ]
-                      }
-                    }
+                    { decoratedText: { text: `You have <b>${userProgress.total_coins}</b> coins and <b>${userProgress.total_badges}</b> badges.` } }
                   ]
                 },
                 {
@@ -97,36 +98,32 @@ app.post("/", async (req, res) => {
         ]
       });
     } else if (userMessage === "progress" || userMessage === "prog") {
-      console.log("Processing 'progress' request...");
-      const outcomes = await getOutcomes();
       return res.json({
         cardsV2: [
           {
-            cardId: "outcome-card",
+            cardId: "quest-card",
             card: {
-              header: { title: "Set your outcomes for the day", subtitle: "Track your progress and stay motivated!" },
+              header: { title: "Today's Quests", subtitle: "Your categorized progress" },
               sections: [
-                ...outcomes.map(category => ({
+                ...Object.entries(questsByCategory).map(([category, quests]) => ({
                   widgets: [
-                    {
-                      columns: {
-                        columnItems: [
-                          { horizontalAlignment: "CENTER", verticalAlignment: "CENTER", widgets: [{ decoratedText: { icon: { iconUrl: category.image_url, altText: category.category }, text: `<b><font color='#333' size='12'>${category.category}</font></b>` } }] }
-                        ]
-                      }
-                    },
-                    { textParagraph: { text: `<b>${category.title}</b>` } },
-                    {
-                      selectionInput: {
-                        name: `item_selection_${category.category}`,
-                        type: "CHECK_BOX",
-                        items: category.items.map(item => ({
-                          text: item.deadline ? `${item.text} [Complete by: ${item.deadline}]` : item.text,
-                          value: `${category.category}::${item.text}`,
-                          selected: item.completed
-                        }))
-                      }
-                    }
+                    { textParagraph: { text: `<b>${category}</b>` } },
+                    ...quests.map(quest => ({
+                      widgets: [
+                        { textParagraph: { text: `<b>${quest.quest_name}</b>` } },
+                        {
+                          selectionInput: {
+                            name: `task_selection_${quest.quest_id}`,
+                            type: "CHECK_BOX",
+                            items: quest.tasks.map(task => ({
+                              text: task.deadline ? `${task.text} [Complete by: ${task.deadline}]` : task.text,
+                              value: `${quest.quest_id}::${task.text}`,
+                              selected: task.completed
+                            }))
+                          }
+                        }
+                      ]
+                    }))
                   ]
                 })),
                 {
