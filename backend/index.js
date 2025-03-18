@@ -1,17 +1,9 @@
 const express = require("express");
-const { Pool } = require("pg");
+const pool = require("./db"); // Import database connection
+require("dotenv").config(); // Load environment variables
 
 const app = express();
 app.use(express.json());
-
-// PostgreSQL Database Connection
-const pool = new Pool({
-  user: "your_db_user",
-  host: "your_db_host",
-  database: "your_db_name",
-  password: "your_db_password",
-  port: 5432,
-});
 
 // Fetch User ID from Keycloak User Table
 async function getUserIdByEmail(email) {
