@@ -17,52 +17,41 @@ app.get("/db-status", async (req, res) => {
     const result = await pool.query("SELECT NOW()");
     res.json({ status: "connected", time: result.rows[0].now });
   } catch (error) {
-    console.error("Database connection error:", error);
+    console.error("❌ Database connection error:", error);
     res.status(500).json({ status: "error", message: error.message });
   }
 });
 
-
-// Fetch user details
+// Fetch user details (Total Coins & Badges Summary)
 const getUserDetails = async (userId) => {
-  const userCoins = await pool.query("SELECT total_coins FROM user_coins WHERE user_id = $1", [userId]);
-  const badges = await pool.query("SELECT COUNT(*) AS total_badges FROM badges WHERE user_id = $1", [userId]);
-  return {
-    total_coins: userCoins.rows[0]?.total_coins || 0,
-    total_badges: badges.rows[0]?.total_badges || 0,
-  };
-};
+  try {
+    // Fetch coins
+    const userCoins = await pool.query(
+      `SELECT total_learning_coins + total_earning_coins + total_contribution_coins AS total_coins 
+       FROM user_coins WHERE uid = $1`, 
+      [userId]
+    );
 
-// Fetch quests (formerly outcomes) categorized by btype
-const getQuestsByCategory = async (userId) => {
-  const result = await pool.query(`
-    SELECT q.id AS quest_id, b.btype AS category, q.qname AS quest_name,
-           json_agg(json_build_object(
-               'text', t.text,
-               'deadline', t.deadline,
-               'coins', t.coins,
-               'completed', t.completed
-           )) AS tasks
-    FROM quests q
-    JOIN badges b ON q.badge_id = b.id
-    LEFT JOIN tasks t ON q.id = t.quest_id
-    WHERE b.user_id = $1
-    GROUP BY q.id, b.btype, q.qname;
-  `, [userId]);
-  
-  const categorizedQuests = {
-    Learning: [],
-    Earning: [],
-    Contribution: []
-  };
+    // Fetch badges summary
+    const badges = await pool.query(
+      `SELECT 
+         COUNT(CASE WHEN bstatus = 'Assigned' THEN 1 END) AS assigned,
+         COUNT(CASE WHEN bstatus = 'In Progress' THEN 1 END) AS in_progress,
+         COUNT(CASE WHEN bstatus = 'Completed' THEN 1 END) AS completed
+       FROM badge_log WHERE uid = $1`, 
+      [userId]
+    );
 
-  result.rows.forEach(quest => {
-    if (categorizedQuests[quest.category]) {
-      categorizedQuests[quest.category].push(quest);
-    }
-  });
-
-  return categorizedQuests;
+    return {
+      total_coins: userCoins.rows[0]?.total_coins || 0,
+      assigned_badges: badges.rows[0]?.assigned || 0,
+      in_progress_badges: badges.rows[0]?.in_progress || 0,
+      completed_badges: badges.rows[0]?.completed || 0
+    };
+  } catch (error) {
+    console.error("❌ Error fetching user details:", error);
+    throw new Error("Failed to fetch user details.");
+  }
 };
 
 // Handle bot interactions
@@ -75,15 +64,18 @@ app.post("/", async (req, res) => {
     const userName = req.body?.message?.sender?.displayName || "User";
 
     if (!userMessage) {
+      console.error("⚠️ No message found in request.");
       return res.status(400).json({ message: "No message found in request." });
     }
 
     if (!userId) {
+      console.error("⚠️ User ID is missing.");
       return res.status(400).json({ message: "User ID is missing." });
     }
 
+    // Fetch user details
     const userProgress = await getUserDetails(userId);
-    const questsByCategory = await getQuestsByCategory(userId);
+    console.log("✅ User Progress Data:", userProgress);
 
     if (userMessage === "hi" || userMessage === "hello") {
       return res.json({
@@ -91,55 +83,49 @@ app.post("/", async (req, res) => {
           {
             cardId: "daily-progress-card",
             card: {
-              header: { title: `Hello, ${userName}!` },
+              header: {
+                title: `Hello, ${userName}!`,
+                subtitle: "Here’s your latest progress summary."
+              },
               sections: [
                 {
                   widgets: [
-                    { decoratedText: { text: `You have <b>${userProgress.total_coins}</b> coins and <b>${userProgress.total_badges}</b> badges.` } }
+                    {
+                      decoratedText: {
+                        text: `🌟 **Total Coins:** ${userProgress.total_coins}`
+                      }
+                    },
+                    {
+                      decoratedText: {
+                        text: `🏆 **Badges Completed:** ${userProgress.completed_badges}`
+                      }
+                    },
+                    {
+                      decoratedText: {
+                        text: `📌 **Badges Assigned:** ${userProgress.assigned_badges}`
+                      }
+                    },
+                    {
+                      decoratedText: {
+                        text: `⚡ **Badges In Progress:** ${userProgress.in_progress_badges}`
+                      }
+                    }
                   ]
                 },
                 {
                   widgets: [
-                    { buttonList: { buttons: [{ text: "Go to Star App →", onClick: { openLink: { url: "https://starapp.example.com" } } }] } }
-                  ]
-                }
-              ]
-            }
-          }
-        ]
-      });
-    } else if (userMessage === "progress" || userMessage === "prog") {
-      return res.json({
-        cardsV2: [
-          {
-            cardId: "quest-card",
-            card: {
-              header: { title: "Today's Quests", subtitle: "Your categorized progress" },
-              sections: [
-                ...Object.entries(questsByCategory).map(([category, quests]) => ({
-                  widgets: [
-                    { textParagraph: { text: `<b>${category}</b>` } },
-                    ...quests.map(quest => ({
-                      widgets: [
-                        { textParagraph: { text: `<b>${quest.quest_name}</b>` } },
-                        {
-                          selectionInput: {
-                            name: `task_selection_${quest.quest_id}`,
-                            type: "CHECK_BOX",
-                            items: quest.tasks.map(task => ({
-                              text: task.deadline ? `${task.text} [Complete by: ${task.deadline}]` : task.text,
-                              value: `${quest.quest_id}::${task.text}`,
-                              selected: task.completed
-                            }))
+                    {
+                      buttonList: {
+                        buttons: [
+                          {
+                            text: "Go to Star App →",
+                            onClick: {
+                              openLink: { url: "https://starapp.example.com" }
+                            }
                           }
-                        }
-                      ]
-                    }))
-                  ]
-                })),
-                {
-                  widgets: [
-                    { buttonList: { buttons: [{ text: "Submit", onClick: { action: { function: "submitProgress" } } }] } }
+                        ]
+                      }
+                    }
                   ]
                 }
               ]
@@ -148,6 +134,7 @@ app.post("/", async (req, res) => {
         ]
       });
     } else {
+      console.warn("⚠️ Unrecognized user message:", userMessage);
       return res.json({ text: "I didn't understand that. Type **'hi'** to see your progress." });
     }
   } catch (error) {
