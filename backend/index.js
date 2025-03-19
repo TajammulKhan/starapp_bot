@@ -39,10 +39,10 @@ async function getUserBadges(userId) {
   if (result.rows.length > 0) {
     return {
       totalBadges: result.rows[0].completedbadges || 0,
-      maxBadges: (result.rows[0].completedbadges || 0) + (result.rows[0].assignedbadges || 0)
+      assignedBadges: result.rows[0].assignedbadges || 0
     };
   }
-  return { totalBadges: 0, maxBadges: 0 };
+  return { completedBadges: 0, assignedBadges: 0 };
 }
 
 // Construct Google Chat Bot Response
@@ -50,8 +50,8 @@ function createGoogleChatCard(
   userName,
   totalCoins,
   coinsDifference,
-  totalBadges,
-  maxBadges
+  completedBadges,
+  assignedBadges
 ) {
   return {
     cardsV2: [
@@ -106,7 +106,7 @@ function createGoogleChatCard(
                         horizontalAlignment: "CENTER",
                         verticalAlignment: "CENTER",
                         widgets: [
-                          { decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png", altText: "Badge Icon" }, text: `<b>${totalBadges} / ${maxBadges}</b> ` } }
+                          { decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png", altText: "Badge Icon" }, text: `<b>${completedBadges} / ${assignedBadges}</b>` } }
                         ]
                       }
                     ]
@@ -169,18 +169,19 @@ app.post("/", async (req, res) => {
     const totalCoins = await getTotalCoins(userId);
     console.log(`Total Coins: ${totalCoins}`);
 
-    console.log(`Fetching badge data for user ID: ${userId}`);
-    const { totalBadges, maxBadges } = await getUserBadges(userId);
-    console.log(`Total Badges: ${totalBadges}, Max Badges: ${maxBadges}`);
-    
+   // Fetch Badge Data
+   console.log(`Fetching badge data for user ID: ${userId}`);
+   const { completedBadges, assignedBadges } = await getUserBadges(userId);
+   console.log(`Completed Badges: ${completedBadges}, Assigned Badges: ${assignedBadges}`);
+
     const coinsDifference = 10; // Placeholder
 
     const responseCard = createGoogleChatCard(
       userName,
       totalCoins,
       coinsDifference,
-      totalBadges,
-      maxBadges
+      completedBadges,
+      assignedBadges
     );
 
     console.log("Response to be sent:", JSON.stringify(responseCard, null, 2));
