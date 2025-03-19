@@ -260,7 +260,7 @@ app.post("/", async (req, res) => {
                         text: "ADD",  // ✅ Single submit button at the bottom
                         onClick: {
                           action: {
-                            function: "submitProgress",
+                            function: "addEarningOutcome",
                           }
                         }
                       }
