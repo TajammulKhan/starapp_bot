@@ -115,34 +115,47 @@ function createGoogleChatCard(userName, totalCoins, coinsDifference, totalBadges
   };
 }
 
+
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log("Request Body:", JSON.stringify(req.body, null, 2));
+  next();
+});
+
+app.get("/", (req, res) => {
+  res.status(200).json({ message: "StarApp Bot is running!" });
+});
+
 // Handle Incoming Google Chat Webhook Request
 app.post("/", async (req, res) => {
   try {
+    console.log("Incoming request:", req.body); // Debugging logs
+
     const email = req.body.user?.email;
     const userName = req.body?.message?.sender?.displayName || "User";
 
     if (!email) {
+      console.log("Error: Missing email in request");
       return res.json({ text: "⚠️ Error: Email is missing in the request." });
     }
 
-    // Get User ID from Keycloak
+    // Fetch User ID
     const userId = await getUserIdByEmail(email);
     if (!userId) {
+      console.log(`Error: No user found for email ${email}`);
       return res.json({ text: `⚠️ Error: No user found for email ${email}` });
     }
 
-    // Get Total Coins from user_coins table
+    // Fetch User Coins
     const totalCoins = await getTotalCoins(userId);
+    const coinsDifference = 10; // Placeholder
+    const totalBadges = 5; // Placeholder
+    const maxBadges = 10; // Placeholder
 
-    // Assuming you have logic for these values
-    const coinsDifference = 10; // Placeholder for now
-    const totalBadges = 5; // Placeholder for now
-    const maxBadges = 10; // Placeholder for now
-
-    // Call the function with correct parameters
     const responseCard = createGoogleChatCard(userName, totalCoins, coinsDifference, totalBadges, maxBadges);
 
-    // Send response
+    console.log("Response to be sent:", JSON.stringify(responseCard, null, 2));
+
     res.json(responseCard);
   } catch (error) {
     console.error("Error processing request:", error);
