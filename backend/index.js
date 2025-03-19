@@ -16,7 +16,7 @@ async function getUserIdByEmail(email) {
 async function getTotalCoins(userId) {
   const query = `
     SELECT COALESCE(SUM(earned + learning + contributions), 0) AS total
-    FROM badgelog
+    FROM registry.badgelog
     WHERE uid = $1
   `;
   const result = await pool.query(query, [userId]);
