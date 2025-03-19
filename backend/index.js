@@ -26,95 +26,103 @@ async function getTotalCoins(userId) {
 }
 
 // Construct Google Chat Bot Response
-function createGoogleChatCard(userName, totalCoins, coinsDifference, totalBadges, maxBadges) {
+function createGoogleChatCard(
+  userName,
+  totalCoins,
+  coinsDifference,
+  totalBadges,
+  maxBadges
+) {
   return {
-    "cardsV2": [
+    cards: [
       {
-        "cardId": "daily_summary_card",
-        "card": {
-          "header": {
-            "title": `Good  ${userName}!`,
-            "subtitle": `"Stars don’t shine without darkness. Embrace the journey and illuminate your path!"`,
-            "imageUrl": "https://example.com/your-quote-image.png",
-            "imageType": "SQUARE"
+        cardId: "daily_summary_card",
+        card: {
+          header: {
+            title: `Good  ${userName}!`,
+            subtitle: `"Stars don’t shine without darkness. Embrace the journey and illuminate your path!"`,
+            imageUrl: "https://example.com/your-quote-image.png",
+            imageType: "SQUARE",
           },
-          "sections": [
+          sections: [
             {
-              "widgets": [
+              widgets: [
                 {
-                  "image": {
-                    "imageUrl": "https://example.com/star-emoji.png",
-                    "altText": "Star Achievement"
-                  }
+                  image: {
+                    imageUrl: "https://example.com/star-emoji.png",
+                    altText: "Star Achievement",
+                  },
                 },
                 {
-                  "textParagraph": {
-                    "text": "**Impressive!**\n\nYou've earned **" + coinsDifference + " ⬆️** coins more than yesterday! ✨"
-                  }
-                }
-              ]
+                  textParagraph: {
+                    text:
+                      "**Impressive!**\n\nYou've earned **" +
+                      coinsDifference +
+                      " ⬆️** coins more than yesterday! ✨",
+                  },
+                },
+              ],
             },
             {
-              "columns": [
+              columns: [
                 {
-                  "horizontalAlignment": "CENTER",
-                  "widgets": [
+                  horizontalAlignment: "CENTER",
+                  widgets: [
                     {
-                      "image": {
-                        "imageUrl": "https://example.com/coin-icon.png",
-                        "altText": "Total Coins"
-                      }
+                      image: {
+                        imageUrl: "https://example.com/coin-icon.png",
+                        altText: "Total Coins",
+                      },
                     },
                     {
-                      "textParagraph": {
-                        "text": `**${totalCoins}**`
-                      }
-                    }
-                  ]
+                      textParagraph: {
+                        text: `**${totalCoins}**`,
+                      },
+                    },
+                  ],
                 },
                 {
-                  "horizontalAlignment": "CENTER",
-                  "widgets": [
+                  horizontalAlignment: "CENTER",
+                  widgets: [
                     {
-                      "image": {
-                        "imageUrl": "https://example.com/badge-icon.png",
-                        "altText": "Total Badges"
-                      }
+                      image: {
+                        imageUrl: "https://example.com/badge-icon.png",
+                        altText: "Total Badges",
+                      },
                     },
                     {
-                      "textParagraph": {
-                        "text": `**${totalBadges}/${maxBadges}**`
-                      }
-                    }
-                  ]
-                }
-              ]
+                      textParagraph: {
+                        text: `**${totalBadges}/${maxBadges}**`,
+                      },
+                    },
+                  ],
+                },
+              ],
             },
             {
-              "widgets": [
+              widgets: [
                 {
-                  "buttonList": {
-                    "buttons": [
+                  buttonList: {
+                    buttons: [
                       {
-                        "text": "Go to Star App →",
-                        "onClick": {
-                          "openLink": {
-                            "url": "https://starapp.example.com"
-                          }
-                        }
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      }
-    ]
+                        text: "Go to Star App →",
+                        onClick: {
+                          openLink: {
+                            url: "https://starapp.example.com",
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ],
   };
 }
-
 
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
@@ -131,7 +139,13 @@ app.post("/", async (req, res) => {
   try {
     console.log("Incoming request:", req.body); // Debugging logs
 
-    const email = req.body.user?.email;
+    console.log("Full request body:", JSON.stringify(req.body, null, 2));
+    const email = req.body.user?.email || req.body.message?.sender?.email;
+    if (!email) {
+      console.log("Error: Email is missing in request body.");
+      return res.json({ text: "⚠️ Error: Missing email in request." });
+    }
+
     const userName = req.body?.message?.sender?.displayName || "User";
 
     if (!email) {
@@ -140,19 +154,29 @@ app.post("/", async (req, res) => {
     }
 
     // Fetch User ID
+    console.log(`Fetching user ID for email: ${email}`);
     const userId = await getUserIdByEmail(email);
+    console.log(`User ID found: ${userId}`);
     if (!userId) {
       console.log(`Error: No user found for email ${email}`);
       return res.json({ text: `⚠️ Error: No user found for email ${email}` });
     }
 
     // Fetch User Coins
+    console.log(`Fetching total coins for user ID: ${userId}`);
     const totalCoins = await getTotalCoins(userId);
+    console.log(`Total Coins: ${totalCoins}`);
     const coinsDifference = 10; // Placeholder
     const totalBadges = 5; // Placeholder
     const maxBadges = 10; // Placeholder
 
-    const responseCard = createGoogleChatCard(userName, totalCoins, coinsDifference, totalBadges, maxBadges);
+    const responseCard = createGoogleChatCard(
+      userName,
+      totalCoins,
+      coinsDifference,
+      totalBadges,
+      maxBadges
+    );
 
     console.log("Response to be sent:", JSON.stringify(responseCard, null, 2));
 
@@ -162,7 +186,6 @@ app.post("/", async (req, res) => {
     res.status(500).json({ text: "⚠️ Internal server error" });
   }
 });
-
 
 // Start the Server
 const PORT = process.env.PORT || 3000;
