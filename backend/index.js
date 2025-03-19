@@ -208,7 +208,8 @@ app.post("/", async (req, res) => {
                   widgets: [
                     {
                       decoratedText: {
-                        text: `<b><font color='#6A0DAD'>🎓 Learning</font></b>`,
+                        icon:{ iconUrl:"https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png",altText: "Learning icon"},
+                        text: `<b><font color='#6A0DAD'>Learning</font></b>`,
                       },
                     },
                     ...outcomes.Learning.map((item) => ({
@@ -230,7 +231,8 @@ app.post("/", async (req, res) => {
                   widgets: [
                     {
                       decoratedText: {
-                        text: `<b><font color='#D32F2F'>💰 Earning</font></b>`,
+                        icon:{ iconUrl:"https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png",altText: "Learning icon"},
+                        text: `<b><font color='#D32F2F'>Earning</font></b>`,
                       },
                     },
                     ...outcomes.Earning.map((item) => ({
@@ -252,7 +254,8 @@ app.post("/", async (req, res) => {
                   widgets: [
                     {
                       decoratedText: {
-                        text: `<b><font color='#0288D1'>🤝 Contribution</font></b>`,
+                        icon:{ iconUrl:"https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png",altText: "Learning icon"},
+                        text: `<b><font color='#0288D1'>Contribution</font></b>`,
                       },
                     },
                     ...outcomes.Contribution.map((item) => ({
