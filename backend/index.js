@@ -38,7 +38,7 @@ function createGoogleChatCard(
       {
         cardId: "daily-progress-card",
         card: {
-          header: { title: `${title}, ${userName}!` },
+          header: { title: `Good Morning, ${userName}!` },
           sections: [
             {
               widgets: [
