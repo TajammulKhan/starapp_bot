@@ -64,7 +64,7 @@ function createGoogleChatCard(
           sections: [
             {
               widgets: [
-                { textParagraph: { text: `<b><font color='#D4A017' size='14'></font></b>` } }
+                { textParagraph: { text: `<b><font color='#D4A017' size='14'>" Stars don’t shine without darkness. Embrace the journey and illuminate your path! "</font></b>` } }
               ]
             },
             {
