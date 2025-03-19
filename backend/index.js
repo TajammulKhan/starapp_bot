@@ -43,6 +43,26 @@ async function getUserBadges(userId) {
     : { completedBadges: 0, assignedBadges: 0 };
 }
 
+async function getUserOutcomes() {
+  const query = `
+    SELECT bid, bname, btype 
+    FROM registry.badges 
+    WHERE btype IN ('Learning', 'Earning', 'Contribution')
+  `;
+  const result = await pool.query(query);
+  const outcomes = { Learning: [], Earning: [], Contribution: [] };
+
+  result.rows.forEach((row) => {
+    outcomes[row.btype].push({
+      id: row.bid,
+      text: row.bname,
+      coins: 10,
+    });
+  });
+
+  return outcomes;
+}
+
 // Construct Daily Progress Card
 function createGoogleChatCard(userName, totalCoins, coinsDifference, completedBadges, assignedBadges) {
   return {
@@ -146,13 +166,16 @@ app.post("/", async (req, res) => {
     console.log("Incoming request:", req.body);
 
     const email = req.body.user?.email || req.body.message?.sender?.email;
-    const userMessage = req.body.message?.text?.toLowerCase().trim();
-
     if (!email) {
       return res.json({ text: "⚠️ Error: Missing email in request." });
     }
 
+    const messageText = req.body.message?.text?.toLowerCase();
     const userName = req.body?.message?.sender?.displayName || "User";
+    if (messageText === "progress") {
+      const outcomeCard = await createOutcomeCard(userName);
+      return res.json(outcomeCard);
+    }
     console.log(`Fetching user ID for email: ${email}`);
     const userId = await getUserIdByEmail(email);
 
@@ -168,76 +191,95 @@ app.post("/", async (req, res) => {
 
     const coinsDifference = 10; // Placeholder
 
-    if (userMessage === "progress" || userMessage === "prog") {
-      console.log("Processing 'progress' request...");
-
-      const progressData = responses.progressMessage; // Ensure this is defined
-      console.log("Loaded progress data:", progressData);
-
-      if (!progressData || !progressData.outcomes) {
-        return res.json({ text: "No progress data available." });
-      }
-
-      return res.json({
+    async function createOutcomeCard(userName) {
+      const outcomes = await getUserOutcomes();
+    
+      return {
         cardsV2: [
           {
             cardId: "outcome-card",
             card: {
               header: {
-                title: progressData.title || "Set your outcomes for the day",
-                subtitle: progressData.subtitle || "",
+                title: `Set your outcomes for the day`,
+                subtitle: "",
                 imageType: "SQUARE",
               },
               sections: [
-                ...progressData.outcomes.map(category => ({
+                // Learning Section
+                {
                   widgets: [
                     {
-                      columns: {
-                        columnItems: [
-                          {
-                            horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
-                            widgets: [
-                              {
-                                decoratedText: {
-                                  icon: { iconUrl: category.imageUrl, altText: category.category },
-                                  text: `<b><font color='#333' size='12'></font></b>`,
-                                }
-                              }
-                            ]
-                          }
-                        ]
-                      }
+                      decoratedText: {
+                        startIcon: { knownIcon: "BOOKMARK" },
+                        text: `<b><font color='#6A0DAD'>🎓 Learning</font></b>`,
+                      },
                     },
-                    { textParagraph: { text: `<b></b>` } },
+                    ...outcomes.Learning.map((item) => ({
+                      decoratedText: {
+                        text: item.text,
+                        endIcon: { knownIcon: "COIN" },
+                        bottomLabel: `⭐ ${item.coins} Coins`,
+                      },
+                    })),
+                  ],
+                },
+                // Earning Section
+                {
+                  widgets: [
                     {
-                      selectionInput: {
-                        name: `item_selection_${category.category}`,
-                        type: "CHECK_BOX",
-                        items: category.items.map(item => ({
-                          text: item.deadline ? `${item.text} [Complete by: ${item.deadline}]` : item.text,
-                          value: `${category.category}::${item.text}`,
-                          selected: item.completed || false
-                        }))
-                      }
-                    }
-                  ]
-                })),
+                      decoratedText: {
+                        startIcon: { knownIcon: "ATTACH_MONEY" },
+                        text: `<b><font color='#D32F2F'>💰 Earning</font></b>`,
+                      },
+                    },
+                    ...outcomes.Earning.map((item) => ({
+                      decoratedText: {
+                        text: item.text,
+                        endIcon: { knownIcon: "COIN" },
+                        bottomLabel: `⭐ ${item.coins} Coins`,
+                      },
+                    })),
+                  ],
+                },
+                // Contribution Section
+                {
+                  widgets: [
+                    {
+                      decoratedText: {
+                        startIcon: { knownIcon: "VOLUNTEER_ACTIVISM" },
+                        text: `<b><font color='#0288D1'>🤝 Contribution</font></b>`,
+                      },
+                    },
+                    ...outcomes.Contribution.map((item) => ({
+                      decoratedText: {
+                        text: item.text,
+                        endIcon: { knownIcon: "COIN" },
+                        bottomLabel: `⭐ ${item.coins} Coins`,
+                      },
+                    })),
+                  ],
+                },
+                // Submit Button
                 {
                   widgets: [
                     {
                       buttonList: {
-                        buttons: [{ text: "Submit", onClick: { action: { function: "submitProgress" } } }]
-                      }
-                    }
-                  ]
-                }
-              ]
-            }
-          }
-        ]
-      });
-    }
+                        buttons: [
+                          {
+                            text: "SUBMIT",
+                            onClick: { action: { function: "submitOutcomes" } },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          },
+        ],
+      };
+    }    
 
     const responseCard = createGoogleChatCard(userName, totalCoins, coinsDifference, completedBadges, assignedBadges);
     res.json(responseCard);
