@@ -253,6 +253,20 @@ app.post("/", async (req, res) => {
                     label: "Add your own Earning outcome"
                   },
                 },
+                {
+                  buttonList: {
+                    buttons: [
+                      {
+                        text: "ADD",  // ✅ Single submit button at the bottom
+                        onClick: {
+                          action: {
+                            function: "submitProgress",
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
                   ],
                 },
                 // Contribution Section
