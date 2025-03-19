@@ -25,6 +25,26 @@ async function getTotalCoins(userId) {
   return result.rows.length > 0 ? result.rows[0].total : 0;
 }
 
+// Fetch Total Badges from badgelog table
+async function getUserBadges(userId) {
+  const query = `
+    SELECT 
+      COUNT(CASE WHEN bstatus = 'Completed' THEN 1 END) AS completedBadges,
+      COUNT(CASE WHEN bstatus IN ('Assigned', 'In Progress') THEN 1 END) AS assignedBadges
+    FROM registry.badgelog
+    WHERE uid = $1
+  `;
+  const result = await pool.query(query, [userId]);
+
+  if (result.rows.length > 0) {
+    return {
+      totalBadges: result.rows[0].completedbadges || 0,
+      maxBadges: (result.rows[0].completedbadges || 0) + (result.rows[0].assignedbadges || 0)
+    };
+  }
+  return { totalBadges: 0, maxBadges: 0 };
+}
+
 // Construct Google Chat Bot Response
 function createGoogleChatCard(
   userName,
@@ -86,7 +106,7 @@ function createGoogleChatCard(
                         horizontalAlignment: "CENTER",
                         verticalAlignment: "CENTER",
                         widgets: [
-                          { decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png", altText: "Badge Icon" }, text: `<b>${totalBadges}</b> ` } }
+                          { decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png", altText: "Badge Icon" }, text: `<b>${totalBadges} / ${maxBadges}</b> ` } }
                         ]
                       }
                     ]
@@ -127,7 +147,6 @@ app.post("/", async (req, res) => {
   try {
     console.log("Incoming request:", req.body); // Debugging logs
 
-    console.log("Full request body:", JSON.stringify(req.body, null, 2));
     const email = req.body.user?.email || req.body.message?.sender?.email;
     if (!email) {
       console.log("Error: Email is missing in request body.");
@@ -135,11 +154,6 @@ app.post("/", async (req, res) => {
     }
 
     const userName = req.body?.message?.sender?.displayName || "User";
-
-    if (!email) {
-      console.log("Error: Missing email in request");
-      return res.json({ text: "⚠️ Error: Email is missing in the request." });
-    }
 
     // Fetch User ID
     console.log(`Fetching user ID for email: ${email}`);
@@ -155,8 +169,6 @@ app.post("/", async (req, res) => {
     const totalCoins = await getTotalCoins(userId);
     console.log(`Total Coins: ${totalCoins}`);
     const coinsDifference = 10; // Placeholder
-    const totalBadges = 5; // Placeholder
-    const maxBadges = 10; // Placeholder
 
     const responseCard = createGoogleChatCard(
       userName,
