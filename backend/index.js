@@ -118,8 +118,9 @@ function createGoogleChatCard(userName, totalCoins, coinsDifference, totalBadges
 // Handle Incoming Google Chat Webhook Request
 app.post("/", async (req, res) => {
   try {
-    const email = req.body.user.email;
+    const email = req.body.user?.email;
     const userName = req.body?.message?.sender?.displayName || "User";
+
     if (!email) {
       return res.json({ text: "⚠️ Error: Email is missing in the request." });
     }
@@ -130,16 +131,25 @@ app.post("/", async (req, res) => {
       return res.json({ text: `⚠️ Error: No user found for email ${email}` });
     }
 
-    // Get Total Coins from badgelog
+    // Get Total Coins from user_coins table
     const totalCoins = await getTotalCoins(userId);
 
-    // Send the Google Chat bot response
-    res.json(createGoogleChatCard);
+    // Assuming you have logic for these values
+    const coinsDifference = 10; // Placeholder for now
+    const totalBadges = 5; // Placeholder for now
+    const maxBadges = 10; // Placeholder for now
+
+    // Call the function with correct parameters
+    const responseCard = createGoogleChatCard(userName, totalCoins, coinsDifference, totalBadges, maxBadges);
+
+    // Send response
+    res.json(responseCard);
   } catch (error) {
     console.error("Error processing request:", error);
     res.status(500).json({ text: "⚠️ Internal server error" });
   }
 });
+
 
 // Start the Server
 const PORT = process.env.PORT || 3000;
