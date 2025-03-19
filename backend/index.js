@@ -201,8 +201,6 @@ app.post("/", async (req, res) => {
             card: {
               header: {
                 title: `Set your outcomes for the day`,
-                subtitle: "",
-                imageType: "SQUARE",
               },
               sections: [
                 // Learning Section
@@ -215,10 +213,15 @@ app.post("/", async (req, res) => {
                       },
                     },
                     ...outcomes.Learning.map((item) => ({
-                      decoratedText: {
-                        text: item.text,
-                        endIcon: { knownIcon: "COIN" },
-                        bottomLabel: `⭐ ${item.coins} Coins`,
+                      selectionInput: {
+                        name: "selectedOutcomes",
+                        type: "CHECK_BOX",
+                        items: [
+                          {
+                            text: `${item.text} ⭐ ${item.coins} Coins`,
+                            value: JSON.stringify({ id: item.id, type: "Learning" }),
+                          },
+                        ],
                       },
                     })),
                   ],
@@ -233,10 +236,15 @@ app.post("/", async (req, res) => {
                       },
                     },
                     ...outcomes.Earning.map((item) => ({
-                      decoratedText: {
-                        text: item.text,
-                        endIcon: { knownIcon: "COIN" },
-                        bottomLabel: `⭐ ${item.coins} Coins`,
+                      selectionInput: {
+                        name: "selectedOutcomes",
+                        type: "CHECK_BOX",
+                        items: [
+                          {
+                            text: `${item.text} ⭐ ${item.coins} Coins`,
+                            value: JSON.stringify({ id: item.id, type: "Earning" }),
+                          },
+                        ],
                       },
                     })),
                   ],
@@ -251,10 +259,15 @@ app.post("/", async (req, res) => {
                       },
                     },
                     ...outcomes.Contribution.map((item) => ({
-                      decoratedText: {
-                        text: item.text,
-                        endIcon: { knownIcon: "COIN" },
-                        bottomLabel: `⭐ ${item.coins} Coins`,
+                      selectionInput: {
+                        name: "selectedOutcomes",
+                        type: "CHECK_BOX",
+                        items: [
+                          {
+                            text: `${item.text} ⭐ ${item.coins} Coins`,
+                            value: JSON.stringify({ id: item.id, type: "Contribution" }),
+                          },
+                        ],
                       },
                     })),
                   ],
@@ -267,7 +280,17 @@ app.post("/", async (req, res) => {
                         buttons: [
                           {
                             text: "SUBMIT",
-                            onClick: { action: { function: "submitOutcomes" } },
+                            onClick: {
+                              action: {
+                                function: "submitOutcomes",
+                                parameters: [
+                                  {
+                                    key: "selectedOutcomes",
+                                    value: "${selectedOutcomes}",
+                                  },
+                                ],
+                              },
+                            },
                           },
                         ],
                       },
