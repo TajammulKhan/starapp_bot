@@ -49,8 +49,7 @@ function createGoogleChatCard(
               "widgets": [
                 {
                   "image": {
-                    "imageUrl": "https://example.com/star-emoji.png",
-                    "altText": "Star Achievement"
+                    "imageUrl": "https://example.com/star-emoji.png"
                   }
                 },
                 {
@@ -67,8 +66,7 @@ function createGoogleChatCard(
                   "widgets": [
                     {
                       "image": {
-                        "imageUrl": "https://example.com/coin-icon.png",
-                        "altText": "Total Coins"
+                        "imageUrl": "https://example.com/coin-icon.png"
                       }
                     },
                     {
@@ -83,8 +81,7 @@ function createGoogleChatCard(
                   "widgets": [
                     {
                       "image": {
-                        "imageUrl": "https://example.com/badge-icon.png",
-                        "altText": "Total Badges"
+                        "imageUrl": "https://example.com/badge-icon.png"
                       }
                     },
                     {
