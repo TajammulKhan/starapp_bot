@@ -26,7 +26,7 @@ async function getTotalCoins(userId) {
 }
 
 // Construct Google Chat Bot Response
-function createGoogleChatCard(userId, totalCoins, coinsDifference, totalBadges, maxBadges) {
+function createGoogleChatCard(userName, totalCoins, coinsDifference, totalBadges, maxBadges) {
   return {
     "cardsV2": [
       {
@@ -134,7 +134,7 @@ app.post("/", async (req, res) => {
     const totalCoins = await getTotalCoins(userId);
 
     // Send the Google Chat bot response
-    res.json(createGoogleChatCard(userId, totalCoins));
+    res.json(createGoogleChatCard);
   } catch (error) {
     console.error("Error processing request:", error);
     res.status(500).json({ text: "⚠️ Internal server error" });
