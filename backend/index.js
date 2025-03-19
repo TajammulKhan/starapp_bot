@@ -34,78 +34,72 @@ function createGoogleChatCard(
   maxBadges
 ) {
   return {
-    "cardsV2": [
+    cardsV2: [
       {
-        "cardId": "daily_summary_card",
-        "card": {
-          "header": {
-            "title": "Good Morning, User!",
-            "subtitle": "Stars don’t shine without darkness. Embrace the journey and illuminate your path!",
-            "imageUrl": "https://example.com/your-quote-image.png",
-            "imageType": "SQUARE"
-          },
-          "sections": [
+        cardId: "daily-progress-card",
+        card: {
+          header: { title: `${title}, ${userName}!` },
+          sections: [
             {
-              "widgets": [
-                {
-                  "image": {
-                    "imageUrl": "https://example.com/star-emoji.png"
-                  }
-                },
-                {
-                  "textParagraph": {
-                    "text": "**Impressive!**\n\nYou've earned **10 ⬆️** coins more than yesterday! ✨"
-                  }
-                }
+              widgets: [
+                { textParagraph: { text: `<b><font color='#D4A017' size='14'></font></b>` } }
               ]
             },
             {
-              "columns": [
+              widgets: [
                 {
-                  "horizontalAlignment": "CENTER",
-                  "widgets": [
-                    {
-                      "image": {
-                        "imageUrl": "https://example.com/coin-icon.png"
-                      }
-                    },
-                    {
-                      "textParagraph": {
-                        "text": "**1500**"
-                      }
-                    }
-                  ]
-                },
-                {
-                  "horizontalAlignment": "CENTER",
-                  "widgets": [
-                    {
-                      "image": {
-                        "imageUrl": "https://example.com/badge-icon.png"
-                      }
-                    },
-                    {
-                      "textParagraph": {
-                        "text": "**5/10**"
-                      }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "widgets": [
-                {
-                  "buttonList": {
-                    "buttons": [
+                  columns: {
+                    columnItems: [
                       {
-                        "text": "Go to Star App →",
-                        "onClick": {
-                          "openLink": {
-                            "url": "https://starapp.example.com"
-                          }
-                        }
+                        horizontalAlignment: "CENTER",
+                        verticalAlignment: "CENTER",
+                        widgets: [
+                          { decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png", altText: "Impressive Emoji" } } }
+                        ]
+                      },
+                      {
+                        horizontalAlignment: "CENTER",
+                        verticalAlignment: "CENTER",
+                        widgets: [
+                          { textParagraph: { text: "<b>Impressive!</b>" } },
+                          { textParagraph: { text: `You’ve earned <b><font color='#4CAF50'> ↑</font></b> coins more than yesterday! ✨` } }
+                        ]
                       }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              widgets: [
+                {
+                  columns: {
+                    columnItems: [
+                      {
+                        horizontalAlignment: "CENTER",
+                        verticalAlignment: "CENTER",
+                        widgets: [
+                          { decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png", altText: "Coin Icon" }, text: `<b>${totalCoins}</b> 🔼` } }
+                        ]
+                      },
+                      {
+                        horizontalAlignment: "CENTER",
+                        verticalAlignment: "CENTER",
+                        widgets: [
+                          { decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png", altText: "Badge Icon" }, text: `<b>${totalBadges}</b> 🔽` } }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              widgets: [
+                {
+                  buttonList: {
+                    buttons: [
+                      { text: "Go to Star App →", onClick: { openLink: { url: "https://starapp.example.com" } } }
                     ]
                   }
                 }
