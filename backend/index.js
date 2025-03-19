@@ -33,7 +33,7 @@ function createGoogleChatCard(userId, totalCoins, coinsDifference, totalBadges, 
         "cardId": "daily_summary_card",
         "card": {
           "header": {
-            "title": `Good  ${username}!`,
+            "title": `Good  ${userName}!`,
             "subtitle": `"Stars don’t shine without darkness. Embrace the journey and illuminate your path!"`,
             "imageUrl": "https://example.com/your-quote-image.png",
             "imageType": "SQUARE"
@@ -119,6 +119,7 @@ function createGoogleChatCard(userId, totalCoins, coinsDifference, totalBadges, 
 app.post("/", async (req, res) => {
   try {
     const email = req.body.user.email;
+    const userName = req.body?.message?.sender?.displayName || "User";
     if (!email) {
       return res.json({ text: "⚠️ Error: Email is missing in the request." });
     }
