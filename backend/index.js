@@ -7,7 +7,7 @@ app.use(express.json());
 
 // Fetch User ID from Keycloak User Table
 async function getUserIdByEmail(email) {
-  const query = `SELECT id FROM user_entity WHERE email = $1`;
+  const query = `SELECT id FROM keycloak.user_entity WHERE email = $1`;
   const result = await pool.query(query, [email]);
   return result.rows.length > 0 ? result.rows[0].id : null;
 }
