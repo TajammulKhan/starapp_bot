@@ -168,6 +168,11 @@ app.post("/", async (req, res) => {
     console.log(`Fetching total coins for user ID: ${userId}`);
     const totalCoins = await getTotalCoins(userId);
     console.log(`Total Coins: ${totalCoins}`);
+
+    console.log(`Fetching badge data for user ID: ${userId}`);
+    const { totalBadges, maxBadges } = await getUserBadges(userId);
+    console.log(`Total Badges: ${totalBadges}, Max Badges: ${maxBadges}`);
+    
     const coinsDifference = 10; // Placeholder
 
     const responseCard = createGoogleChatCard(
