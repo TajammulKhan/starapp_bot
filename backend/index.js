@@ -208,7 +208,6 @@ app.post("/", async (req, res) => {
                   widgets: [
                     {
                       decoratedText: {
-                        startIcon: { knownIcon: "BOOKMARK" },
                         text: `<b><font color='#6A0DAD'>🎓 Learning</font></b>`,
                       },
                     },
@@ -231,7 +230,6 @@ app.post("/", async (req, res) => {
                   widgets: [
                     {
                       decoratedText: {
-                        startIcon: { knownIcon: "ATTACH_MONEY" },
                         text: `<b><font color='#D32F2F'>💰 Earning</font></b>`,
                       },
                     },
@@ -254,7 +252,6 @@ app.post("/", async (req, res) => {
                   widgets: [
                     {
                       decoratedText: {
-                        startIcon: { knownIcon: "VOLUNTEER_ACTIVISM" },
                         text: `<b><font color='#0288D1'>🤝 Contribution</font></b>`,
                       },
                     },
