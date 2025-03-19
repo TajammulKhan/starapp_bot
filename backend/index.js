@@ -34,27 +34,17 @@ async function getUserBadges(userId) {
     FROM registry.badgelog
     WHERE uid = $1
   `;
-
   const result = await pool.query(query, [userId]);
-
-  if (result.rows.length > 0) {
-    return {
-      completedBadges: result.rows[0].completedBadges || 0,
-      assignedBadges: result.rows[0].assignedBadges || 0
-    };
-  }
-  return { completedBadges: 0, assignedBadges: 0 };
+  return result.rows.length > 0
+    ? {
+        completedBadges: result.rows[0].completedBadges || 0,
+        assignedBadges: result.rows[0].assignedBadges || 0,
+      }
+    : { completedBadges: 0, assignedBadges: 0 };
 }
 
-
-// Construct Google Chat Bot Response
-function createGoogleChatCard(
-  userName,
-  totalCoins,
-  coinsDifference,
-  completedBadges,
-  assignedBadges
-) {
+// Construct Daily Progress Card
+function createGoogleChatCard(userName, totalCoins, coinsDifference, completedBadges, assignedBadges) {
   return {
     cardsV2: [
       {
@@ -64,7 +54,11 @@ function createGoogleChatCard(
           sections: [
             {
               widgets: [
-                { textParagraph: { text: `<b><font color='#D4A017' size='14'>" Stars don’t shine without darkness.<br> Embrace the journey and illuminate your path! "</font></b>` } }
+                { 
+                  textParagraph: { 
+                    text: `<b><font color='#D4A017' size='14'>" Stars don’t shine without darkness.<br> Embrace the journey and illuminate your path! "</font></b>` 
+                  } 
+                }
               ]
             },
             {
@@ -134,60 +128,118 @@ function createGoogleChatCard(
   };
 }
 
+// Middleware for Logging Requests
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   console.log("Request Body:", JSON.stringify(req.body, null, 2));
   next();
 });
 
+// Default Route
 app.get("/", (req, res) => {
   res.status(200).json({ message: "StarApp Bot is running!" });
 });
 
-// Handle Incoming Google Chat Webhook Request
+// Handle Google Chat Webhook Requests
 app.post("/", async (req, res) => {
   try {
-    console.log("Incoming request:", req.body); // Debugging logs
+    console.log("Incoming request:", req.body);
 
     const email = req.body.user?.email || req.body.message?.sender?.email;
+    const userMessage = req.body.message?.text?.toLowerCase().trim();
+
     if (!email) {
-      console.log("Error: Email is missing in request body.");
       return res.json({ text: "⚠️ Error: Missing email in request." });
     }
 
     const userName = req.body?.message?.sender?.displayName || "User";
-
-    // Fetch User ID
     console.log(`Fetching user ID for email: ${email}`);
     const userId = await getUserIdByEmail(email);
-    console.log(`User ID found: ${userId}`);
+
     if (!userId) {
-      console.log(`Error: No user found for email ${email}`);
       return res.json({ text: `⚠️ Error: No user found for email ${email}` });
     }
 
-    // Fetch User Coins
     console.log(`Fetching total coins for user ID: ${userId}`);
     const totalCoins = await getTotalCoins(userId);
-    console.log(`Total Coins: ${totalCoins}`);
 
-   // Fetch Badge Data
-   console.log(`Fetching badge data for user ID: ${userId}`);
-   const { completedBadges, assignedBadges } = await getUserBadges(userId);
-   console.log(`Completed Badges: ${completedBadges}, Assigned Badges: ${assignedBadges}`);
+    console.log(`Fetching badge data for user ID: ${userId}`);
+    const { completedBadges, assignedBadges } = await getUserBadges(userId);
 
     const coinsDifference = 10; // Placeholder
 
-    const responseCard = createGoogleChatCard(
-      userName,
-      totalCoins,
-      coinsDifference,
-      completedBadges,
-      assignedBadges
-    );
+    if (userMessage === "progress" || userMessage === "prog") {
+      console.log("Processing 'progress' request...");
 
-    console.log("Response to be sent:", JSON.stringify(responseCard, null, 2));
+      const progressData = responses.progressMessage; // Ensure this is defined
+      console.log("Loaded progress data:", progressData);
 
+      if (!progressData || !progressData.outcomes) {
+        return res.json({ text: "No progress data available." });
+      }
+
+      return res.json({
+        cardsV2: [
+          {
+            cardId: "outcome-card",
+            card: {
+              header: {
+                title: progressData.title || "Set your outcomes for the day",
+                subtitle: progressData.subtitle || "",
+                imageType: "SQUARE",
+              },
+              sections: [
+                ...progressData.outcomes.map(category => ({
+                  widgets: [
+                    {
+                      columns: {
+                        columnItems: [
+                          {
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                decoratedText: {
+                                  icon: { iconUrl: category.imageUrl, altText: category.category },
+                                  text: `<b><font color='#333' size='12'></font></b>`,
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    },
+                    { textParagraph: { text: `<b></b>` } },
+                    {
+                      selectionInput: {
+                        name: `item_selection_${category.category}`,
+                        type: "CHECK_BOX",
+                        items: category.items.map(item => ({
+                          text: item.deadline ? `${item.text} [Complete by: ${item.deadline}]` : item.text,
+                          value: `${category.category}::${item.text}`,
+                          selected: item.completed || false
+                        }))
+                      }
+                    }
+                  ]
+                })),
+                {
+                  widgets: [
+                    {
+                      buttonList: {
+                        buttons: [{ text: "Submit", onClick: { action: { function: "submitProgress" } } }]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      });
+    }
+
+    const responseCard = createGoogleChatCard(userName, totalCoins, coinsDifference, completedBadges, assignedBadges);
     res.json(responseCard);
   } catch (error) {
     console.error("Error processing request:", error);
@@ -195,8 +247,5 @@ app.post("/", async (req, res) => {
   }
 });
 
-// Start the Server
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
