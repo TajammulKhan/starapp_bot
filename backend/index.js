@@ -15,12 +15,14 @@ async function getUserIdByEmail(email) {
 // Fetch Total Coins from badgelog table
 async function getTotalCoins(userId) {
   const query = `
-    SELECT COALESCE(SUM(earned + learning + contributions), 0) AS total
-    FROM registry.badgelog
+    SELECT COALESCE(
+      total_learning_coins + total_earning_coins + total_contribution_coins, 0
+    ) AS total
+    FROM registry.user_coins
     WHERE uid = $1
   `;
   const result = await pool.query(query, [userId]);
-  return result.rows[0]?.total || 0;
+  return result.rows.length > 0 ? result.rows[0].total : 0;
 }
 
 // Construct Google Chat Bot Response
