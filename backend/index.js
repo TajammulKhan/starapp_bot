@@ -209,7 +209,7 @@ app.post("/", async (req, res) => {
                     {
                       decoratedText: {
                         icon:{ iconUrl:"https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png",altText: "Learning icon"},
-                        text: `<b><font color='#6A0DAD'>Learning</font></b>`,
+                        text: `<b><font color='#7A3BBB'>Learning</font></b>`,
                       },
                     },
                     ...outcomes.Learning.map((item) => ({
@@ -231,8 +231,8 @@ app.post("/", async (req, res) => {
                   widgets: [
                     {
                       decoratedText: {
-                        icon:{ iconUrl:"https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png",altText: "Learning icon"},
-                        text: `<b><font color='#D32F2F'>Earning</font></b>`,
+                        icon:{ iconUrl:"https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Medal+(1).png",altText: "Earning icon"},
+                        text: `<b><font color='#FF6C6C'>Earning</font></b>`,
                       },
                     },
                     ...outcomes.Earning.map((item) => ({
@@ -254,8 +254,8 @@ app.post("/", async (req, res) => {
                   widgets: [
                     {
                       decoratedText: {
-                        icon:{ iconUrl:"https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png",altText: "Learning icon"},
-                        text: `<b><font color='#0288D1'>Contribution</font></b>`,
+                        icon:{ iconUrl:"https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Shield+(1).png",altText: "Contribution icon"},
+                        text: `<b><font color='#3CAF91'>Contribution</font></b>`,
                       },
                     },
                     ...outcomes.Contribution.map((item) => ({
