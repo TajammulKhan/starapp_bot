@@ -29,21 +29,23 @@ async function getTotalCoins(userId) {
 async function getUserBadges(userId) {
   const query = `
     SELECT 
-      COUNT(CASE WHEN bstatus = 'Completed' THEN 1 END) AS completedBadges,
-      COUNT(CASE WHEN bstatus IN ('Assigned', 'In Progress') THEN 1 END) AS assignedBadges
+      COUNT(CASE WHEN bstatus = 'Completed' THEN 1 END) AS "completedBadges",
+      COUNT(CASE WHEN bstatus IN ('Assigned', 'In Progress') THEN 1 END) AS "assignedBadges"
     FROM registry.badgelog
     WHERE uid = $1
   `;
+
   const result = await pool.query(query, [userId]);
 
   if (result.rows.length > 0) {
     return {
-      totalBadges: result.rows[0].completedbadges || 0,
-      assignedBadges: result.rows[0].assignedbadges || 0
+      completedBadges: result.rows[0].completedBadges || 0,
+      assignedBadges: result.rows[0].assignedBadges || 0
     };
   }
   return { completedBadges: 0, assignedBadges: 0 };
 }
+
 
 // Construct Google Chat Bot Response
 function createGoogleChatCard(
