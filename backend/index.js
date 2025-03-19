@@ -26,24 +26,84 @@ async function getTotalCoins(userId) {
 }
 
 // Construct Google Chat Bot Response
-function createGoogleChatCard(userId, totalCoins) {
+function createGoogleChatCard(userId, totalCoins, coinsDifference, totalBadges, maxBadges) {
   return {
     "cardsV2": [
       {
-        "cardId": "total_coins_card",
+        "cardId": "daily_summary_card",
         "card": {
           "header": {
-            "title": "🏆 Total Coins Earned",
-            "subtitle": `User ID: ${userId}`,
-            "imageUrl": "https://example.com/coin-icon.png",
-            "imageType": "CIRCLE"
+            "title": `Good  ${username}!`,
+            "subtitle": `"Stars don’t shine without darkness. Embrace the journey and illuminate your path!"`,
+            "imageUrl": "https://example.com/your-quote-image.png",
+            "imageType": "SQUARE"
           },
           "sections": [
             {
               "widgets": [
                 {
+                  "image": {
+                    "imageUrl": "https://example.com/star-emoji.png",
+                    "altText": "Star Achievement"
+                  }
+                },
+                {
                   "textParagraph": {
-                    "text": `✨ Congratulations! You have a total of **${totalCoins} coins** from your learning, earning, and contributions! Keep up the great work! 🎉`
+                    "text": "**Impressive!**\n\nYou've earned **" + coinsDifference + " ⬆️** coins more than yesterday! ✨"
+                  }
+                }
+              ]
+            },
+            {
+              "columns": [
+                {
+                  "horizontalAlignment": "CENTER",
+                  "widgets": [
+                    {
+                      "image": {
+                        "imageUrl": "https://example.com/coin-icon.png",
+                        "altText": "Total Coins"
+                      }
+                    },
+                    {
+                      "textParagraph": {
+                        "text": `**${totalCoins}**`
+                      }
+                    }
+                  ]
+                },
+                {
+                  "horizontalAlignment": "CENTER",
+                  "widgets": [
+                    {
+                      "image": {
+                        "imageUrl": "https://example.com/badge-icon.png",
+                        "altText": "Total Badges"
+                      }
+                    },
+                    {
+                      "textParagraph": {
+                        "text": `**${totalBadges}/${maxBadges}**`
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "widgets": [
+                {
+                  "buttonList": {
+                    "buttons": [
+                      {
+                        "text": "Go to Star App →",
+                        "onClick": {
+                          "openLink": {
+                            "url": "https://starapp.example.com"
+                          }
+                        }
+                      }
+                    ]
                   }
                 }
               ]
