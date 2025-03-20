@@ -290,7 +290,7 @@ app.post("/", async (req, res) => {
                           action: {
                             function: "addEarningOutcome",
                             parameters: [
-                              { key: "customEarningOutcome", value: "${customEarningOutcome}" }, // Capture input text
+                              { key: "customEarningOutcome", value: "${{customEarningOutcome}}" }, // Capture input text
                               { key: "existingOutcomes", value: JSON.stringify(customOutcomes) }, // Keep track of previously added outcomes
                             ],
                           }
