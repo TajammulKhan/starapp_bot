@@ -172,13 +172,14 @@ app.post("/", async (req, res) => {
       const existingOutcomes = JSON.parse(req.body.action.parameters?.find((p) => p.key === "existingOutcomes")?.value || "[]");
     
       if (customOutcome) {
+        console.log("customs"+customOutcome);
         existingOutcomes.push(customOutcome);
+        console.log("existing"+existingOutcomes);
       }
     
       const outcomeCard = await createOutcomeCard(userName, existingOutcomes);
       return res.json(outcomeCard);
     }
-    console.log("customs"+customOutcome);
     
 
     const email = req.body.user?.email || req.body.message?.sender?.email;
