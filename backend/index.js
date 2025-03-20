@@ -178,8 +178,6 @@ app.post("/", async (req, res) => {
       const outcomeCard = await createOutcomeCard(userName, existingOutcomes);
       return res.json(outcomeCard);
     }
-
-    console.log("existing"+existingOutcomes);
     console.log("customs"+customOutcomes);
     
 
