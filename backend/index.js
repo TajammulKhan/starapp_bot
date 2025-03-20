@@ -273,6 +273,8 @@ app.post("/", async (req, res) => {
                         ],
                       },
                     })),
+                    console.log(existingOutcomes),
+                    console.log(customOutcomes),
                     {
                   textInput: {
                     name: "customEarningOutcome",
