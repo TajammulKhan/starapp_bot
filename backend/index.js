@@ -178,7 +178,7 @@ app.post("/", async (req, res) => {
       const outcomeCard = await createOutcomeCard(userName, existingOutcomes);
       return res.json(outcomeCard);
     }
-    console.log("customs"+customOutcomes);
+    console.log("customs"+customOutcome);
     
 
     const email = req.body.user?.email || req.body.message?.sender?.email;
