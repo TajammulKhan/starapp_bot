@@ -163,29 +163,46 @@ app.get("/", (req, res) => {
 // Handle Google Chat Webhook Requests
 app.post("/", async (req, res) => {
   try {
-    console.log("Incoming request:", JSON.stringify(req.body, null, 2));
+    console.log('[RAW REQUEST]', JSON.stringify(req.body, null, 2));
 
-    if (req.body.action?.function === "addEarningOutcome") {
-      console.log("Adding custom outcome...");
+    // Handle ADD action first
+    if (req.body.type === 'CARD_CLICKED' && req.body.action.actionMethodName === 'addEarningOutcome') {
+      console.log('[ADD ACTION] Handling custom outcome addition');
       
-      // Extract parameters from the action
-      const customOutcomeParam = req.body.action.parameters.find(p => p.key === "customEarningOutcome");
-      const existingOutcomesParam = req.body.action.parameters.find(p => p.key === "existingOutcomes");
+      const customOutcome = req.body.action.parameters?.find(p => p.key === 'customEarningOutcome')?.value;
+      const existingOutcomes = JSON.parse(
+        req.body.action.parameters?.find(p => p.key === 'existingOutcomes')?.value || '[]'
+      );
 
-      const customOutcome = customOutcomeParam?.value;
-      const existingOutcomes = existingOutcomesParam ? JSON.parse(existingOutcomesParam.value) : [];
-    
-      // Add new custom outcome if provided
+      console.log('[ADD ACTION] Existing outcomes:', existingOutcomes);
+      console.log('[ADD ACTION] New custom outcome:', customOutcome);
+
       if (customOutcome && customOutcome.trim()) {
-        console.log("Adding custom outcome:", customOutcome);
         existingOutcomes.push(customOutcome.trim());
+        console.log('[ADD ACTION] Updated outcomes:', existingOutcomes);
       }
 
-      // Return updated outcome card with new list
-      const outcomeCard = await createOutcomeCard(userName, existingOutcomes);
-      return res.json(outcomeCard);
+      const userName = req.body.user?.displayName || 'User';
+      return res.json(await createOutcomeCard(userName, existingOutcomes));
     }
-    
+
+    // Handle initial message
+    if (req.body.type === 'MESSAGE') {
+      console.log('[MESSAGE] Handling initial request');
+      const email = req.body.message.sender.email;
+      const messageText = req.body.message.text?.toLowerCase();
+      
+      if (!email) {
+        console.log('[ERROR] Missing email in request');
+        return res.json({ text: "⚠️ Error: Missing email in request." });
+      }
+
+      if (messageText === 'progress') {
+        console.log('[PROGRESS] Generating outcome card');
+        const userName = req.body.message.sender.displayName || 'User';
+        return res.json(await createOutcomeCard(userName));
+      }
+    }
 
     const email = req.body.user?.email || req.body.message?.sender?.email;
     if (!email) {
