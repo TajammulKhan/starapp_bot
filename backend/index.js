@@ -163,20 +163,25 @@ app.get("/", (req, res) => {
 // Handle Google Chat Webhook Requests
 app.post("/", async (req, res) => {
   try {
-    console.log("Incoming request:", req.body);
+    console.log("Incoming request:", JSON.stringify(req.body, null, 2));
 
     if (req.body.action?.function === "addEarningOutcome") {
       console.log("Adding custom outcome...");
       
-      const customOutcome = req.body.action.parameters?.find((p) => p.key === "customEarningOutcome")?.value;
-      const existingOutcomes = JSON.parse(req.body.action.parameters?.find((p) => p.key === "existingOutcomes")?.value || "[]");
+      // Extract parameters from the action
+      const customOutcomeParam = req.body.action.parameters.find(p => p.key === "customEarningOutcome");
+      const existingOutcomesParam = req.body.action.parameters.find(p => p.key === "existingOutcomes");
+
+      const customOutcome = customOutcomeParam?.value;
+      const existingOutcomes = existingOutcomesParam ? JSON.parse(existingOutcomesParam.value) : [];
     
-      if (customOutcome) {
-        console.log("customs"+customOutcome);
-        existingOutcomes.push(customOutcome);
-        console.log("existing"+existingOutcomes);
+      // Add new custom outcome if provided
+      if (customOutcome && customOutcome.trim()) {
+        console.log("Adding custom outcome:", customOutcome);
+        existingOutcomes.push(customOutcome.trim());
       }
-    
+
+      // Return updated outcome card with new list
       const outcomeCard = await createOutcomeCard(userName, existingOutcomes);
       return res.json(outcomeCard);
     }
@@ -290,8 +295,14 @@ app.post("/", async (req, res) => {
                           action: {
                             function: "addEarningOutcome",
                             parameters: [
-                              { key: "customEarningOutcome", value: "${{customEarningOutcome}}" }, // Capture input text
-                              { key: "existingOutcomes", value: JSON.stringify(customOutcomes) }, // Keep track of previously added outcomes
+                              { 
+                                key: "customEarningOutcome", 
+                                value: "${customEarningOutcome}" // Corrected template syntax
+                              },
+                              { 
+                                key: "existingOutcomes", 
+                                value: JSON.stringify(customOutcomes) 
+                              }
                             ],
                           }
                         }                        
