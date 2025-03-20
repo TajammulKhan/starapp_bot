@@ -165,6 +165,31 @@ app.post("/", async (req, res) => {
   try {
     console.log("Incoming request:", req.body);
 
+    const actionType = req.body.action?.function;
+    
+    // Handle adding a custom Earning Outcome
+    if (actionType === "addEarningOutcome") {
+      const customEarningOutcome = req.body.action?.parameters?.find(p => p.key === "customEarningOutcome")?.value;
+
+      if (!customEarningOutcome) {
+        return res.json({ text: "⚠️ Error: Please enter an earning outcome." });
+      }
+
+      // Append to existing outcomes dynamically
+      const outcomes = await getUserOutcomes();
+      outcomes.Earning.push({
+        id: `custom-${Date.now()}`, // Generate a unique ID
+        text: customEarningOutcome,
+        coins: 10 // Default coin value for custom outcomes
+      });
+
+      // Re-render the outcome card with the new entry
+      const userName = req.body?.user?.displayName || "User";
+      const updatedCard = await createOutcomeCard(userName, outcomes);
+      
+      return res.json(updatedCard);
+    }
+
     const email = req.body.user?.email || req.body.message?.sender?.email;
     if (!email) {
       return res.json({ text: "⚠️ Error: Missing email in request." });
@@ -191,8 +216,10 @@ app.post("/", async (req, res) => {
 
     const coinsDifference = 10; // Placeholder
 
-    async function createOutcomeCard(userName) {
-      const outcomes = await getUserOutcomes();
+    async function createOutcomeCard(userName,outcomes = null) {
+      if (!outcomes) {
+        outcomes = await getUserOutcomes();
+      }
     
       return {
         cardsV2: [
@@ -261,8 +288,14 @@ app.post("/", async (req, res) => {
                         onClick: {
                           action: {
                             function: "addEarningOutcome",
+                            parameters: [
+                              {
+                                key: "customEarningOutcome",
+                                value: "${customEarningOutcome}"
+                              }
+                            ]
                           }
-                        }
+                        }                        
                       }
                     ]
                   }
