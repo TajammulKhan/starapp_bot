@@ -178,6 +178,9 @@ app.post("/", async (req, res) => {
       const outcomeCard = await createOutcomeCard(userName, existingOutcomes);
       return res.json(outcomeCard);
     }
+
+    console.log("existing"+existingOutcomes);
+    console.log("customs"+customOutcomes);
     
 
     const email = req.body.user?.email || req.body.message?.sender?.email;
@@ -273,8 +276,6 @@ app.post("/", async (req, res) => {
                         ],
                       },
                     })),
-                    console.log(existingOutcomes),
-                    console.log(customOutcomes),
                     {
                   textInput: {
                     name: "customEarningOutcome",
