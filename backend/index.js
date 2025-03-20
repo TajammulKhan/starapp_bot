@@ -165,30 +165,20 @@ app.post("/", async (req, res) => {
   try {
     console.log("Incoming request:", req.body);
 
-    const actionType = req.body.action?.function;
-    
-    // Handle adding a custom Earning Outcome
-    if (actionType === "addEarningOutcome") {
-      const customEarningOutcome = req.body.action?.parameters?.find(p => p.key === "customEarningOutcome")?.value;
-
-      if (!customEarningOutcome) {
-        return res.json({ text: "⚠️ Error: Please enter an earning outcome." });
-      }
-
-      // Append to existing outcomes dynamically
-      const outcomes = await getUserOutcomes();
-      outcomes.Earning.push({
-        id: `custom-${Date.now()}`, // Generate a unique ID
-        text: customEarningOutcome,
-        coins: 10 // Default coin value for custom outcomes
-      });
-
-      // Re-render the outcome card with the new entry
-      const userName = req.body?.user?.displayName || "User";
-      const updatedCard = await createOutcomeCard(userName, outcomes);
+    if (req.body.action?.function === "addEarningOutcome") {
+      console.log("Adding custom outcome...");
       
-      return res.json(updatedCard);
+      const customOutcome = req.body.action.parameters?.find((p) => p.key === "customEarningOutcome")?.value;
+      const existingOutcomes = JSON.parse(req.body.action.parameters?.find((p) => p.key === "existingOutcomes")?.value || "[]");
+    
+      if (customOutcome) {
+        existingOutcomes.push(customOutcome);
+      }
+    
+      const outcomeCard = await createOutcomeCard(userName, existingOutcomes);
+      return res.json(outcomeCard);
     }
+    
 
     const email = req.body.user?.email || req.body.message?.sender?.email;
     if (!email) {
@@ -216,11 +206,20 @@ app.post("/", async (req, res) => {
 
     const coinsDifference = 10; // Placeholder
 
-    async function createOutcomeCard(userName,outcomes = null) {
-      if (!outcomes) {
-        outcomes = await getUserOutcomes();
-      }
-    
+    async function createOutcomeCard(userName,customOutcomes = []) {
+      const outcomes = await getUserOutcomes();
+
+      // Add any custom outcomes provided in the request
+  if (customOutcomes.length > 0) {
+    outcomes.Earning.push(
+      ...customOutcomes.map((item, index) => ({
+        id: `custom_${index}`, // Assign unique ID for custom outcomes
+        text: item, // Use the entered custom outcome
+        coins: 10, // Default coin value
+      }))
+    );
+  }
+ 
       return {
         cardsV2: [
           {
@@ -289,11 +288,9 @@ app.post("/", async (req, res) => {
                           action: {
                             function: "addEarningOutcome",
                             parameters: [
-                              {
-                                key: "customEarningOutcome",
-                                value: "${customEarningOutcome}"
-                              }
-                            ]
+                              { key: "customEarningOutcome", value: "${customEarningOutcome}" }, // Capture input text
+                              { key: "existingOutcomes", value: JSON.stringify(customOutcomes) }, // Keep track of previously added outcomes
+                            ],
                           }
                         }                        
                       }
