@@ -192,10 +192,10 @@ function createGoogleChatCard(
 // Middleware for Logging Requests
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Global Error Handler:', err.stack);
+  console.error("Global Error Handler:", err.stack);
   res.status(500).json({
     text: "⚠️ Something went wrong! Please try again.",
-    cardsV2: []  // Ensure Google Chat compatibility
+    cardsV2: [], // Ensure Google Chat compatibility
   });
 });
 
@@ -216,39 +216,55 @@ app.post("/", async (req, res) => {
     ) {
       console.log("[ADD ACTION] Handling custom outcome addition");
 
-      // Log the full request body to inspect formInputs
+      const userName = req.body.user?.displayName || "User";
+
+      // Validate request structure
+      if (!req.body.formInputs || !req.body.action) {
+        console.error("Invalid request structure");
+        return res.status(400).json({
+          text: "Invalid request format",
+          cardsV2: [],
+        });
+      }
+
+      // Debug form inputs
       console.log(
-        "[ADD ACTION] Request Body:",
-        JSON.stringify(req.body, null, 2)
+        "Full formInputs:",
+        JSON.stringify(req.body.formInputs, null, 2)
       );
 
+      // Get custom outcome
       const customOutcome =
-        req.body.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
+        req.body.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim() ||
+        null;
 
-      // Get existing outcomes from parameters
-      const existingOutcomesParam = req.body.action.parameters?.find(
-        (p) => p.key === "existingOutcomes"
-      )?.value;
-      let existingOutcomes = existingOutcomesParam
-        ? JSON.parse(existingOutcomesParam)
-        : [];
+      // Handle existing outcomes
+      const existingOutcomesParam =
+        req.body.action.parameters?.find((p) => p.key === "existingOutcomes")
+          ?.value || "[]";
 
-        console.log('[DEBUG] Raw custom outcome:', customOutcome);
-        console.log('[DEBUG] Existing outcomes:', existingOutcomes);      
+      let existingOutcomes;
+      try {
+        existingOutcomes = JSON.parse(existingOutcomesParam);
+      } catch (e) {
+        console.error("Error parsing existing outcomes:", e);
+        existingOutcomes = [];
+      }
 
-      // In ADD action handler
+      // Validate input
       if (!customOutcome || customOutcome.startsWith("${")) {
         console.log("[INVALID INPUT] Ignoring placeholder value");
-        return res.json(await createOutcomeCard(userName, existingOutcomes));
+        return res.json({
+          text: "Please enter a valid outcome first!",
+          cardsV2: (await createOutcomeCard(userName, existingOutcomes))
+            .cardsV2,
+        });
       }
 
-      // Add new outcome if valid
-      if (customOutcome) {
-        existingOutcomes = [...existingOutcomes, customOutcome];
-        console.log('[UPDATED OUTCOMES]', existingOutcomes);
-      }
+      // Update outcomes
+      existingOutcomes = [...existingOutcomes, customOutcome];
+      console.log("[UPDATED OUTCOMES]", existingOutcomes);
 
-      const userName = req.body.user?.displayName || "User";
       return res.json(await createOutcomeCard(userName, existingOutcomes));
     }
 
@@ -303,7 +319,7 @@ app.post("/", async (req, res) => {
       if (customOutcomes.length > 0) {
         outcomes.Earning.push(
           ...customOutcomes.map((item, index) => ({
-            id: `custom_${index}_${Date.now()}`,  // Unique ID
+            id: `custom_${index}_${Date.now()}`, // Unique ID
             text: item, // Use the entered custom outcome
             coins: 10, // Default coin value
             type: "Earning",
@@ -395,7 +411,10 @@ app.post("/", async (req, res) => {
                                 parameters: [
                                   {
                                     key: "existingOutcomes",
-                                    value: JSON.stringify(customOutcomes)
+                                    value: JSON.stringify([
+                                      ...customOutcomes,
+                                      "${formInputs.customEarningOutcome}",
+                                    ]),
                                   },
                                 ],
                               },
