@@ -219,53 +219,34 @@ app.post("/", async (req, res) => {
       const userName = req.body.user?.displayName || "User";
 
       // Validate request structure
-      if (!req.body.formInputs || !req.body.action) {
-        console.error("Invalid request structure");
-        return res.status(400).json({
-          text: "Invalid request format",
-          cardsV2: [],
-        });
-      }
+    if (!req.body.formInputs || !req.body.action?.parameters) {
+      console.error('Invalid request structure:', JSON.stringify(req.body, null, 2));
+      return res.json({
+        text: "⚠️ Invalid request format",
+        cardsV2: (await createOutcomeCard(userName, [])).cardsV2
+      });
+    }
 
-      // Debug form inputs
-      console.log(
-        "Full formInputs:",
-        JSON.stringify(req.body.formInputs, null, 2)
-      );
+    // Parse parameters safely
+    const params = JSON.parse(req.body.action.parameters[0].value);
+    const customOutcome = params.new?.trim();
+    const existingOutcomes = Array.isArray(params.existing) ? params.existing : [];
 
-      // Get custom outcome
-      const customOutcome =
-        req.body.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim() ||
-        null;
+    console.log('[DEBUG] Received custom outcome:', customOutcome);
+    console.log('[DEBUG] Existing outcomes:', existingOutcomes);
 
-      // Handle existing outcomes
-      const existingOutcomesParam =
-        req.body.action.parameters?.find((p) => p.key === "existingOutcomes")
-          ?.value || "[]";
 
-      let existingOutcomes;
-      try {
-        existingOutcomes = JSON.parse(existingOutcomesParam);
-      } catch (e) {
-        console.error("Error parsing existing outcomes:", e);
-        existingOutcomes = [];
-      }
-
-      // Validate input
-      if (!customOutcome || customOutcome.startsWith("${")) {
-        console.log("[INVALID INPUT] Ignoring placeholder value");
-        return res.json({
-          text: "Please enter a valid outcome first!",
-          cardsV2: (await createOutcomeCard(userName, existingOutcomes))
-            .cardsV2,
-        });
-      }
-
-      // Update outcomes
-      existingOutcomes = [...existingOutcomes, customOutcome];
-      console.log("[UPDATED OUTCOMES]", existingOutcomes);
-
+      // Validate custom outcome
+    if (!customOutcome || customOutcome.startsWith('${')) {
+      console.log('[INVALID INPUT] Returning current state');
       return res.json(await createOutcomeCard(userName, existingOutcomes));
+    }
+
+    // Update outcomes
+    const updatedOutcomes = [...existingOutcomes, customOutcome];
+    console.log('[UPDATED OUTCOMES]', updatedOutcomes);
+
+    return res.json(await createOutcomeCard(userName, updatedOutcomes));
     }
 
     // Handle initial message
@@ -317,14 +298,12 @@ app.post("/", async (req, res) => {
 
       // Add any custom outcomes provided in the request
       if (customOutcomes.length > 0) {
-        outcomes.Earning.push(
-          ...customOutcomes.map((item, index) => ({
-            id: `custom_${index}_${Date.now()}`, // Unique ID
-            text: item, // Use the entered custom outcome
-            coins: 10, // Default coin value
-            type: "Earning",
-          }))
-        );
+        outcomes.Earning.push(...customOutcomes.map((text, index) => ({
+          id: `custom_${Date.now()}_${index}`,
+          text: text,
+          coins: 10,
+          type: "Earning"
+        })));
       }
 
       return {
@@ -381,17 +360,14 @@ app.post("/", async (req, res) => {
                     },
                     ...outcomes.Earning.map((item) => ({
                       selectionInput: {
-                        name: "selectedOutcomes",
-                        type: "CHECK_BOX",
-                        items: [
-                          {
-                            text: `${item.text} ⭐ ${item.coins} Coins`,
-                            value: JSON.stringify({
-                              id: item.id,
-                              type: "Earning",
-                            }),
-                          },
-                        ],
+                        name: `earning_${item.id}`,
+                    label: item.text,
+                    type: "CHECK_BOX",
+                    items: [{
+                      text: `${item.text} ⭐ ${item.coins} Coins`,
+                      value: JSON.stringify(item),
+                      selected: false
+                    }]
                       },
                     })),
                     {
@@ -411,13 +387,14 @@ app.post("/", async (req, res) => {
                                 parameters: [
                                   {
                                     key: "existingOutcomes",
-                                    value: JSON.stringify([
-                                      ...customOutcomes,
-                                      "${formInputs.customEarningOutcome}",
-                                    ]),
-                                  },
-                                ],
-                              },
+                                    // Proper parameter structure with form input reference
+                                    value: JSON.stringify({
+                                      existing: customOutcomes,
+                                      new: "${formInputs.customEarningOutcome}"
+                                    })
+                                  }
+                                ]
+                              }
                             },
                           },
                         ],
@@ -486,6 +463,7 @@ app.post("/", async (req, res) => {
         ],
       };
     }
+    
 
     const responseCard = createGoogleChatCard(
       userName,
