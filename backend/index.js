@@ -173,15 +173,14 @@ app.post("/", async (req, res) => {
       console.log('[ADD ACTION] Request Body:', JSON.stringify(req.body, null, 2));
       
       // Get existing outcomes from parameters
+      const customOutcomeParam = req.body.action.parameters?.find(p => p.key === 'customEarningOutcome')?.value;
       const existingOutcomesParam = req.body.action.parameters?.find(p => p.key === 'existingOutcomes')?.value;
-      const existingOutcomes = existingOutcomesParam ? JSON.parse(existingOutcomesParam) : [];
-  
-      // Safely retrieve the custom outcome from form inputs
-      const customOutcomeInput = req.body.formInputs?.customEarningOutcome?.stringInputs?.value;
-      const customOutcome = customOutcomeInput?.[0]?.trim();
 
+      const customOutcome = customOutcomeParam?.trim(); // Get trimmed value
+      const existingOutcomes = existingOutcomesParam ? JSON.parse(existingOutcomesParam) : [];
+
+      console.log('[ADD ACTION] Custom outcome:', customOutcome);
       console.log('[ADD ACTION] Existing outcomes:', existingOutcomes);
-      console.log('[ADD ACTION] New custom outcome:', customOutcome);
 
       if (customOutcome) {
         existingOutcomes.push(customOutcome);
@@ -318,6 +317,10 @@ app.post("/", async (req, res) => {
                           action: {
                             function: "addEarningOutcome",
                             parameters: [
+                              { 
+                                key: "customEarningOutcome", 
+                                value: "${customEarningOutcome}" // Interpolate input value
+                              },
                               { 
                                 key: "existingOutcomes", 
                                 value: JSON.stringify(customOutcomes) 
