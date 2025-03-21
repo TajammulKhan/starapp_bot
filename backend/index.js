@@ -206,6 +206,12 @@ app.post("/", async (req, res) => {
   try {
     console.log("[RAW REQUEST]", JSON.stringify(req.body, null, 2));
 
+    // In ADD action handler
+    if (!customOutcome || customOutcome.startsWith("${")) {
+      console.log("[INVALID INPUT] Ignoring placeholder value");
+      return res.json(await createOutcomeCard(userName, existingOutcomes));
+    }
+
     // Handle ADD action first
     if (
       req.body.type === "CARD_CLICKED" &&
@@ -219,33 +225,24 @@ app.post("/", async (req, res) => {
         JSON.stringify(req.body, null, 2)
       );
 
-      // 1. Get parameters from action
-  const params = req.body.action.parameters || [];
-  const customOutcomeParam = params.find(p => p.key === 'customEarningOutcome')?.value;
-  const existingOutcomesParam = params.find(p => p.key === 'existingOutcomes')?.value;
+      const customOutcome =
+        req.body.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
 
-  // 2. Get form input value (fallback method)
-  const formInputValue = req.body.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
+      // Get existing outcomes from parameters
+      const existingOutcomesParam = req.body.action.parameters?.find(
+        (p) => p.key === "existingOutcomes"
+      )?.value;
+      const existingOutcomes = existingOutcomesParam
+        ? JSON.parse(existingOutcomesParam)
+        : [];
 
-  // 3. Priority: Form Input > Parameter
-  const customOutcome = formInputValue || customOutcomeParam?.trim();
-  
-  // 4. Process existing outcomes
-  const existingOutcomes = existingOutcomesParam ? JSON.parse(existingOutcomesParam) : [];
-
-  console.log('[DEBUG] Custom outcome:', customOutcome);
-  console.log('[DEBUG] Existing outcomes:', existingOutcomes);
+      console.log("[RAW CUSTOM OUTCOME]", customOutcome);
+      console.log("[EXISTING OUTCOMES]", existingOutcomes);
 
       // Add new outcome if valid
       if (customOutcome && customOutcome.length > 0) {
         existingOutcomes.push(customOutcome);
-        console.log("[ADD ACTION] Updated outcomes:", existingOutcomes);
-      }
-
-      // Add this in the ADD action handler
-      if (!customOutcome || customOutcome.length === 0) {
-        console.log("[ADD ACTION] Empty custom outcome ignored");
-        return res.json(await createOutcomeCard(userName, existingOutcomes));
+        console.log("Updated outcomes:", existingOutcomes);
       }
 
       const userName = req.body.user?.displayName || "User";
@@ -303,7 +300,7 @@ app.post("/", async (req, res) => {
       if (customOutcomes.length > 0) {
         outcomes.Earning.push(
           ...customOutcomes.map((item, index) => ({
-            id: `custom_${Date.now()}_${index}`, // Assign unique ID for custom outcomes
+            id: `custom_${index}`, // Assign unique ID for custom outcomes
             text: item, // Use the entered custom outcome
             coins: 10, // Default coin value
             type: "Earning",
@@ -393,10 +390,6 @@ app.post("/", async (req, res) => {
                               action: {
                                 function: "addEarningOutcome",
                                 parameters: [
-                                  { 
-                                    key: "customEarningOutcome",
-                                    value: "${formInputs.customEarningOutcome}"
-                                  },
                                   {
                                     key: "existingOutcomes",
                                     value: JSON.stringify(customOutcomes),
