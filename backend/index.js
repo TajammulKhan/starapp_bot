@@ -168,13 +168,17 @@ app.post("/", async (req, res) => {
     // Handle ADD action first
     if (req.body.type === 'CARD_CLICKED' && req.body.action.actionMethodName === 'addEarningOutcome') {
       console.log('[ADD ACTION] Handling custom outcome addition');
+
+      // Log the full request body to inspect formInputs
+      console.log('[ADD ACTION] Request Body:', JSON.stringify(req.body, null, 2));
       
       // Get existing outcomes from parameters
       const existingOutcomesParam = req.body.action.parameters?.find(p => p.key === 'existingOutcomes')?.value;
       const existingOutcomes = existingOutcomesParam ? JSON.parse(existingOutcomesParam) : [];
   
-      // Get custom outcome from form inputs
-      const customOutcome = req.body.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
+      // Safely retrieve the custom outcome from form inputs
+      const customOutcomeInput = req.body.formInputs?.customEarningOutcome?.stringInputs?.value;
+      const customOutcome = customOutcomeInput?.[0]?.trim();
 
       console.log('[ADD ACTION] Existing outcomes:', existingOutcomes);
       console.log('[ADD ACTION] New custom outcome:', customOutcome);
