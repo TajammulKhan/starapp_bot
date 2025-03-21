@@ -64,7 +64,13 @@ async function getUserOutcomes() {
 }
 
 // Construct Daily Progress Card
-function createGoogleChatCard(userName, totalCoins, coinsDifference, completedBadges, assignedBadges) {
+function createGoogleChatCard(
+  userName,
+  totalCoins,
+  coinsDifference,
+  completedBadges,
+  assignedBadges
+) {
   return {
     cardsV2: [
       {
@@ -74,12 +80,12 @@ function createGoogleChatCard(userName, totalCoins, coinsDifference, completedBa
           sections: [
             {
               widgets: [
-                { 
-                  textParagraph: { 
-                    text: `<b><font color='#D4A017' size='14'>" Stars don’t shine without darkness.<br> Embrace the journey and illuminate your path! "</font></b>` 
-                  } 
-                }
-              ]
+                {
+                  textParagraph: {
+                    text: `<b><font color='#D4A017' size='14'>" Stars don’t shine without darkness.<br> Embrace the journey and illuminate your path! "</font></b>`,
+                  },
+                },
+              ],
             },
             {
               widgets: [
@@ -90,21 +96,33 @@ function createGoogleChatCard(userName, totalCoins, coinsDifference, completedBa
                         horizontalAlignment: "CENTER",
                         verticalAlignment: "CENTER",
                         widgets: [
-                          { decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png", altText: "Impressive Emoji" } } }
-                        ]
+                          {
+                            decoratedText: {
+                              icon: {
+                                iconUrl:
+                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png",
+                                altText: "Impressive Emoji",
+                              },
+                            },
+                          },
+                        ],
                       },
                       {
                         horizontalAlignment: "CENTER",
                         verticalAlignment: "CENTER",
                         widgets: [
                           { textParagraph: { text: "<b>Impressive!</b>" } },
-                          { textParagraph: { text: `You’ve earned <b><font color='#4CAF50'> ↑</font></b> coins more than yesterday! ✨` } }
-                        ]
-                      }
-                    ]
-                  }
-                }
-              ]
+                          {
+                            textParagraph: {
+                              text: `You’ve earned <b><font color='#4CAF50'> ↑</font></b> coins more than yesterday! ✨`,
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
+              ],
             },
             {
               widgets: [
@@ -115,36 +133,59 @@ function createGoogleChatCard(userName, totalCoins, coinsDifference, completedBa
                         horizontalAlignment: "CENTER",
                         verticalAlignment: "CENTER",
                         widgets: [
-                          { decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png", altText: "Coin Icon" }, text: `<b>${totalCoins}</b> ` } }
-                        ]
+                          {
+                            decoratedText: {
+                              icon: {
+                                iconUrl:
+                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                                altText: "Coin Icon",
+                              },
+                              text: `<b>${totalCoins}</b> `,
+                            },
+                          },
+                        ],
                       },
                       {
                         horizontalAlignment: "CENTER",
                         verticalAlignment: "CENTER",
                         widgets: [
-                          { decoratedText: { icon: { iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png", altText: "Badge Icon" }, text: `<b>${completedBadges} / ${assignedBadges}</b>` } }
-                        ]
-                      }
-                    ]
-                  }
-                }
-              ]
+                          {
+                            decoratedText: {
+                              icon: {
+                                iconUrl:
+                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(1)+(1).png",
+                                altText: "Badge Icon",
+                              },
+                              text: `<b>${completedBadges} / ${assignedBadges}</b>`,
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
+              ],
             },
             {
               widgets: [
                 {
                   buttonList: {
                     buttons: [
-                      { text: "Go to Star App →", onClick: { openLink: { url: "https://starapp.example.com" } } }
-                    ]
-                  }
-                }
-              ]
-            }
-          ]
-        }
-      }
-    ]
+                      {
+                        text: "Go to Star App →",
+                        onClick: {
+                          openLink: { url: "https://starapp.example.com" },
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ],
   };
 }
 
@@ -163,48 +204,69 @@ app.get("/", (req, res) => {
 // Handle Google Chat Webhook Requests
 app.post("/", async (req, res) => {
   try {
-    console.log('[RAW REQUEST]', JSON.stringify(req.body, null, 2));
+    console.log("[RAW REQUEST]", JSON.stringify(req.body, null, 2));
 
     // Handle ADD action first
-    if (req.body.type === 'CARD_CLICKED' && req.body.action.actionMethodName === 'addEarningOutcome') {
-      console.log('[ADD ACTION] Handling custom outcome addition');
+    if (
+      req.body.type === "CARD_CLICKED" &&
+      req.body.action.actionMethodName === "addEarningOutcome"
+    ) {
+      console.log("[ADD ACTION] Handling custom outcome addition");
 
       // Log the full request body to inspect formInputs
-      console.log('[ADD ACTION] Request Body:', JSON.stringify(req.body, null, 2));
-      
-      // Get existing outcomes from parameters
-      const customOutcomeParam = req.body.action.parameters?.find(p => p.key === 'customEarningOutcome')?.value;
-      const existingOutcomesParam = req.body.action.parameters?.find(p => p.key === 'existingOutcomes')?.value;
+      console.log(
+        "[ADD ACTION] Request Body:",
+        JSON.stringify(req.body, null, 2)
+      );
 
-      const customOutcome = customOutcomeParam?.trim(); // Get trimmed value
-      const existingOutcomes = existingOutcomesParam ? JSON.parse(existingOutcomesParam) : [];
+      // Get parameters from action
+      const params = req.body.action.parameters || [];
+      const customOutcomeParam = params.find(
+        (p) => p.key === "customEarningOutcome"
+      )?.value;
+      const existingOutcomesParam = params.find(
+        (p) => p.key === "existingOutcomes"
+      )?.value;
 
-      console.log('[ADD ACTION] Custom outcome:', customOutcome);
-      console.log('[ADD ACTION] Existing outcomes:', existingOutcomes);
+      // Process values
+      const customOutcome = customOutcomeParam?.trim();
+      const existingOutcomes = existingOutcomesParam
+        ? JSON.parse(existingOutcomesParam)
+        : [];
 
-      if (customOutcome) {
+      console.log("[ADD ACTION] Custom outcome:", customOutcome);
+      console.log("[ADD ACTION] Existing outcomes:", existingOutcomes);
+
+      // Add new outcome if valid
+      if (customOutcome && customOutcome.length > 0) {
         existingOutcomes.push(customOutcome);
-        console.log('[ADD ACTION] Updated outcomes:', existingOutcomes);
+        console.log("[ADD ACTION] Updated outcomes:", existingOutcomes);
       }
 
-      const userName = req.body.user?.displayName || 'User';
+      // Add this in the ADD action handler
+      if (!customOutcome || customOutcome.length === 0) {
+        console.log("[ADD ACTION] Empty custom outcome ignored");
+        return res.json(await createOutcomeCard(userName, existingOutcomes));
+      }
+
+      const userName = req.body.user?.displayName || "User";
       return res.json(await createOutcomeCard(userName, existingOutcomes));
     }
 
     // Handle initial message
-    if (req.body.type === 'MESSAGE') {
-      console.log('[MESSAGE] Handling initial request');
+    if (req.body.type === "MESSAGE") {
+      console.log("[MESSAGE] Handling initial request");
       const email = req.body.message.sender.email;
       const messageText = req.body.message.text?.toLowerCase();
-      
+
       if (!email) {
-        console.log('[ERROR] Missing email in request');
+        console.log("[ERROR] Missing email in request");
         return res.json({ text: "⚠️ Error: Missing email in request." });
       }
 
-      if (messageText === 'progress') {
-        console.log('[PROGRESS] Generating outcome card');
-        const userName = req.body.message.sender.displayName || 'User';
+      if (messageText === "progress") {
+        console.log("[PROGRESS] Generating outcome card");
+        const userName = req.body.message.sender.displayName || "User";
         return res.json(await createOutcomeCard(userName));
       }
     }
@@ -235,20 +297,21 @@ app.post("/", async (req, res) => {
 
     const coinsDifference = 10; // Placeholder
 
-    async function createOutcomeCard(userName,customOutcomes = []) {
+    async function createOutcomeCard(userName, customOutcomes = []) {
       const outcomes = await getUserOutcomes();
 
       // Add any custom outcomes provided in the request
-  if (customOutcomes.length > 0) {
-    outcomes.Earning.push(
-      ...customOutcomes.map((item, index) => ({
-        id: `custom_${index}`, // Assign unique ID for custom outcomes
-        text: item, // Use the entered custom outcome
-        coins: 10, // Default coin value
-      }))
-    );
-  }
- 
+      if (customOutcomes.length > 0) {
+        outcomes.Earning.push(
+          ...customOutcomes.map((item, index) => ({
+            id: `custom_${Date.now()}_${index}`, // Assign unique ID for custom outcomes
+            text: item, // Use the entered custom outcome
+            coins: 10, // Default coin value
+            type: "Earning",
+          }))
+        );
+      }
+
       return {
         cardsV2: [
           {
@@ -263,7 +326,11 @@ app.post("/", async (req, res) => {
                   widgets: [
                     {
                       decoratedText: {
-                        icon:{ iconUrl:"https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png",altText: "Learning icon"},
+                        icon: {
+                          iconUrl:
+                            "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png",
+                          altText: "Learning icon",
+                        },
                         text: `<b><font color='#7A3BBB'>Learning</font></b>`,
                       },
                     },
@@ -274,7 +341,10 @@ app.post("/", async (req, res) => {
                         items: [
                           {
                             text: `${item.text} ⭐ ${item.coins} Coins`,
-                            value: JSON.stringify({ id: item.id, type: "Learning" }),
+                            value: JSON.stringify({
+                              id: item.id,
+                              type: "Learning",
+                            }),
                           },
                         ],
                       },
@@ -286,7 +356,11 @@ app.post("/", async (req, res) => {
                   widgets: [
                     {
                       decoratedText: {
-                        icon:{ iconUrl:"https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Medal+(1).png",altText: "Earning icon"},
+                        icon: {
+                          iconUrl:
+                            "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Medal+(1).png",
+                          altText: "Earning icon",
+                        },
                         text: `<b><font color='#FF6C6C'>Earning</font></b>`,
                       },
                     },
@@ -297,41 +371,44 @@ app.post("/", async (req, res) => {
                         items: [
                           {
                             text: `${item.text} ⭐ ${item.coins} Coins`,
-                            value: JSON.stringify({ id: item.id, type: "Earning" }),
+                            value: JSON.stringify({
+                              id: item.id,
+                              type: "Earning",
+                            }),
                           },
                         ],
                       },
                     })),
                     {
-                  textInput: {
-                    name: "customEarningOutcome",
-                    label: "Add your own Earning outcome"
-                  },
-                },
-                {
-                  buttonList: {
-                    buttons: [
-                      {
-                        text: "ADD",  // ✅ Single submit button at the bottom
-                        onClick: {
-                          action: {
-                            function: "addEarningOutcome",
-                            parameters: [
-                              { 
-                                key: "customEarningOutcome", 
-                                value: "${customEarningOutcome}" // Interpolate input value
+                      textInput: {
+                        name: "customEarningOutcome",
+                        label: "Add your own Earning outcome",
+                      },
+                    },
+                    {
+                      buttonList: {
+                        buttons: [
+                          {
+                            text: "ADD", // ✅ Single submit button at the bottom
+                            onClick: {
+                              action: {
+                                function: "addEarningOutcome",
+                                parameters: [
+                                  {
+                                    key: "customEarningOutcome",
+                                    value: "${customEarningOutcome}",
+                                  },
+                                  {
+                                    key: "existingOutcomes",
+                                    value: JSON.stringify(customOutcomes),
+                                  },
+                                ],
                               },
-                              { 
-                                key: "existingOutcomes", 
-                                value: JSON.stringify(customOutcomes) 
-                              }
-                            ],
-                          }
-                        }                        
-                      }
-                    ]
-                  }
-                }
+                            },
+                          },
+                        ],
+                      },
+                    },
                   ],
                 },
                 // Contribution Section
@@ -339,7 +416,11 @@ app.post("/", async (req, res) => {
                   widgets: [
                     {
                       decoratedText: {
-                        icon:{ iconUrl:"https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Shield+(1).png",altText: "Contribution icon"},
+                        icon: {
+                          iconUrl:
+                            "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Shield+(1).png",
+                          altText: "Contribution icon",
+                        },
                         text: `<b><font color='#3CAF91'>Contribution</font></b>`,
                       },
                     },
@@ -350,7 +431,10 @@ app.post("/", async (req, res) => {
                         items: [
                           {
                             text: `${item.text} ⭐ ${item.coins} Coins`,
-                            value: JSON.stringify({ id: item.id, type: "Contribution" }),
+                            value: JSON.stringify({
+                              id: item.id,
+                              type: "Contribution",
+                            }),
                           },
                         ],
                       },
@@ -387,9 +471,15 @@ app.post("/", async (req, res) => {
           },
         ],
       };
-    }    
+    }
 
-    const responseCard = createGoogleChatCard(userName, totalCoins, coinsDifference, completedBadges, assignedBadges);
+    const responseCard = createGoogleChatCard(
+      userName,
+      totalCoins,
+      coinsDifference,
+      completedBadges,
+      assignedBadges
+    );
     res.json(responseCard);
   } catch (error) {
     console.error("Error processing request:", error);
