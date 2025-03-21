@@ -223,51 +223,32 @@ app.post("/", async (req, res) => {
         console.log("[ADD ACTION] Handling custom outcome addition");
         const userName = req.body.user?.displayName || "User";
 
-        // Directly access form input value
         // Modify the customOutcome access to match Google Chat's structure
         const customOutcome =
-          req.body.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim() ||
           req.body.formInputs?.customEarningOutcome?.stringInput?.value?.trim();
-        // Get existing outcomes from parameters
-        const existingOutcomesParam =
-          req.body.action.parameters?.find((p) => p.key === "existingOutcomes")
-            ?.value || "[]";
-
-        // Modify existing outcomes parsing with error handling
+        // 2. Get existing outcomes with proper error handling
         let existingOutcomes = [];
         try {
-          const existingParam = req.body.action.parameters?.find(
+          const param = req.body.action.parameters.find(
             (p) => p.key === "existingOutcomes"
           )?.value;
-          existingOutcomes = existingParam ? JSON.parse(existingParam) : [];
+          existingOutcomes = param ? JSON.parse(param) : [];
         } catch (e) {
           console.error("Error parsing existing outcomes:", e);
         }
 
         // Add this right after receiving the request
-        console.log(
-          "Full formInputs structure:",
-          JSON.stringify(req.body.formInputs, null, 2)
-        );
-        console.log(
-          "Action parameters:",
-          JSON.stringify(req.body.action?.parameters, null, 2)
-        );
+        console.log("Full request body:", JSON.stringify({
+          formInputs: req.body.formInputs,
+          actionParams: req.body.action.parameters,
+          customOutcome,
+          existingOutcomes
+        }, null, 2));
 
-        console.log("[DEBUG] Custom Outcome:", customOutcome);
-        console.log("[DEBUG] Existing Outcomes:", existingOutcomes);
-
-        // Validate custom outcome
-        // Modify validation check
-        if (
-          !customOutcome ||
-          (typeof customOutcome === "string" && customOutcome.startsWith("${"))
-        ) {
-          console.log("[INVALID INPUT] Returning current state");
+        if (!customOutcome) {
           return res.json({
-            text: "⚠️ Please enter a valid outcome before clicking ADD",
-            cardsV2: (await createOutcomeCard(userName, existingOutcomes))
-              .cardsV2,
+            text: "❌ Please type an outcome before clicking ADD",
+            cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2
           });
         }
 
@@ -415,6 +396,8 @@ app.post("/", async (req, res) => {
                       textInput: {
                         name: "customEarningOutcome",
                         label: "Add your own Earning outcome",
+                        type: "SINGLE_LINE", // Add explicit type
+                        value: "" // Initialize with empty value
                       },
                     },
                     {
@@ -428,9 +411,8 @@ app.post("/", async (req, res) => {
                                 parameters: [
                                   {
                                     key: "existingOutcomes",
-                                    // Use spread operator to ensure fresh array
-                                    value: JSON.stringify([...customOutcomes])
-                                  }
+                                    value: JSON.stringify(customOutcomes),
+                                  },
                                 ],
                               },
                             },
