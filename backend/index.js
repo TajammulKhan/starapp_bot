@@ -169,16 +169,18 @@ app.post("/", async (req, res) => {
     if (req.body.type === 'CARD_CLICKED' && req.body.action.actionMethodName === 'addEarningOutcome') {
       console.log('[ADD ACTION] Handling custom outcome addition');
       
-      const customOutcome = req.body.action.parameters?.find(p => p.key === 'customEarningOutcome')?.value;
-      const existingOutcomes = JSON.parse(
-        req.body.action.parameters?.find(p => p.key === 'existingOutcomes')?.value || '[]'
-      );
+      // Get existing outcomes from parameters
+      const existingOutcomesParam = req.body.action.parameters?.find(p => p.key === 'existingOutcomes')?.value;
+      const existingOutcomes = existingOutcomesParam ? JSON.parse(existingOutcomesParam) : [];
+  
+      // Get custom outcome from form inputs
+      const customOutcome = req.body.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
 
       console.log('[ADD ACTION] Existing outcomes:', existingOutcomes);
       console.log('[ADD ACTION] New custom outcome:', customOutcome);
 
-      if (customOutcome && customOutcome.trim()) {
-        existingOutcomes.push(customOutcome.trim());
+      if (customOutcome) {
+        existingOutcomes.push(customOutcome);
         console.log('[ADD ACTION] Updated outcomes:', existingOutcomes);
       }
 
@@ -312,10 +314,6 @@ app.post("/", async (req, res) => {
                           action: {
                             function: "addEarningOutcome",
                             parameters: [
-                              { 
-                                key: "customEarningOutcome", 
-                                value: "${customEarningOutcome}" // Corrected template syntax
-                              },
                               { 
                                 key: "existingOutcomes", 
                                 value: JSON.stringify(customOutcomes) 
