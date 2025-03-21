@@ -206,12 +206,6 @@ app.post("/", async (req, res) => {
   try {
     console.log("[RAW REQUEST]", JSON.stringify(req.body, null, 2));
 
-    // In ADD action handler
-    if (!customOutcome || customOutcome.startsWith("${")) {
-      console.log("[INVALID INPUT] Ignoring placeholder value");
-      return res.json(await createOutcomeCard(userName, existingOutcomes));
-    }
-
     // Handle ADD action first
     if (
       req.body.type === "CARD_CLICKED" &&
@@ -238,6 +232,12 @@ app.post("/", async (req, res) => {
 
       console.log("[RAW CUSTOM OUTCOME]", customOutcome);
       console.log("[EXISTING OUTCOMES]", existingOutcomes);
+
+      // In ADD action handler
+      if (!customOutcome || customOutcome.startsWith("${")) {
+        console.log("[INVALID INPUT] Ignoring placeholder value");
+        return res.json(await createOutcomeCard(userName, existingOutcomes));
+      }
 
       // Add new outcome if valid
       if (customOutcome && customOutcome.length > 0) {
