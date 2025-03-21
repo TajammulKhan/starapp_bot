@@ -190,17 +190,16 @@ function createGoogleChatCard(
 }
 
 // Middleware for Logging Requests
-// Error handling middleware
-// Add before your main handler
-app.use("/interactive", (req, res, next) => {
-  if (req.body.type === "CARD_CLICKED") {
-    if (!req.body.action?.parameters?.length) {
-      return res.status(400).json({
-        text: "Invalid request parameters",
-        cardsV2: [],
-      });
-    }
-  }
+app.use(
+  express.json({
+    verify: (req, res, buf) => {
+      req.rawBody = buf.toString();
+    },
+  })
+);
+
+app.use((req, res, next) => {
+  console.log("Raw Request Body:", req.rawBody);
   next();
 });
 
@@ -224,6 +223,7 @@ app.post("/", async (req, res) => {
         const userName = req.body.user?.displayName || "User";
 
         // 1. Get the text input value using Google Chat's actual structure
+        // In the ADD action handler
         const customOutcome =
           req.body.formInputs?.customEarningOutcome?.stringInput?.value?.trim();
 
@@ -235,7 +235,7 @@ app.post("/", async (req, res) => {
           )?.value;
           existingOutcomes = param ? JSON.parse(param) : [];
         } catch (e) {
-          console.error("Error parsing existing outcomes:", e);
+          console.error("Parameter parsing error:", e);
         }
 
         // 3. Add debug logging
@@ -255,10 +255,10 @@ app.post("/", async (req, res) => {
 
         // 4. Validate input
         if (!customOutcome) {
+          console.log("[INVALID INPUT] Returning current state");
           return res.json({
             text: "⚠️ Please type an outcome before clicking ADD",
-            cardsV2: (await createOutcomeCard(userName, existingOutcomes))
-              .cardsV2,
+            cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2
           });
         }
 
@@ -324,16 +324,16 @@ app.post("/", async (req, res) => {
       const outcomes = await getUserOutcomes();
 
       // In createOutcomeCard function
+      // In createOutcomeCard function
       if (customOutcomes.length > 0) {
-        outcomes.Earning = [
-          ...outcomes.Earning,
-          ...customOutcomes.map((text, index) => ({
-            id: `custom_${index}_${Date.now()}`,
+        outcomes.Earning = outcomes.Earning.concat(
+          customOutcomes.map((text, index) => ({
+            id: `custom_${Date.now()}_${index}`,
             text: text,
             coins: 10,
             type: "Earning",
-          })),
-        ];
+          }))
+        );
       }
 
       return {
