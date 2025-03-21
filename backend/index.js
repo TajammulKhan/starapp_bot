@@ -190,10 +190,13 @@ function createGoogleChatCard(
 }
 
 // Middleware for Logging Requests
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  console.log("Request Body:", JSON.stringify(req.body, null, 2));
-  next();
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Global Error Handler:', err.stack);
+  res.status(500).json({
+    text: "⚠️ Something went wrong! Please try again.",
+    cardsV2: []  // Ensure Google Chat compatibility
+  });
 });
 
 // Default Route
@@ -226,12 +229,12 @@ app.post("/", async (req, res) => {
       const existingOutcomesParam = req.body.action.parameters?.find(
         (p) => p.key === "existingOutcomes"
       )?.value;
-      const existingOutcomes = existingOutcomesParam
+      let existingOutcomes = existingOutcomesParam
         ? JSON.parse(existingOutcomesParam)
         : [];
 
-      console.log("[RAW CUSTOM OUTCOME]", customOutcome);
-      console.log("[EXISTING OUTCOMES]", existingOutcomes);
+        console.log('[DEBUG] Raw custom outcome:', customOutcome);
+        console.log('[DEBUG] Existing outcomes:', existingOutcomes);      
 
       // In ADD action handler
       if (!customOutcome || customOutcome.startsWith("${")) {
@@ -240,9 +243,9 @@ app.post("/", async (req, res) => {
       }
 
       // Add new outcome if valid
-      if (customOutcome && customOutcome.length > 0) {
-        existingOutcomes.push(customOutcome);
-        console.log("Updated outcomes:", existingOutcomes);
+      if (customOutcome) {
+        existingOutcomes = [...existingOutcomes, customOutcome];
+        console.log('[UPDATED OUTCOMES]', existingOutcomes);
       }
 
       const userName = req.body.user?.displayName || "User";
@@ -300,7 +303,7 @@ app.post("/", async (req, res) => {
       if (customOutcomes.length > 0) {
         outcomes.Earning.push(
           ...customOutcomes.map((item, index) => ({
-            id: `custom_${index}`, // Assign unique ID for custom outcomes
+            id: `custom_${index}_${Date.now()}`,  // Unique ID
             text: item, // Use the entered custom outcome
             coins: 10, // Default coin value
             type: "Earning",
@@ -392,7 +395,7 @@ app.post("/", async (req, res) => {
                                 parameters: [
                                   {
                                     key: "existingOutcomes",
-                                    value: JSON.stringify(customOutcomes),
+                                    value: JSON.stringify(customOutcomes)
                                   },
                                 ],
                               },
