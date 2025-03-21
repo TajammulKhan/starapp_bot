@@ -223,10 +223,11 @@ app.post("/", async (req, res) => {
         console.log("[ADD ACTION] Handling custom outcome addition");
         const userName = req.body.user?.displayName || "User";
 
-        // Modify the customOutcome access to match Google Chat's structure
+        // 1. Get the text input value using Google Chat's actual structure
         const customOutcome =
           req.body.formInputs?.customEarningOutcome?.stringInput?.value?.trim();
-        // 2. Get existing outcomes with proper error handling
+
+        // 2. Get existing outcomes from parameters
         let existingOutcomes = [];
         try {
           const param = req.body.action.parameters.find(
@@ -237,30 +238,39 @@ app.post("/", async (req, res) => {
           console.error("Error parsing existing outcomes:", e);
         }
 
-        // Add this right after receiving the request
-        console.log("Full request body:", JSON.stringify({
-          formInputs: req.body.formInputs,
-          actionParams: req.body.action.parameters,
-          customOutcome,
-          existingOutcomes
-        }, null, 2));
+        // 3. Add debug logging
+        console.log(
+          "Full request structure:",
+          JSON.stringify(
+            {
+              formInputs: req.body.formInputs,
+              actionParameters: req.body.action.parameters,
+              customOutcome,
+              existingOutcomes,
+            },
+            null,
+            2
+          )
+        );
 
+        // 4. Validate input
         if (!customOutcome) {
           return res.json({
-            text: "❌ Please type an outcome before clicking ADD",
-            cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2
+            text: "⚠️ Please type an outcome before clicking ADD",
+            cardsV2: (await createOutcomeCard(userName, existingOutcomes))
+              .cardsV2,
           });
         }
 
-        // Update outcomes
+        // 5. Update outcomes
         const updatedOutcomes = [...existingOutcomes, customOutcome];
-        console.log("[UPDATED OUTCOMES]", updatedOutcomes);
+        console.log("[SUCCESS] New outcomes:", updatedOutcomes);
 
         return res.json(await createOutcomeCard(userName, updatedOutcomes));
       } catch (error) {
         console.error("ADD ACTION ERROR:", error);
         return res.json({
-          text: "⚠️ Failed to add outcome. Please try again.",
+          text: "⚠️ Something went wrong. Please try again.",
           cardsV2: (await createOutcomeCard("User", [])).cardsV2,
         });
       }
@@ -397,7 +407,7 @@ app.post("/", async (req, res) => {
                         name: "customEarningOutcome",
                         label: "Add your own Earning outcome",
                         type: "SINGLE_LINE", // Add explicit type
-                        value: "" // Initialize with empty value
+                        value: "", // Initialize with empty value
                       },
                     },
                     {
