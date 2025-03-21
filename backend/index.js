@@ -252,10 +252,6 @@ app.post("/", async (req, res) => {
       return res.json(await createOutcomeCard(userName, existingOutcomes));
     }
 
-    console.log('[FINAL CARD DATA]', 
-      JSON.stringify(await createOutcomeCard(userName, existingOutcomes), null, 2)
-    );
-
     // Handle initial message
     if (req.body.type === "MESSAGE") {
       console.log("[MESSAGE] Handling initial request");
