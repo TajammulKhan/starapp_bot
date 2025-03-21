@@ -224,23 +224,51 @@ app.post("/", async (req, res) => {
         const userName = req.body.user?.displayName || "User";
 
         // Directly access form input value
+        // Modify the customOutcome access to match Google Chat's structure
         const customOutcome =
-          req.body.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
-
+          req.body.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim() ||
+          req.body.formInputs?.customEarningOutcome?.stringInput?.value?.trim();
         // Get existing outcomes from parameters
         const existingOutcomesParam =
           req.body.action.parameters?.find((p) => p.key === "existingOutcomes")
             ?.value || "[]";
 
-        const existingOutcomes = JSON.parse(existingOutcomesParam);
+        // Modify existing outcomes parsing with error handling
+        let existingOutcomes = [];
+        try {
+          const existingParam = req.body.action.parameters?.find(
+            (p) => p.key === "existingOutcomes"
+          )?.value;
+          existingOutcomes = existingParam ? JSON.parse(existingParam) : [];
+        } catch (e) {
+          console.error("Error parsing existing outcomes:", e);
+        }
+
+        // Add this right after receiving the request
+        console.log(
+          "Full formInputs structure:",
+          JSON.stringify(req.body.formInputs, null, 2)
+        );
+        console.log(
+          "Action parameters:",
+          JSON.stringify(req.body.action?.parameters, null, 2)
+        );
 
         console.log("[DEBUG] Custom Outcome:", customOutcome);
         console.log("[DEBUG] Existing Outcomes:", existingOutcomes);
 
         // Validate custom outcome
-        if (!customOutcome || customOutcome.startsWith("${")) {
+        // Modify validation check
+        if (
+          !customOutcome ||
+          (typeof customOutcome === "string" && customOutcome.startsWith("${"))
+        ) {
           console.log("[INVALID INPUT] Returning current state");
-          return res.json(await createOutcomeCard(userName, existingOutcomes));
+          return res.json({
+            text: "⚠️ Please enter a valid outcome before clicking ADD",
+            cardsV2: (await createOutcomeCard(userName, existingOutcomes))
+              .cardsV2,
+          });
         }
 
         // Update outcomes
@@ -304,13 +332,12 @@ app.post("/", async (req, res) => {
     async function createOutcomeCard(userName, customOutcomes = []) {
       const outcomes = await getUserOutcomes();
 
-      // Add any custom outcomes provided in the request
       // In createOutcomeCard function
       if (customOutcomes.length > 0) {
         outcomes.Earning = [
           ...outcomes.Earning,
           ...customOutcomes.map((text, index) => ({
-            id: `custom_${Date.now()}_${index}`,
+            id: `custom_${index}_${Date.now()}`,
             text: text,
             coins: 10,
             type: "Earning",
@@ -401,8 +428,9 @@ app.post("/", async (req, res) => {
                                 parameters: [
                                   {
                                     key: "existingOutcomes",
-                                    value: JSON.stringify(customOutcomes),
-                                  },
+                                    // Use spread operator to ensure fresh array
+                                    value: JSON.stringify([...customOutcomes])
+                                  }
                                 ],
                               },
                             },
