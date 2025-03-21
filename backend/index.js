@@ -192,12 +192,12 @@ function createGoogleChatCard(
 // Middleware for Logging Requests
 // Error handling middleware
 // Add before your main handler
-app.use('/interactive', (req, res, next) => {
-  if (req.body.type === 'CARD_CLICKED') {
+app.use("/interactive", (req, res, next) => {
+  if (req.body.type === "CARD_CLICKED") {
     if (!req.body.action?.parameters?.length) {
       return res.status(400).json({
         text: "Invalid request parameters",
-        cardsV2: []
+        cardsV2: [],
       });
     }
   }
@@ -223,31 +223,19 @@ app.post("/", async (req, res) => {
         console.log("[ADD ACTION] Handling custom outcome addition");
         const userName = req.body.user?.displayName || "User";
 
-        // Validate request structure
-        if (!req.body.action?.parameters) {
-          console.error("Invalid parameters structure");
-          return res.json({
-            text: "⚠️ Invalid request format",
-            cardsV2: (await createOutcomeCard(userName, [])).cardsV2,
-          });
-        }
+        // Directly access form input value
+        const customOutcome =
+          req.body.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
 
-        // Parse parameters
-        const params = req.body.action.parameters.reduce((acc, param) => {
-          acc[param.key] = param.value;
-          return acc;
-        }, {});
+        // Get existing outcomes from parameters
+        const existingOutcomesParam =
+          req.body.action.parameters?.find((p) => p.key === "existingOutcomes")
+            ?.value || "[]";
 
-        const existingOutcomes = params.existingOutcomes
-          ? JSON.parse(params.existingOutcomes)
-          : [];
+        const existingOutcomes = JSON.parse(existingOutcomesParam);
 
-        const customOutcome = params.newOutcome?.trim();
-
-        console.log("[DEBUG] Received values:", {
-          existingOutcomes,
-          customOutcome,
-        });
+        console.log("[DEBUG] Custom Outcome:", customOutcome);
+        console.log("[DEBUG] Existing Outcomes:", existingOutcomes);
 
         // Validate custom outcome
         if (!customOutcome || customOutcome.startsWith("${")) {
@@ -414,10 +402,6 @@ app.post("/", async (req, res) => {
                                   {
                                     key: "existingOutcomes",
                                     value: JSON.stringify(customOutcomes),
-                                  },
-                                  {
-                                    key: "newOutcome",
-                                    value: "${formInputs.customEarningOutcome}",
                                   },
                                 ],
                               },
