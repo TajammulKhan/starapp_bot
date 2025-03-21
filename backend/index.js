@@ -219,23 +219,22 @@ app.post("/", async (req, res) => {
         JSON.stringify(req.body, null, 2)
       );
 
-      // Get parameters from action
-      const params = req.body.action.parameters || [];
-      const customOutcomeParam = params.find(
-        (p) => p.key === "customEarningOutcome"
-      )?.value;
-      const existingOutcomesParam = params.find(
-        (p) => p.key === "existingOutcomes"
-      )?.value;
+      // 1. Get parameters from action
+  const params = req.body.action.parameters || [];
+  const customOutcomeParam = params.find(p => p.key === 'customEarningOutcome')?.value;
+  const existingOutcomesParam = params.find(p => p.key === 'existingOutcomes')?.value;
 
-      // Process values
-      const customOutcome = customOutcomeParam?.trim();
-      const existingOutcomes = existingOutcomesParam
-        ? JSON.parse(existingOutcomesParam)
-        : [];
+  // 2. Get form input value (fallback method)
+  const formInputValue = req.body.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
 
-      console.log("[ADD ACTION] Custom outcome:", customOutcome);
-      console.log("[ADD ACTION] Existing outcomes:", existingOutcomes);
+  // 3. Priority: Form Input > Parameter
+  const customOutcome = formInputValue || customOutcomeParam?.trim();
+  
+  // 4. Process existing outcomes
+  const existingOutcomes = existingOutcomesParam ? JSON.parse(existingOutcomesParam) : [];
+
+  console.log('[DEBUG] Custom outcome:', customOutcome);
+  console.log('[DEBUG] Existing outcomes:', existingOutcomes);
 
       // Add new outcome if valid
       if (customOutcome && customOutcome.length > 0) {
@@ -252,6 +251,10 @@ app.post("/", async (req, res) => {
       const userName = req.body.user?.displayName || "User";
       return res.json(await createOutcomeCard(userName, existingOutcomes));
     }
+
+    console.log('[FINAL CARD DATA]', 
+      JSON.stringify(await createOutcomeCard(userName, existingOutcomes), null, 2)
+    );
 
     // Handle initial message
     if (req.body.type === "MESSAGE") {
@@ -394,9 +397,9 @@ app.post("/", async (req, res) => {
                               action: {
                                 function: "addEarningOutcome",
                                 parameters: [
-                                  {
+                                  { 
                                     key: "customEarningOutcome",
-                                    value: "${customEarningOutcome}",
+                                    value: "${formInputs.customEarningOutcome}"
                                   },
                                   {
                                     key: "existingOutcomes",
