@@ -274,7 +274,6 @@ app.post("/", async (req, res) => {
           type: "Earning"
         })));
       }
-      }
 
       return {
         cardsV2: [
