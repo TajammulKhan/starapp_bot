@@ -214,90 +214,36 @@ app.post("/", async (req, res) => {
     console.log("[RAW REQUEST]", JSON.stringify(req.body, null, 2));
 
     // Handle ADD action first
-    if (
-      req.body.type === "CARD_CLICKED" &&
-      req.body.action.actionMethodName === "addEarningOutcome"
-    ) {
-      try {
-        console.log("[ADD ACTION] Handling custom outcome addition");
-        const userName = req.body.user?.displayName || "User";
-
-        // 1. Get the text input value using Google Chat's actual structure
-        // In the ADD action handler
-        const customOutcome =
-          req.body.formInputs?.customEarningOutcome?.stringInput?.value?.trim();
-
-        // 2. Get existing outcomes from parameters
-        let existingOutcomes = [];
-        try {
-          const param = req.body.action.parameters.find(
-            (p) => p.key === "existingOutcomes"
-          )?.value;
-          existingOutcomes = param ? JSON.parse(param) : [];
-        } catch (e) {
-          console.error("Parameter parsing error:", e);
-        }
-
-        // 3. Add debug logging
-        console.log(
-          "Full request structure:",
-          JSON.stringify(
-            {
-              formInputs: req.body.formInputs,
-              actionParameters: req.body.action.parameters,
-              customOutcome,
-              existingOutcomes,
-            },
-            null,
-            2
-          )
-        );
-
-        // 4. Validate input
-        if (!customOutcome) {
-          console.log("[INVALID INPUT] Returning current state");
-          return res.json({
-            text: "⚠️ Please type an outcome before clicking ADD",
-            cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2
-          });
-        }
-
-        // 5. Update outcomes
-        const updatedOutcomes = [...existingOutcomes, customOutcome];
-        console.log("[SUCCESS] New outcomes:", updatedOutcomes);
-
-        return res.json(await createOutcomeCard(userName, updatedOutcomes));
-      } catch (error) {
-        console.error("ADD ACTION ERROR:", error);
+    if (req.body.type === 'CARD_CLICKED' && req.body.action.actionMethodName === 'addEarningOutcome') {
+      const userName = req.body.user?.displayName || 'User';
+      
+      // 1. Retrieve the custom outcome from formInputs (correct path)
+      const customOutcome = req.body.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
+      
+      // 2. Get existing outcomes from action parameters
+      const existingParam = req.body.action.parameters.find(p => p.key === 'existingOutcomes');
+      const existingOutcomes = existingParam ? JSON.parse(existingParam.value) : [];
+      
+      // 3. Validate and update outcomes
+      if (!customOutcome) {
         return res.json({
-          text: "⚠️ Something went wrong. Please try again.",
-          cardsV2: (await createOutcomeCard("User", [])).cardsV2,
+          text: "⚠️ Please enter an outcome before clicking ADD.",
+          cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2
         });
       }
+      existingOutcomes.push(customOutcome);
+      
+      // 4. Return updated card
+      return res.json(await createOutcomeCard(userName, existingOutcomes));
     }
 
-    // Handle initial message
-    if (req.body.type === "MESSAGE") {
-      console.log("[MESSAGE] Handling initial request");
-      const email = req.body.message.sender.email;
-      const messageText = req.body.message.text?.toLowerCase();
-
-      if (!email) {
-        console.log("[ERROR] Missing email in request");
-        return res.json({ text: "⚠️ Error: Missing email in request." });
-      }
-
-      if (messageText === "progress") {
-        console.log("[PROGRESS] Generating outcome card");
-        const userName = req.body.message.sender.displayName || "User";
-        return res.json(await createOutcomeCard(userName));
-      }
+    // Handle initial 'progress' message
+    if (req.body.type === 'MESSAGE' && req.body.message.text?.toLowerCase() === 'progress') {
+      const userName = req.body.message.sender.displayName || 'User';
+      return res.json(await createOutcomeCard(userName));
     }
 
     const email = req.body.user?.email || req.body.message?.sender?.email;
-    if (!email) {
-      return res.json({ text: "⚠️ Error: Missing email in request." });
-    }
 
     const messageText = req.body.message?.text?.toLowerCase();
     const userName = req.body?.message?.sender?.displayName || "User";
@@ -307,10 +253,6 @@ app.post("/", async (req, res) => {
     }
     console.log(`Fetching user ID for email: ${email}`);
     const userId = await getUserIdByEmail(email);
-
-    if (!userId) {
-      return res.json({ text: `⚠️ Error: No user found for email ${email}` });
-    }
 
     console.log(`Fetching total coins for user ID: ${userId}`);
     const totalCoins = await getTotalCoins(userId);
@@ -323,17 +265,15 @@ app.post("/", async (req, res) => {
     async function createOutcomeCard(userName, customOutcomes = []) {
       const outcomes = await getUserOutcomes();
 
-      // In createOutcomeCard function
-      // In createOutcomeCard function
+      // Merge custom outcomes into Earning section
       if (customOutcomes.length > 0) {
-        outcomes.Earning = outcomes.Earning.concat(
-          customOutcomes.map((text, index) => ({
-            id: `custom_${Date.now()}_${index}`,
-            text: text,
-            coins: 10,
-            type: "Earning",
-          }))
-        );
+        outcomes.Earning.push(...customOutcomes.map((text, index) => ({
+          id: `custom_${Date.now()}_${index}`, // Unique ID
+          text: text,
+          coins: 10,
+          type: "Earning"
+        })));
+      }
       }
 
       return {
@@ -390,24 +330,18 @@ app.post("/", async (req, res) => {
                     },
                     ...outcomes.Earning.map((item) => ({
                       selectionInput: {
-                        name: `earning_${item.id}`,
-                        label: item.text,
+                        name: "selectedOutcomes",
                         type: "CHECK_BOX",
-                        items: [
-                          {
-                            text: `${item.text} ⭐ ${item.coins} Coins`,
-                            value: JSON.stringify(item),
-                            selected: false,
-                          },
-                        ],
-                      },
+                        items: [{
+                          text: `${item.text} ⭐ ${item.coins} Coins`,
+                          value: JSON.stringify({ id: item.id, type: item.type })
+                        }]
+                      }
                     })),
                     {
                       textInput: {
                         name: "customEarningOutcome",
-                        label: "Add your own Earning outcome",
-                        type: "SINGLE_LINE", // Add explicit type
-                        value: "", // Initialize with empty value
+                        label: "Add your own Earning outcome"
                       },
                     },
                     {
@@ -421,7 +355,7 @@ app.post("/", async (req, res) => {
                                 parameters: [
                                   {
                                     key: "existingOutcomes",
-                                    value: JSON.stringify(customOutcomes),
+                                    value: JSON.stringify(customOutcomes)
                                   },
                                 ],
                               },
