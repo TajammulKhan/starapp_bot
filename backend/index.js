@@ -202,37 +202,12 @@ function createOutcomeConfirmationCard(userName, outcomeCount) {
               widgets: [
                 {
                   textParagraph: {
-                    text: `<b><font color='#D4A017' size='14'>" Stars don’t shine without darkness.<br> Embrace the journey and illuminate your path! "</font></b>`,
-                  },
-                },
-              ],
-            },
-            {
-              widgets: [
-                {
-                  textParagraph: {
                     text: `You've selected ${outcomeCount} outcomes to complete today.`,
                   },
                 },
                 {
                   textParagraph: {
                     text: "<i>All the best! Have a great day ahead!</i> 🌟",
-                  },
-                },
-              ],
-            },
-            {
-              widgets: [
-                {
-                  buttonList: {
-                    buttons: [
-                      {
-                        text: "Go to Star App →",
-                        onClick: {
-                          openLink: { url: "https://starapp.example.com" },
-                        },
-                      },
-                    ],
                   },
                 },
               ],
