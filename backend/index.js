@@ -283,7 +283,7 @@ app.post("/", async (req, res) => {
                       type: "CHECK_BOX",
                       items: [
                         {
-                          text: `${item.text} ⭐ ${item.coins} Coins`,
+                          text: `${item.text} ⭐ ${item.coins}`,
                           value: JSON.stringify({
                             id: item.id,
                             type: "Learning",
@@ -313,7 +313,7 @@ app.post("/", async (req, res) => {
                       type: "CHECK_BOX",
                       items: [
                         {
-                          text: `${item.text} ⭐ ${item.coins} Coins`,
+                          text: `${item.text} ⭐ ${item.coins}`,
                           value: JSON.stringify({
                             id: item.id,
                             type: item.type,
@@ -373,7 +373,7 @@ app.post("/", async (req, res) => {
                       type: "CHECK_BOX",
                       items: [
                         {
-                          text: `${item.text} ⭐ ${item.coins} Coins`,
+                          text: `${item.text} ⭐ ${item.coins}`,
                           value: JSON.stringify({
                             id: item.id,
                             type: "Contribution",
