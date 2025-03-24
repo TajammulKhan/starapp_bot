@@ -389,7 +389,7 @@ app.post("/", async (req, res) => {
       const userName = req.body.user?.displayName || 'User';
       
       // 1. Retrieve the custom outcome from formInputs (correct path)
-      const customOutcome = req.body.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
+      const customOutcome = req.body.common?.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
       
       // 2. Get existing outcomes from action parameters
       const existingParam = req.body.action.parameters.find(p => p.key === 'existingOutcomes');
