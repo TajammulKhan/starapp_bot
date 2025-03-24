@@ -189,6 +189,61 @@ function createGoogleChatCard(
   };
 }
 
+// Add this new function after createGoogleChatCard
+function createOutcomeConfirmationCard(userName, outcomeCount) {
+  return {
+    cardsV2: [
+      {
+        cardId: "outcome-confirmation-card",
+        card: {
+          header: { title: `Great, ${userName}!` },
+          sections: [
+            {
+              widgets: [
+                {
+                  textParagraph: {
+                    text: `<b><font color='#D4A017' size='14'>" Stars don’t shine without darkness.<br> Embrace the journey and illuminate your path! "</font></b>`,
+                  },
+                },
+              ],
+            },
+            {
+              widgets: [
+                {
+                  textParagraph: {
+                    text: `You've selected ${outcomeCount} outcomes to complete today.`,
+                  },
+                },
+                {
+                  textParagraph: {
+                    text: "<i>All the best! Have a great day ahead!</i> 🌟",
+                  },
+                },
+              ],
+            },
+            {
+              widgets: [
+                {
+                  buttonList: {
+                    buttons: [
+                      {
+                        text: "Go to Star App →",
+                        onClick: {
+                          openLink: { url: "https://starapp.example.com" },
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ],
+  };
+}
+
 // Middleware for Logging Requests
 app.use(
   express.json({
@@ -424,6 +479,7 @@ app.post("/", async (req, res) => {
         cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2,
       });
     }
+    
 
     // Handle initial 'progress' message
     if (
@@ -436,8 +492,14 @@ app.post("/", async (req, res) => {
 
     const email = req.body.user?.email || req.body.message?.sender?.email;
 
-    const messageText = req.body.message?.text?.toLowerCase();
+    const messageText = req.body.message?.text?.toLowerCase().trim();
     const userName = req.body?.message?.sender?.displayName || "User";
+
+    // Handle "outcomes" command
+    if (messageText === "outcomes") {
+      const outcomeCount = 5; // Replace with actual count from DB
+      return res.json(createOutcomeConfirmationCard(userName, outcomeCount));
+    }
     if (messageText === "progress") {
       const outcomeCard = await createOutcomeCard(userName);
       return res.json(outcomeCard);
