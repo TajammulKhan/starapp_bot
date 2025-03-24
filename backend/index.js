@@ -281,16 +281,21 @@ app.post("/", async (req, res) => {
                     selectionInput: {
                       name: "selectedOutcomes",
                       type: "CHECK_BOX",
-                      items: [{
-                        text: `${item.text} ⭐ ${item.coins} Coins`,
-                        value: JSON.stringify({ id: item.id, type: item.type })
-                      }]
-                    }
+                      items: [
+                        {
+                          text: `${item.text} ⭐ ${item.coins} Coins`,
+                          value: JSON.stringify({
+                            id: item.id,
+                            type: item.type,
+                          }),
+                        },
+                      ],
+                    },
                   })),
                   {
                     textInput: {
                       name: "customEarningOutcome",
-                      label: "Add your own Earning outcome"
+                      label: "Add your own Earning outcome",
                     },
                   },
                   {
@@ -304,7 +309,7 @@ app.post("/", async (req, res) => {
                               parameters: [
                                 { 
                                   key: "customEarningOutcome", 
-                                  value: "${customEarningOutcome.stringInputs.value}" // Corrected template syntax
+                                  value: "${formInputs.customEarningOutcome}"
                                 },
                                 { 
                                   key: "existingOutcomes", 
@@ -385,32 +390,47 @@ app.post("/", async (req, res) => {
     console.log("[RAW REQUEST]", JSON.stringify(req.body, null, 2));
 
     // Handle ADD action first
-    if (req.body.type === 'CARD_CLICKED' && req.body.action.actionMethodName === 'addEarningOutcome') {
-      const userName = req.body.user?.displayName || 'User';
-      
+    if (
+      req.body.type === "CARD_CLICKED" &&
+      req.body.action.actionMethodName === "addEarningOutcome"
+    ) {
+      const userName = req.body.user?.displayName || "User";
+
       // 1. Retrieve the custom outcome from formInputs (correct path)
-      const customOutcome = req.body.common?.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
-      
+      const customOutcome =
+        req.body.common?.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
+
       // 2. Get existing outcomes from action parameters
-      const existingParam = req.body.action.parameters.find(p => p.key === 'existingOutcomes');
-      const existingOutcomes = existingParam ? JSON.parse(existingParam.value) : [];
-      
+      const existingParam = req.body.action.parameters.find(
+        (p) => p.key === "existingOutcomes"
+      );
+      const existingOutcomes = existingParam
+        ? JSON.parse(existingParam.value)
+        : [];
+
       // 3. Validate and update outcomes
       if (!customOutcome) {
         return res.json({
           text: "⚠️ Please enter an outcome before clicking ADD.",
-          cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2,
+          cardsV2: (await createOutcomeCard(userName, existingOutcomes))
+            .cardsV2,
         });
       }
       existingOutcomes.push(customOutcome);
-      
-      // 4. Return updated card
-      return res.json(await createOutcomeCard(userName, existingOutcomes));
+
+      // 4. Return updated card as message update
+      return res.json({
+        actionResponse: { type: "UPDATE_MESSAGE" }, // This is the critical change
+        cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2,
+      });
     }
 
     // Handle initial 'progress' message
-    if (req.body.type === 'MESSAGE' && req.body.message.text?.toLowerCase() === 'progress') {
-      const userName = req.body.message.sender.displayName || 'User';
+    if (
+      req.body.type === "MESSAGE" &&
+      req.body.message.text?.toLowerCase() === "progress"
+    ) {
+      const userName = req.body.message.sender.displayName || "User";
       return res.json(await createOutcomeCard(userName));
     }
 
