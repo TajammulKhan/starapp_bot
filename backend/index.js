@@ -202,12 +202,12 @@ function createOutcomeConfirmationCard(userName, outcomeCount) {
               widgets: [
                 {
                   textParagraph: {
-                    text: `You've selected ${outcomeCount} outcomes to complete today.`,
+                    text: `You've selected <b>${outcomeCount}</b> outcomes to complete today.`,
                   },
                 },
                 {
                   textParagraph: {
-                    text: "<i>All the best! Have a great day ahead!</i> 🌟",
+                    text: "<b>All the best! Have a great day ahead!</b>",
                   },
                 },
               ],
