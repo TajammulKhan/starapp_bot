@@ -302,11 +302,15 @@ app.post("/", async (req, res) => {
                             action: {
                               function: "addEarningOutcome",
                               parameters: [
-                                {
-                                  key: "existingOutcomes",
-                                  value: JSON.stringify(customOutcomes),
+                                { 
+                                  key: "customEarningOutcome", 
+                                  value: "${customEarningOutcome.stringInputs.value}" // Corrected template syntax
                                 },
-                              ],
+                                { 
+                                  key: "existingOutcomes", 
+                                  value: JSON.stringify(customOutcomes) 
+                                }
+                              ],  
                             },
                           },
                         },
