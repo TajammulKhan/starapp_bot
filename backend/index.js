@@ -258,276 +258,296 @@ app.get("/", (req, res) => {
 
 // Handle Google Chat Webhook Requests
 
-  async function createOutcomeCard(userName, customOutcomes = []) {
-    const outcomes = await getUserOutcomes();
+async function createOutcomeCard(userName, customOutcomes = []) {
+  const outcomes = await getUserOutcomes();
 
-    // Merge custom outcomes into Earning section
-    if (customOutcomes.length > 0) {
-      outcomes.Earning.push(
-        ...customOutcomes.map((text) => ({
-          id: `custom_${Date.now()}`,
-          text: text,
-          coins: 10,
-          type: "Earning",
-        }))
-      );
-    }
-
-    return {
-      cardsV2: [
-        {
-          cardId: "outcome-card",
-          card: {
-            header: {
-              title: `Set your outcomes for the day`,
-            },
-            sections: [
-              // Learning Section
-              {
-                widgets: [
-                  {
-                    decoratedText: {
-                      icon: {
-                        iconUrl:
-                          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png",
-                        altText: "Learning icon",
-                      },
-                      text: `<b><font color='#7A3BBB'>Learning</font></b>`,
-                    },
-                  },
-                  ...outcomes.Learning.map((item) => ({
-                    selectionInput: {
-                      name: "selectedOutcomes",
-                      type: "CHECK_BOX",
-                      items: [
-                        {
-                          text: `${item.text} 💰 ${item.coins}`,
-                          value: JSON.stringify({
-                            id: item.id,
-                            type: "Learning",
-                          }),
-                        },
-                      ],
-                    },
-                  })),
-                ],
-              },
-              // Earning Section
-              {
-                widgets: [
-                  {
-                    decoratedText: {
-                      icon: {
-                        iconUrl:
-                          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Medal+(1).png",
-                        altText: "Earning icon",
-                      },
-                      text: `<b><font color='#FF6C6C'>Earning</font></b>`,
-                    },
-                  },
-                  ...outcomes.Earning.map((item) => ({
-                    selectionInput: {
-                      name: "selectedOutcomes",
-                      type: "CHECK_BOX",
-                      items: [
-                        {
-                          text: `${item.text} 💰 ${item.coins}`,
-                          value: JSON.stringify({
-                            id: item.id,
-                            type: item.type,
-                            text: item.text, // Added text field
-                          }),
-                        },
-                      ],
-                    },
-                  })),
-                  {
-                    textInput: {
-                      name: "customEarningOutcome",
-                      label: "Add your own Earning outcome",
-                    },
-                  },
-                  {
-                    buttonList: {
-                      buttons: [
-                        {
-                          text: "ADD", // ✅ Single submit button at the bottom
-                          onClick: {
-                            action: {
-                              function: "addEarningOutcome",
-                              parameters: [
-                                {
-                                  key: "customEarningOutcome",
-                                  value: "${formInputs.customEarningOutcome}",
-                                },
-                                {
-                                  key: "existingOutcomes",
-                                  value: JSON.stringify(customOutcomes),
-                                },
-                              ],
-                            },
-                          },
-                        },
-                      ],
-                    },
-                  },
-                ],
-              },
-              // Contribution Section
-              {
-                widgets: [
-                  {
-                    decoratedText: {
-                      icon: {
-                        iconUrl:
-                          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Shield+(1).png",
-                        altText: "Contribution icon",
-                      },
-                      text: `<b><font color='#3CAF91'>Contribution</font></b>`,
-                    },
-                  },
-                  ...outcomes.Contribution.map((item) => ({
-                    selectionInput: {
-                      name: "selectedOutcomes",
-                      type: "CHECK_BOX",
-                      items: [
-                        {
-                          text: `${item.text} 💰 ${item.coins}`,
-                          value: JSON.stringify({
-                            id: item.id,
-                            type: "Contribution",
-                          }),
-                        },
-                      ],
-                    },
-                  })),
-                ],
-              },
-              // Submit Button
-              {
-                widgets: [
-                  {
-                    buttonList: {
-                      buttons: [
-                        {
-                          text: "SUBMIT",
-                          onClick: {
-                            action: {
-                              function: "submitOutcomes",
-                              parameters: [
-                                {
-                                  key: "selectedOutcomes",
-                                  value: "${selectedOutcomes}",
-                                },
-                              ],
-                            },
-                          },
-                        },
-                      ],
-                    },
-                  },
-                ],
-              },
-            ],
-          },
-        },
-      ],
-    };
+  // Merge custom outcomes into Earning section
+  if (customOutcomes.length > 0) {
+    outcomes.Earning.push(
+      ...customOutcomes.map((text) => ({
+        id: `custom_${Date.now()}`,
+        text: text,
+        coins: 10,
+        type: "Earning",
+      }))
+    );
   }
-  app.post("/", async (req, res) => {
-    try {
-      console.log("[REQUEST]", JSON.stringify(req.body, null, 2));
-  
-      // Handle different Google Chat event types
-      switch (req.body.type) {
-        case "CARD_CLICKED":
-          return handleCardAction(req, res);
-        
-        case "MESSAGE":
-          return handleTextMessage(req, res);
-        
-        default:
-          return res.status(400).json({ text: "Unsupported event type" });
-      }
-    } catch (error) {
-      console.error("Processing error:", error);
-      res.status(500).json({ text: "⚠️ Internal server error" });
+
+  return {
+    cardsV2: [
+      {
+        cardId: "outcome-card",
+        card: {
+          header: {
+            title: `Set your outcomes for the day`,
+          },
+          sections: [
+            // Learning Section
+            {
+              widgets: [
+                {
+                  decoratedText: {
+                    icon: {
+                      iconUrl:
+                        "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png",
+                      altText: "Learning icon",
+                    },
+                    text: `<b><font color='#7A3BBB'>Learning</font></b>`,
+                  },
+                },
+                ...outcomes.Learning.map((item) => ({
+                  selectionInput: {
+                    name: "selectedOutcomes",
+                    type: "CHECK_BOX",
+                    items: [
+                      {
+                        text: `${item.text} 💰 ${item.coins}`,
+                        value: JSON.stringify({
+                          id: item.id,
+                          type: "Learning",
+                        }),
+                      },
+                    ],
+                  },
+                })),
+              ],
+            },
+            // Earning Section
+            {
+              widgets: [
+                {
+                  decoratedText: {
+                    icon: {
+                      iconUrl:
+                        "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Medal+(1).png",
+                      altText: "Earning icon",
+                    },
+                    text: `<b><font color='#FF6C6C'>Earning</font></b>`,
+                  },
+                },
+                ...outcomes.Earning.map((item) => ({
+                  selectionInput: {
+                    name: "selectedOutcomes",
+                    type: "CHECK_BOX",
+                    items: [
+                      {
+                        text: `${item.text} 💰 ${item.coins}`,
+                        value: JSON.stringify({
+                          id: item.id,
+                          type: item.type,
+                          text: item.text, // Added text field
+                        }),
+                      },
+                    ],
+                  },
+                })),
+                {
+                  textInput: {
+                    name: "customEarningOutcome",
+                    label: "Add your own Earning outcome",
+                  },
+                },
+                {
+                  buttonList: {
+                    buttons: [
+                      {
+                        text: "ADD", // ✅ Single submit button at the bottom
+                        onClick: {
+                          action: {
+                            function: "addEarningOutcome",
+                            parameters: [
+                              {
+                                key: "customEarningOutcome",
+                                value: "${formInputs.customEarningOutcome}",
+                              },
+                              {
+                                key: "existingOutcomes",
+                                value: JSON.stringify(customOutcomes),
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+            // Contribution Section
+            {
+              widgets: [
+                {
+                  decoratedText: {
+                    icon: {
+                      iconUrl:
+                        "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Shield+(1).png",
+                      altText: "Contribution icon",
+                    },
+                    text: `<b><font color='#3CAF91'>Contribution</font></b>`,
+                  },
+                },
+                ...outcomes.Contribution.map((item) => ({
+                  selectionInput: {
+                    name: "selectedOutcomes",
+                    type: "CHECK_BOX",
+                    items: [
+                      {
+                        text: `${item.text} 💰 ${item.coins}`,
+                        value: JSON.stringify({
+                          id: item.id,
+                          type: "Contribution",
+                        }),
+                      },
+                    ],
+                  },
+                })),
+              ],
+            },
+            // Submit Button
+            {
+              widgets: [
+                {
+                  buttonList: {
+                    buttons: [
+                      {
+                        text: "SUBMIT",
+                        onClick: {
+                          action: {
+                            function: "submitOutcomes",
+                            parameters: [
+                              {
+                                key: "selectedOutcomes",
+                                value: "${selectedOutcomes}",
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ],
+  };
+}
+app.post("/", async (req, res) => {
+  try {
+    console.log("[REQUEST]", JSON.stringify(req.body, null, 2));
+
+    // Handle different Google Chat event types
+    switch (req.body.type) {
+      case "CARD_CLICKED":
+        return handleCardAction(req, res);
+
+      case "MESSAGE":
+        return handleTextMessage(req, res);
+
+      default:
+        return res.status(400).json({ text: "Unsupported event type" });
     }
-  });
-  
-  async function handleCardAction(req, res) {
-    const { action, user } = req.body;
-    const userName = user?.displayName || "User";
-    const email = user?.email;
-  
-    switch (action.actionMethodName) {
-      case "addEarningOutcome":
-        const customOutcome = action.parameters?.find(p => p.key === "customEarningOutcome")?.value;
-        const existingOutcomes = JSON.parse(action.parameters?.find(p => p.key === "existingOutcomes")?.value || "[]");
-  
-        if (!customOutcome) {
-          return res.json({
-            actionResponse: { type: "UPDATE_MESSAGE" },
-            cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2,
-            text: "Please enter a valid outcome!"
-          });
-        }
-  
-        existingOutcomes.push(customOutcome);
+  } catch (error) {
+    console.error("Processing error:", error);
+    res.status(500).json({ text: "⚠️ Internal server error" });
+  }
+});
+
+async function handleCardAction(req, res) {
+  const { action, user } = req.body;
+  const userName = user?.displayName || "User";
+  const email = user?.email;
+
+  switch (action.actionMethodName) {
+    case "addEarningOutcome":
+      // Get custom outcome from formInputs
+      const customOutcome =
+        req.body.common?.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
+
+      // Get existing outcomes from parameters
+      const existingParam = action.parameters?.find(
+        (p) => p.key === "existingOutcomes"
+      );
+      const existingOutcomes = existingParam
+        ? JSON.parse(existingParam.value)
+        : [];
+
+      if (!customOutcome) {
         return res.json({
           actionResponse: { type: "UPDATE_MESSAGE" },
-          cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2
+          cardsV2: (await createOutcomeCard(userName, existingOutcomes))
+            .cardsV2,
+          text: "Please enter a valid outcome!",
         });
-  
-      case "submitOutcomes":
-        const userId = await getUserIdByEmail(email);
-        const selectedParam = action.parameters.find(p => p.key === "selectedOutcomes");
-        const selectedOutcomes = selectedParam ? JSON.parse(selectedParam.value) : [];
-  
-        // Process outcomes
-        for (const outcome of selectedOutcomes.map(s => JSON.parse(s))) {
-          let bid = outcome.id.startsWith("custom_") 
-            ? await insertCustomOutcome(outcome.text)
-            : outcome.id;
-  
-          await logBadgeProgress(userId, bid);
+      }
+
+      existingOutcomes.push(customOutcome);
+      return res.json({
+        actionResponse: { type: "UPDATE_MESSAGE" },
+        cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2,
+      });
+
+    case "submitOutcomes":
+      const userId = await getUserIdByEmail(email);
+      const selectedOutcomes =
+        req.body.common?.formInputs?.selectedOutcomes?.stringInputs?.value ||
+        [];
+
+      // Process outcomes
+      for (const outcomeString of selectedOutcomes) {
+        const outcome = JSON.parse(outcomeString);
+        let bid;
+
+        if (outcome.id.startsWith("custom_")) {
+          bid = await insertCustomOutcome(outcome.text);
+        } else {
+          bid = outcome.id;
         }
-  
-        return res.json(createOutcomeConfirmationCard(userName, selectedOutcomes.length));
-  
-      default:
-        return res.status(400).json({ text: "Unsupported action" });
-    }
+
+        await logBadgeProgress(userId, bid);
+      }
+
+      return res.json(
+        createOutcomeConfirmationCard(userName, selectedOutcomes.length)
+      );
+
+    default:
+      return res.status(400).json({ text: "Unsupported action" });
   }
-  
-  async function handleTextMessage(req, res) {
-    const { message } = req.body;
-    const messageText = message?.text?.toLowerCase().trim();
-    const userName = message?.sender?.displayName || "User";
-    const email = message?.sender?.email;
-  
-    switch (messageText) {
-      case "progress":
-        // Return daily progress summary
-        const userId = await getUserIdByEmail(email);
-        const totalCoins = await getTotalCoins(userId);
-        const { completedBadges, assignedBadges } = await getUserBadges(userId);
-        
-        return res.json(createGoogleChatCard(
+}
+
+async function handleTextMessage(req, res) {
+  const { message } = req.body;
+  const messageText = message?.text?.toLowerCase().trim();
+  const userName = message?.sender?.displayName || "User";
+  const email = message?.sender?.email;
+
+  switch (messageText) {
+    case "progress":
+      // Return daily progress summary
+      const userId = await getUserIdByEmail(email);
+      const totalCoins = await getTotalCoins(userId);
+      const { completedBadges, assignedBadges } = await getUserBadges(userId);
+
+      return res.json(
+        createGoogleChatCard(
           userName,
           totalCoins,
           10, // coinsDifference
           completedBadges,
           assignedBadges
-        ));
-  
-      case "outcomes":
-        return res.json(await createOutcomeCard(userName));
-  
-      default:
-        return res.json({ text: `Unsupported command: ${messageText}` });
-    }
-  }  
+        )
+      );
+
+    case "outcomes":
+      return res.json(await createOutcomeCard(userName));
+
+    default:
+      return res.json({ text: `Unsupported command: ${messageText}` });
+  }
+}
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
