@@ -62,6 +62,24 @@ async function getUserOutcomes() {
 
   return outcomes;
 }
+// Add these new database functions
+async function insertCustomOutcome(text) {
+  const query = `
+    INSERT INTO registry.badges (bname, btype)
+    VALUES ($1, 'Earning')
+    RETURNING bid
+  `;
+  const result = await pool.query(query, [text]);
+  return result.rows[0].bid;
+}
+
+async function logBadgeProgress(userId, bid) {
+  const query = `
+    INSERT INTO registry.badgelog (uid, bid, bstatus)
+    VALUES ($1, $2, 'Assigned')
+  `;
+  await pool.query(query, [userId, bid]);
+}
 
 // Construct Daily Progress Card
 function createGoogleChatCard(
@@ -317,6 +335,7 @@ app.post("/", async (req, res) => {
                           value: JSON.stringify({
                             id: item.id,
                             type: item.type,
+                            text: item.text, // Added text field
                           }),
                         },
                       ],
@@ -337,15 +356,15 @@ app.post("/", async (req, res) => {
                             action: {
                               function: "addEarningOutcome",
                               parameters: [
-                                { 
-                                  key: "customEarningOutcome", 
-                                  value: "${formInputs.customEarningOutcome}"
+                                {
+                                  key: "customEarningOutcome",
+                                  value: "${formInputs.customEarningOutcome}",
                                 },
-                                { 
-                                  key: "existingOutcomes", 
-                                  value: JSON.stringify(customOutcomes) 
-                                }
-                              ],  
+                                {
+                                  key: "existingOutcomes",
+                                  value: JSON.stringify(customOutcomes),
+                                },
+                              ],
                             },
                           },
                         },
@@ -454,8 +473,51 @@ app.post("/", async (req, res) => {
         cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2,
       });
     }
-    
 
+    // Add submitOutcomes handler in the POST route
+    if (req.body.action.actionMethodName === "submitOutcomes") {
+      const email = req.body.user?.email;
+      const userId = await getUserIdByEmail(email);
+      const userName = req.body.user?.displayName || "User";
+
+      // Get selected outcomes from parameters
+      const selectedParam = req.body.action.parameters.find(
+        (p) => p.key === "selectedOutcomes"
+      );
+      if (!selectedParam) return res.json({ text: "No outcomes selected" });
+
+      const selectedOutcomes = JSON.parse(selectedParam.value).map((s) =>
+        JSON.parse(s)
+      );
+
+      // Process each outcome
+      for (const outcome of selectedOutcomes) {
+        let bid;
+
+        // Handle custom outcomes
+        if (outcome.id.startsWith("custom_")) {
+          try {
+            bid = await insertCustomOutcome(outcome.text);
+          } catch (err) {
+            console.error("Failed to insert custom outcome:", err);
+            continue;
+          }
+        } else {
+          bid = outcome.id;
+        }
+
+        // Log badge progress
+        try {
+          await logBadgeProgress(userId, bid);
+        } catch (err) {
+          console.error("Failed to log badge progress:", err);
+        }
+      }
+
+      return res.json(
+        createOutcomeConfirmationCard(userName, selectedOutcomes.length)
+      );
+    }
     // Handle initial 'progress' message
     if (
       req.body.type === "MESSAGE" &&
