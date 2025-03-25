@@ -354,7 +354,12 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                               },
                               {
                                 key: "existingOutcomes",
-                                value: JSON.stringify(customOutcomes),
+                                value: JSON.stringify(customOutcomes.map(oc => ({
+                                  id: oc.id,
+                                  text: oc.text,
+                                  coins: oc.coins,
+                                  isCustom: oc.isCustom
+                                }))),
                               },
                             ],
                           },
@@ -488,29 +493,56 @@ async function handleCardAction(req, res) {
         ).cardsV2,
       });
 
-    case "submitOutcomes":
-      const userId = await getUserIdByEmail(email);
-      const selectedOutcomes =
-        req.body.common?.formInputs?.selectedOutcomes?.stringInputs?.value ||
-        [];
-
-      // Process outcomes
-      for (const outcomeString of selectedOutcomes) {
-        const outcome = JSON.parse(outcomeString);
-        let bid;
-
-        if (outcome.isCustom) {
-          const bid = await insertCustomOutcome(outcome.text);
-          await logBadgeProgress(userId, bid);
-        } else {
-          await logBadgeProgress(userId, outcome.id);
+      case "submitOutcomes":
+        try {
+          const userId = await getUserIdByEmail(email);
+          const selectedOutcomes =
+            req.body.common?.formInputs?.selectedOutcomes?.stringInputs?.value || [];
+      
+          console.log("Submit clicked by:", email);
+          console.log("Selected outcomes:", selectedOutcomes);
+      
+          if (selectedOutcomes.length === 0) {
+            console.log("No outcomes selected for user:", email);
+            return res.json(createOutcomeConfirmationCard(userName, 0));
+          }
+      
+          // Process outcomes
+          for (const outcomeString of selectedOutcomes) {
+            try {
+              const outcome = JSON.parse(outcomeString);
+              console.log("Processing outcome:", outcome);
+      
+              if (!outcome.text || !(outcome.id || outcome.isCustom)) {
+                console.error("Invalid outcome structure:", outcome);
+                continue;
+              }
+      
+              let bid;
+              if (outcome.isCustom) {
+                console.log("Inserting custom outcome:", outcome.text);
+                bid = await insertCustomOutcome(outcome.text);
+              } else {
+                bid = outcome.id;
+              }
+      
+              console.log("Logging badge progress for bid:", bid);
+              await logBadgeProgress(userId, bid);
+            } catch (error) {
+              console.error("Error processing outcome:", outcomeString, error);
+            }
+          }
+      
+          console.log("Successfully processed outcomes for:", email);
+          return res.json(
+            createOutcomeConfirmationCard(userName, selectedOutcomes.length)
+          );
+        } catch (error) {
+          console.error("Submission error for user:", email, error);
+          return res.status(500).json({ 
+            text: "⚠️ Failed to save outcomes. Please try again later." 
+          });
         }
-      }
-
-      return res.json(
-        createOutcomeConfirmationCard(userName, selectedOutcomes.length)
-      );
-
     default:
       return res.status(400).json({ text: "Unsupported action" });
   }
