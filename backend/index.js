@@ -257,7 +257,7 @@ app.get("/", (req, res) => {
 });
 
 // Handle Google Chat Webhook Requests
-app.post("/", async (req, res) => {
+
   async function createOutcomeCard(userName, customOutcomes = []) {
     const outcomes = await getUserOutcomes();
 
@@ -434,137 +434,100 @@ app.post("/", async (req, res) => {
       ],
     };
   }
-
-  try {
-    console.log("[RAW REQUEST]", JSON.stringify(req.body, null, 2));
-
-    // Handle ADD action first
-    if (
-      req.body.type === "CARD_CLICKED" &&
-      req.body.action.actionMethodName === "addEarningOutcome"
-    ) {
-      const userName = req.body.user?.displayName || "User";
-
-      // 1. Retrieve the custom outcome from formInputs (correct path)
-      const customOutcome =
-        req.body.common?.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
-
-      // 2. Get existing outcomes from action parameters
-      const existingParam = req.body.action.parameters.find(
-        (p) => p.key === "existingOutcomes"
-      );
-      const existingOutcomes = existingParam
-        ? JSON.parse(existingParam.value)
-        : [];
-
-      // 3. Validate and update outcomes
-      if (!customOutcome) {
+  app.post("/", async (req, res) => {
+    try {
+      console.log("[REQUEST]", JSON.stringify(req.body, null, 2));
+  
+      // Handle different Google Chat event types
+      switch (req.body.type) {
+        case "CARD_CLICKED":
+          return handleCardAction(req, res);
+        
+        case "MESSAGE":
+          return handleTextMessage(req, res);
+        
+        default:
+          return res.status(400).json({ text: "Unsupported event type" });
+      }
+    } catch (error) {
+      console.error("Processing error:", error);
+      res.status(500).json({ text: "⚠️ Internal server error" });
+    }
+  });
+  
+  async function handleCardAction(req, res) {
+    const { action, user } = req.body;
+    const userName = user?.displayName || "User";
+    const email = user?.email;
+  
+    switch (action.actionMethodName) {
+      case "addEarningOutcome":
+        const customOutcome = action.parameters?.find(p => p.key === "customEarningOutcome")?.value;
+        const existingOutcomes = JSON.parse(action.parameters?.find(p => p.key === "existingOutcomes")?.value || "[]");
+  
+        if (!customOutcome) {
+          return res.json({
+            actionResponse: { type: "UPDATE_MESSAGE" },
+            cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2,
+            text: "Please enter a valid outcome!"
+          });
+        }
+  
+        existingOutcomes.push(customOutcome);
         return res.json({
-          text: "⚠️ Please enter an outcome before clicking ADD.",
-          cardsV2: (await createOutcomeCard(userName, existingOutcomes))
-            .cardsV2,
+          actionResponse: { type: "UPDATE_MESSAGE" },
+          cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2
         });
-      }
-      existingOutcomes.push(customOutcome);
-
-      // 4. Return updated card as message update
-      return res.json({
-        actionResponse: { type: "UPDATE_MESSAGE" }, // This is the critical change
-        cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2,
-      });
-    }
-
-    // Add submitOutcomes handler in the POST route
-    if (req.body.action.actionMethodName === "submitOutcomes") {
-      const email = req.body.user?.email;
-      const userId = await getUserIdByEmail(email);
-      const userName = req.body.user?.displayName || "User";
-
-      // Get selected outcomes from parameters
-      const selectedParam = req.body.action.parameters.find(
-        (p) => p.key === "selectedOutcomes"
-      );
-      if (!selectedParam) return res.json({ text: "No outcomes selected" });
-
-      const selectedOutcomes = JSON.parse(selectedParam.value).map((s) =>
-        JSON.parse(s)
-      );
-
-      // Process each outcome
-      for (const outcome of selectedOutcomes) {
-        let bid;
-
-        // Handle custom outcomes
-        if (outcome.id.startsWith("custom_")) {
-          try {
-            bid = await insertCustomOutcome(outcome.text);
-          } catch (err) {
-            console.error("Failed to insert custom outcome:", err);
-            continue;
-          }
-        } else {
-          bid = outcome.id;
-        }
-
-        // Log badge progress
-        try {
+  
+      case "submitOutcomes":
+        const userId = await getUserIdByEmail(email);
+        const selectedParam = action.parameters.find(p => p.key === "selectedOutcomes");
+        const selectedOutcomes = selectedParam ? JSON.parse(selectedParam.value) : [];
+  
+        // Process outcomes
+        for (const outcome of selectedOutcomes.map(s => JSON.parse(s))) {
+          let bid = outcome.id.startsWith("custom_") 
+            ? await insertCustomOutcome(outcome.text)
+            : outcome.id;
+  
           await logBadgeProgress(userId, bid);
-        } catch (err) {
-          console.error("Failed to log badge progress:", err);
         }
-      }
-
-      return res.json(
-        createOutcomeConfirmationCard(userName, selectedOutcomes.length)
-      );
+  
+        return res.json(createOutcomeConfirmationCard(userName, selectedOutcomes.length));
+  
+      default:
+        return res.status(400).json({ text: "Unsupported action" });
     }
-    // Handle initial 'progress' message
-    if (
-      req.body.type === "MESSAGE" &&
-      req.body.message.text?.toLowerCase() === "progress"
-    ) {
-      const userName = req.body.message.sender.displayName || "User";
-      return res.json(await createOutcomeCard(userName));
-    }
-
-    const email = req.body.user?.email || req.body.message?.sender?.email;
-
-    const messageText = req.body.message?.text?.toLowerCase().trim();
-    const userName = req.body?.message?.sender?.displayName || "User";
-
-    // Handle "outcomes" command
-    if (messageText === "outcomes") {
-      const outcomeCount = 5; // Replace with actual count from DB
-      return res.json(createOutcomeConfirmationCard(userName, outcomeCount));
-    }
-    if (messageText === "progress") {
-      const outcomeCard = await createOutcomeCard(userName);
-      return res.json(outcomeCard);
-    }
-    console.log(`Fetching user ID for email: ${email}`);
-    const userId = await getUserIdByEmail(email);
-
-    console.log(`Fetching total coins for user ID: ${userId}`);
-    const totalCoins = await getTotalCoins(userId);
-
-    console.log(`Fetching badge data for user ID: ${userId}`);
-    const { completedBadges, assignedBadges } = await getUserBadges(userId);
-
-    const coinsDifference = 10; // Placeholder
-
-    const responseCard = createGoogleChatCard(
-      userName,
-      totalCoins,
-      coinsDifference,
-      completedBadges,
-      assignedBadges
-    );
-    res.json(responseCard);
-  } catch (error) {
-    console.error("Error processing request:", error);
-    res.status(500).json({ text: "⚠️ Internal server error" });
   }
-});
+  
+  async function handleTextMessage(req, res) {
+    const { message } = req.body;
+    const messageText = message?.text?.toLowerCase().trim();
+    const userName = message?.sender?.displayName || "User";
+    const email = message?.sender?.email;
+  
+    switch (messageText) {
+      case "progress":
+        // Return daily progress summary
+        const userId = await getUserIdByEmail(email);
+        const totalCoins = await getTotalCoins(userId);
+        const { completedBadges, assignedBadges } = await getUserBadges(userId);
+        
+        return res.json(createGoogleChatCard(
+          userName,
+          totalCoins,
+          10, // coinsDifference
+          completedBadges,
+          assignedBadges
+        ));
+  
+      case "outcomes":
+        return res.json(await createOutcomeCard(userName));
+  
+      default:
+        return res.json({ text: `Unsupported command: ${messageText}` });
+    }
+  }  
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
