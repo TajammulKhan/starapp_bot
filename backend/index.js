@@ -425,7 +425,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                             parameters: [
                               {
                                 key: "selectedOutcomes",
-                                value: "${formInputs.selectedOutcomes}"
+                                value: "${formInputs.selectedOutcomes}",
                               },
                             ],
                           },
@@ -469,15 +469,24 @@ async function handleCardAction(req, res) {
   const email = user?.email;
 
   switch (action.actionMethodName) {
+    // Modified handleCardAction for ADD case
     case "addEarningOutcome":
       const customOutcomeText =
         req.body.common?.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
+
+      // Retrieve existing outcomes with error handling
+      let existingOutcomes = [];
       const existingParam = action.parameters?.find(
         (p) => p.key === "existingOutcomes"
       );
-      const existingOutcomes = existingParam
-        ? JSON.parse(existingParam.value)
-        : [];
+      if (existingParam) {
+        try {
+          existingOutcomes = JSON.parse(existingParam.value);
+        } catch (e) {
+          console.error("Error parsing existingOutcomes:", e);
+          existingOutcomes = [];
+        }
+      }
 
       if (!customOutcomeText) {
         return res.json({
@@ -488,7 +497,7 @@ async function handleCardAction(req, res) {
         });
       }
 
-      // Generate unique ID for new custom outcome
+      // Generate new outcome with required fields
       const newOutcome = {
         id: `custom_${Date.now()}`,
         text: customOutcomeText,
@@ -556,6 +565,14 @@ async function handleCardAction(req, res) {
               bid = await insertCustomOutcome(outcome.text);
             } else {
               bid = outcome.id;
+              // Ensure bid is a number for existing outcomes
+              if (typeof bid !== 'number') {
+                bid = Number(bid);
+                if (isNaN(bid)) {
+                  console.error("Invalid bid format:", outcome.id);
+                  continue;
+                }
+              }
               await updateOutcomeStatus(bid); // Update existing outcome status
             }
 
