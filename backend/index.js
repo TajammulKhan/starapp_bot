@@ -262,16 +262,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
   const outcomes = await getUserOutcomes();
 
   // Merge custom outcomes into Earning section
-  if (customOutcomes.length > 0) {
-    outcomes.Earning.push(
-      ...customOutcomes.map((text) => ({
-        id: `custom_${Date.now()}`,
-        text: text,
-        coins: 10,
-        type: "Earning",
-      }))
-    );
-  }
+  outcomes.Earning.push(...customOutcomes);
 
   return {
     cardsV2: [
