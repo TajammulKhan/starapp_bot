@@ -334,8 +334,9 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                         text: `${item.text} 💰 ${item.coins}`,
                         value: JSON.stringify({
                           id: item.id,
-                          type: item.type,
-                          text: item.text, // Added text field
+                          type: "Earning",
+                          text: item.text,
+                          isCustom: item.isCustom, // Add custom flag
                         }),
                       },
                     ],
@@ -462,11 +463,8 @@ async function handleCardAction(req, res) {
 
   switch (action.actionMethodName) {
     case "addEarningOutcome":
-      // Get custom outcome from formInputs
-      const customOutcome =
+      const customOutcomeText =
         req.body.common?.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
-
-      // Get existing outcomes from parameters
       const existingParam = action.parameters?.find(
         (p) => p.key === "existingOutcomes"
       );
@@ -474,7 +472,7 @@ async function handleCardAction(req, res) {
         ? JSON.parse(existingParam.value)
         : [];
 
-      if (!customOutcome) {
+      if (!customOutcomeText) {
         return res.json({
           actionResponse: { type: "UPDATE_MESSAGE" },
           cardsV2: (await createOutcomeCard(userName, existingOutcomes))
@@ -483,10 +481,20 @@ async function handleCardAction(req, res) {
         });
       }
 
-      existingOutcomes.push(customOutcome);
+      // Generate unique ID for new custom outcome
+      const newOutcome = {
+        id: `custom_${Date.now()}`,
+        text: customOutcomeText,
+        coins: 10,
+        type: "Earning",
+        isCustom: true,
+      };
+
       return res.json({
         actionResponse: { type: "UPDATE_MESSAGE" },
-        cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2,
+        cardsV2: (
+          await createOutcomeCard(userName, [...existingOutcomes, newOutcome])
+        ).cardsV2,
       });
 
     case "submitOutcomes":
@@ -500,13 +508,12 @@ async function handleCardAction(req, res) {
         const outcome = JSON.parse(outcomeString);
         let bid;
 
-        if (outcome.id.startsWith("custom_")) {
-          bid = await insertCustomOutcome(outcome.text);
+        if (outcome.isCustom) {
+          const bid = await insertCustomOutcome(outcome.text);
+          await logBadgeProgress(userId, bid);
         } else {
-          bid = outcome.id;
+          await logBadgeProgress(userId, outcome.id);
         }
-
-        await logBadgeProgress(userId, bid);
       }
 
       return res.json(
