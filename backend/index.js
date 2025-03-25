@@ -527,7 +527,7 @@ async function handleCardAction(req, res) {
 
         // Get selected outcomes from formInputs
         const selectedItems =
-          req.body.common?.formInputs?.selectedOutcomes?.selectedItems?.value ||
+          req.body.action?.formInputs?.selectedOutcomes?.selectedItems?.value ||
           [];
         console.log("Raw selected items:", selectedItems);
 
@@ -564,23 +564,24 @@ async function handleCardAction(req, res) {
               console.log("Inserting custom outcome:", outcome.text);
               bid = await insertCustomOutcome(outcome.text);
             } else {
-              bid = outcome.id;
-              // Ensure bid is a number for existing outcomes
-              if (typeof bid !== 'number') {
-                bid = Number(bid);
-                if (isNaN(bid)) {
-                  console.error("Invalid bid format:", outcome.id);
-                  continue;
-                }
+              bid = parseInt(outcome.id);
+              if (isNaN(bid)) {
+                console.error("Invalid bid format:", outcome.id);
+                continue;
               }
-              await updateOutcomeStatus(bid); // Update existing outcome status
+              console.log("Updating status for existing outcome:", bid);
+              await updateOutcomeStatus(bid);
             }
 
             console.log(`Logging badge progress for ${bid} (${outcome.text})`);
             await logBadgeProgress(userId, bid);
           } catch (error) {
-            console.error("Error processing outcome:", error.message);
-            console.error("Error stack:", error.stack);
+            console.error("Error processing outcome:", error);
+            console.error("Error details:", {
+              message: error.message,
+              stack: error.stack,
+              outcome,
+            });
           }
         }
 
