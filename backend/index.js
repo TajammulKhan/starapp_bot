@@ -65,12 +65,21 @@ async function getUserOutcomes() {
 // Add these new database functions
 async function insertCustomOutcome(text) {
   const query = `
-    INSERT INTO registry.badges (bname, btype)
-    VALUES ($1, 'Earning')
+    INSERT INTO registry.badges (bname, btype, outcome_status)
+    VALUES ($1, 'Earning', 'checked')
     RETURNING bid
   `;
   const result = await pool.query(query, [text]);
   return result.rows[0].bid;
+}
+// New function to update existing outcomes
+async function updateOutcomeStatus(bid) {
+  const query = `
+    UPDATE registry.badges
+    SET outcome_status = 'checked'
+    WHERE bid = $1
+  `;
+  await pool.query(query, [bid]);
 }
 
 async function logBadgeProgress(userId, bid) {
@@ -547,6 +556,7 @@ async function handleCardAction(req, res) {
               bid = await insertCustomOutcome(outcome.text);
             } else {
               bid = outcome.id;
+              await updateOutcomeStatus(bid); // Update existing outcome status
             }
 
             console.log(`Logging badge progress for ${bid} (${outcome.text})`);
