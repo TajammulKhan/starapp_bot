@@ -482,7 +482,7 @@ async function createCheckedOutcomeCard(userName, userId) {
       {
         cardId: "checked-outcome-card",
         card: {
-          header: { title: `Your Checked Outcomes, ${userName}` },
+          header: { title: `Submit your completed outcomes` },
           sections: [
             {
               widgets: [
@@ -516,7 +516,7 @@ async function createCheckedOutcomeCard(userName, userId) {
                   : [
                       {
                         textParagraph: {
-                          text: "No checked Learning outcomes.",
+                          text: "No submitted Learning outcomes.",
                         },
                       },
                     ]),
@@ -555,7 +555,7 @@ async function createCheckedOutcomeCard(userName, userId) {
                     ]
                   : [
                       {
-                        textParagraph: { text: "No checked Earning outcomes." },
+                        textParagraph: { text: "No submitted Earning outcomes." },
                       },
                     ]),
               ],
@@ -592,7 +592,7 @@ async function createCheckedOutcomeCard(userName, userId) {
                   : [
                       {
                         textParagraph: {
-                          text: "No checked Contribution outcomes.",
+                          text: "No submitted Contribution outcomes.",
                         },
                       },
                     ]),
