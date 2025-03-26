@@ -82,14 +82,22 @@ async function updateOutcomeStatus(bid) {
   await pool.query(query, [bid]);
 }
 
-// Update badge log to mark outcome_status as checked
 async function logBadgeProgress(userId, bid) {
+  console.log(`Logging badge progress for User ID: ${userId}, Badge ID: ${bid}`);
+  
   const query = `
     INSERT INTO registry.badgelog (uid, bid, bstatus, outcome_status)
     VALUES ($1, $2, 'Assigned', 'checked')
   `;
-  await pool.query(query, [userId, bid]);
+
+  try {
+    await pool.query(query, [userId, bid]);
+    console.log("Badge log successfully inserted.");
+  } catch (error) {
+    console.error("Database Insert Error:", error);
+  }
 }
+
 
 // Construct Daily Progress Card
 function createGoogleChatCard(
@@ -463,6 +471,28 @@ app.post("/", async (req, res) => {
     res.status(500).json({ text: "⚠️ Internal server error" });
   }
 });
+
+app.post("/submitOutcomes", async (req, res) => {
+  try {
+    console.log("Submit outcomes triggered:", req.body);
+    
+    const selectedOutcomes = req.body.selectedOutcomes
+      ? JSON.parse(req.body.selectedOutcomes)
+      : [];
+
+    if (selectedOutcomes.length === 0) {
+      return res.status(400).json({ error: "No outcomes selected" });
+    }
+
+    console.log("Parsed Outcomes:", selectedOutcomes);
+
+    return res.status(200).json({ message: "Outcomes received successfully" });
+  } catch (error) {
+    console.error("Error processing outcomes:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 
 async function handleCardAction(req, res) {
   const { action, user } = req.body;
