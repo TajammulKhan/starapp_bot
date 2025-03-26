@@ -73,14 +73,14 @@ async function insertCustomOutcome(text) {
   return result.rows[0].bid;
 }
 // New function to update existing outcomes
-async function updateOutcomeStatus(bid) {
+async function updateOutcomeStatus(bid, userId) {
   const query = `
-    INSERT INTO registry.badgelog (bid, bstatus, outcome_status)
-    VALUES ($1, 'Assigned', 'checked')
-    ON CONFLICT (bid) DO UPDATE
+    INSERT INTO registry.badgelog (uid, bid, bstatus, outcome_status)
+    VALUES ($1, $2, 'Assigned', 'checked')
+    ON CONFLICT (uid, bid) DO UPDATE
     SET outcome_status = 'checked'
   `;
-  await pool.query(query, [bid]);
+  await pool.query(query, [userId, bid]);
 }
 
 async function logBadgeProgress(userId, bid) {
@@ -306,7 +306,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                     text: `<b><font color='#7A3BBB'>Learning</font></b>`,
                   },
                 },
-                ...outcomes.Learning.map((item) => ({
+                {
                   selectionInput: {
                     name: "selectedOutcomes",
                     type: "CHECK_BOX",
@@ -316,7 +316,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                       selected: false,
                     })),
                   },
-                })),
+                }
               ],
             },
             // Earning Section
@@ -332,7 +332,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                     text: `<b><font color='#FF6C6C'>Earning</font></b>`,
                   },
                 },
-                ...outcomes.Earning.map((item) => ({
+                {
                   selectionInput: {
                     name: "selectedOutcomes",
                     type: "CHECK_BOX",
@@ -347,7 +347,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                       selected: false,
                     })),
                   },
-                })),
+                },
                 {
                   textInput: {
                     name: "customEarningOutcome",
@@ -400,7 +400,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                     text: `<b><font color='#3CAF91'>Contribution</font></b>`,
                   },
                 },
-                ...outcomes.Contribution.map((item) => ({
+                {
                   selectionInput: {
                     name: "selectedOutcomes",
                     type: "CHECK_BOX",
@@ -410,7 +410,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                       selected: false,
                     })),
                   },
-                })),
+                },
               ],
             },
             // Submit Button
@@ -487,20 +487,10 @@ async function handleCardAction(req, res) {
   const email = user?.email;
 
   switch (action.actionMethodName) {
-    // Modified handleCardAction for ADD case
     case "addEarningOutcome":
-      const customOutcomeText =
-        req.body.common?.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
-      // const existingOutcomes = action.parameters
-      //   ? JSON.parse(action.parameters.find(p => p.key === "existingOutcomes")?.value || "[]")
-      //   : [];
-
-      // Retrieve existing outcomes with error handling
+      const customOutcomeText = req.body.common?.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
       let existingOutcomes = [];
-      const existingParam = action.parameters.find(
-        (p) => p.key === "existingOutcomes"
-      );
-      // const existingOutcomes = existingParam ? JSON.parse(existingParam.value) : [];
+      const existingParam = action.parameters.find(p => p.key === "existingOutcomes");
       if (existingParam) {
         try {
           existingOutcomes = JSON.parse(existingParam.value);
@@ -513,13 +503,11 @@ async function handleCardAction(req, res) {
       if (!customOutcomeText) {
         return res.json({
           actionResponse: { type: "UPDATE_MESSAGE" },
-          cardsV2: (await createOutcomeCard(userName, existingOutcomes))
-            .cardsV2,
+          cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2,
           text: "Please enter a valid outcome!",
         });
       }
 
-      // Generate new outcome with required fields
       const newOutcome = {
         id: `custom_${Date.now()}`,
         text: customOutcomeText,
@@ -530,82 +518,81 @@ async function handleCardAction(req, res) {
 
       return res.json({
         actionResponse: { type: "UPDATE_MESSAGE" },
-        cardsV2: (
-          await createOutcomeCard(userName, [...existingOutcomes, newOutcome])
-        ).cardsV2,
+        cardsV2: (await createOutcomeCard(userName, [...existingOutcomes, newOutcome])).cardsV2,
       });
 
-      case "submitOutcomes":
-        try {
-          console.log("Submit action triggered with body:", JSON.stringify(req.body, null, 2));
-          const userId = await getUserIdByEmail(email);
-          if (!userId) {
-            console.error("User not found for email:", email);
-            return res.status(400).json({ text: "User not found" });
-          }
-      
-          const formInputs = req.body.common?.formInputs || {};
-          const selectedItems = formInputs.selectedOutcomes?.stringInputs?.value || [];
-          console.log("Raw selected items:", selectedItems);
-      
-          const selectedOutcomes = selectedItems
-            .map((item) => {
-              try {
-                return JSON.parse(item);
-              } catch (e) {
-                console.error("Failed to parse outcome:", item, e);
-                return null;
-              }
-            })
-            .filter(Boolean);
-      
-          console.log("Parsed outcomes:", selectedOutcomes);
-      
-          if (selectedOutcomes.length === 0) {
-            console.log("No valid outcomes selected");
-            return res.json(createOutcomeConfirmationCard(userName, 0));
-          }
-      
-          for (const outcome of selectedOutcomes) {
+    case "submitOutcomes":
+      try {
+        console.log("Submit action triggered with body:", JSON.stringify(req.body, null, 2));
+        const userId = await getUserIdByEmail(email);
+        if (!userId) {
+          console.error("User not found for email:", email);
+          return res.status(400).json({ text: "User not found" });
+        }
+
+        const formInputs = req.body.common?.formInputs || {};
+        const selectedItems = formInputs.selectedOutcomes?.stringInputs?.value || [];
+        console.log("Raw selected items:", selectedItems);
+
+        const selectedOutcomes = selectedItems
+          .map((item) => {
             try {
-              console.log("Processing outcome:", JSON.stringify(outcome));
-      
-              if (!outcome.id && !outcome.isCustom) {
-                console.error("Invalid outcome structure:", outcome);
+              return JSON.parse(item);
+            } catch (e) {
+              console.error("Failed to parse outcome:", item, e);
+              return null;
+            }
+          })
+          .filter(Boolean);
+
+        console.log("Parsed outcomes:", selectedOutcomes);
+
+        if (selectedOutcomes.length === 0) {
+          console.log("No valid outcomes selected");
+          return res.json(createOutcomeConfirmationCard(userName, 0));
+        }
+
+        for (const outcome of selectedOutcomes) {
+          try {
+            console.log("Processing outcome:", JSON.stringify(outcome));
+
+            if (!outcome.id && !outcome.isCustom) {
+              console.error("Invalid outcome structure:", outcome);
+              continue;
+            }
+
+            let bid;
+            if (outcome.isCustom) {
+              console.log("Inserting custom outcome:", outcome.text);
+              bid = await insertCustomOutcome(outcome.text);
+            } else {
+              bid = parseInt(outcome.id);
+              if (isNaN(bid)) {
+                console.error("Invalid bid format:", outcome.id);
                 continue;
               }
-      
-              let bid;
-              if (outcome.isCustom) {
-                console.log("Inserting custom outcome:", outcome.text);
-                bid = await insertCustomOutcome(outcome.text);
-              } else {
-                bid = parseInt(outcome.id);
-                if (isNaN(bid)) {
-                  console.error("Invalid bid format:", outcome.id);
-                  continue;
-                }
-                console.log("Updating status for existing outcome:", bid);
-                await updateOutcomeStatus(bid, userId); // Pass userId here
-              }
-      
-              console.log(`Logging badge progress for ${bid} (${outcome.text || "Existing Badge"})`);
-              await logBadgeProgress(userId, bid);
-            } catch (error) {
-              console.error("Error processing outcome:", error.message, error.stack);
-              throw error;
+              console.log("Updating status for existing outcome:", bid);
+              await updateOutcomeStatus(bid, userId); // Pass userId
             }
+
+            console.log(`Logging badge progress for ${bid} (${outcome.text || "Existing Badge"})`);
+            await logBadgeProgress(userId, bid);
+          } catch (error) {
+            console.error("Error processing outcome:", error.message, error.stack);
+            throw error;
           }
-      
-          console.log("Successfully processed", selectedOutcomes.length, "outcomes");
-          return res.json(createOutcomeConfirmationCard(userName, selectedOutcomes.length));
-        } catch (error) {
-          console.error("Submission error:", error.message);
-          console.error("Error stack:", error.stack);
-          return res.status(500).json({
-            text: "⚠️ Failed to save outcomes. Please try again later.",
-          });
         }
+
+        console.log("Successfully processed", selectedOutcomes.length, "outcomes");
+        return res.json(createOutcomeConfirmationCard(userName, selectedOutcomes.length));
+      } catch (error) {
+        console.error("Submission error:", error.message);
+        console.error("Error stack:", error.stack);
+        return res.status(500).json({
+          text: "⚠️ Failed to save outcomes. Please try again later.",
+        });
+      }
+
     default:
       return res.status(400).json({ text: "Unsupported action" });
   }
