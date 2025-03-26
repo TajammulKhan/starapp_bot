@@ -507,9 +507,9 @@ async function handleCardAction(req, res) {
       //   : [];
 
       // Retrieve existing outcomes with error handling
-      // let existingOutcomes = [];
+      let existingOutcomes = [];
       const existingParam = action.parameters.find(p => p.key === "existingOutcomes");
-      const existingOutcomes = existingParam ? JSON.parse(existingParam.value) : [];
+      // const existingOutcomes = existingParam ? JSON.parse(existingParam.value) : [];
       if (existingParam) {
         try {
           existingOutcomes = JSON.parse(existingParam.value);
