@@ -298,17 +298,24 @@ async function createOutcomeCard(userName, customOutcomes = []) {
   // Merge custom outcomes into Earning section
   outcomes.Earning.push(...customOutcomes);
 
+  // Calculate total number of outcomes (including custom ones)
+  const totalOutcomes =
+    outcomes.Learning.length +
+    outcomes.Earning.length +
+    outcomes.Contribution.length;
+  const formattedCount = totalOutcomes.toString().padStart(2, "0"); // e.g., "05"
+
   return {
     cardsV2: [
       {
         cardId: "outcome-card",
         card: {
           header: {
-            title: `Set your outcomes for the day`,
+            title: `Let's get your day started!`,
           },
           sections: [
-            // Learning Section
             {
+              header: `Set your outcomes for the day <b><font color='#4CAF50'>${formattedCount}</font></b>`,
               widgets: [
                 {
                   decoratedText: {
@@ -333,7 +340,6 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                 },
               ],
             },
-            // Earning Section
             {
               widgets: [
                 {
@@ -372,7 +378,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                   buttonList: {
                     buttons: [
                       {
-                        text: "ADD", // ✅ Single submit button at the bottom
+                        text: "ADD",
                         onClick: {
                           action: {
                             function: "addEarningOutcome",
@@ -401,7 +407,6 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                 },
               ],
             },
-            // Contribution Section
             {
               widgets: [
                 {
@@ -430,7 +435,6 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                 },
               ],
             },
-            // Submit Button
             {
               widgets: [
                 {
