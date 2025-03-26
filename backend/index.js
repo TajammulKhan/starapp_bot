@@ -84,20 +84,17 @@ async function updateOutcomeStatus(bid, userId) {
 }
 
 async function logBadgeProgress(userId, bid) {
-  console.log(
-    `Logging badge progress for User ID: ${userId}, Badge ID: ${bid}`
-  );
+  console.log(`Logging badge progress for User ID: ${userId}, Badge ID: ${bid}`);
   const query = `
     INSERT INTO registry.badgelog (uid, bid, bstatus, outcome_status)
     VALUES ($1, $2, 'Assigned', 'checked')
-    ON CONFLICT DO NOTHING`; // Prevent duplicate entries if applicable
-
+    ON CONFLICT (uid, bid) DO NOTHING`;
   try {
     const result = await pool.query(query, [userId, bid]);
     console.log("Badge log inserted, rows affected:", result.rowCount);
   } catch (error) {
     console.error("Database Insert Error:", error.message, error.stack);
-    throw error; // Re-throw to be caught by caller
+    throw error;
   }
 }
 
