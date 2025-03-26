@@ -309,7 +309,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                 },
                 {
                   selectionInput: {
-                    name: "selectedOutcomes",
+                    name: "learningOutcomes",
                     type: "CHECK_BOX",
                     items: outcomes.Learning.map((item) => ({
                       text: `${item.text} 💰 ${item.coins}`,
@@ -335,7 +335,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                 },
                 {
                   selectionInput: {
-                    name: "selectedOutcomes",
+                    name: "earningOutcomes",
                     type: "CHECK_BOX",
                     items: outcomes.Earning.map((item) => ({
                       text: `${item.text} 💰 ${item.coins}`,
@@ -403,7 +403,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                 },
                 {
                   selectionInput: {
-                    name: "selectedOutcomes",
+                    name: "contributionOutcomes",
                     type: "CHECK_BOX",
                     items: outcomes.Contribution.map((item) => ({
                       text: `${item.text} 💰 ${item.coins}`,
@@ -533,9 +533,14 @@ async function handleCardAction(req, res) {
 
         const formInputs = req.body.common?.formInputs || {};
         console.log("Full formInputs:", JSON.stringify(formInputs, null, 2));
-        const selectedItems = formInputs.selectedOutcomes?.stringInputs?.value || [];
-        console.log("Raw selected items:", selectedItems);
-
+        
+        // Aggregate selections from all sections
+    const learningItems = formInputs.learningOutcomes?.stringInputs?.value || [];
+    const earningItems = formInputs.earningOutcomes?.stringInputs?.value || [];
+    const contributionItems = formInputs.contributionOutcomes?.stringInputs?.value || [];
+    const selectedItems = [...learningItems, ...earningItems, ...contributionItems];
+    console.log("Raw selected items:", selectedItems);
+    
         const selectedOutcomes = selectedItems
           .map((item) => {
             try {
