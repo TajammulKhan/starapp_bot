@@ -446,6 +446,136 @@ async function createOutcomeCard(userName, customOutcomes = []) {
     ],
   };
 }
+
+// ... (after createOutcomeCard)
+
+async function createCheckedOutcomeCard(userName, userId) {
+  const query = `
+    SELECT b.bid, b.bname, b.btype
+    FROM registry.badges b
+    JOIN registry.badgelog bl ON b.bid = bl.bid
+    WHERE bl.uid = $1 AND bl.outcome_status = 'checked'
+  `;
+  const result = await pool.query(query, [userId]);
+  const outcomes = { Learning: [], Earning: [], Contribution: [] };
+
+  result.rows.forEach((row) => {
+    outcomes[row.btype].push({
+      id: row.bid,
+      text: row.bname,
+      coins: 10,
+    });
+  });
+
+  return {
+    cardsV2: [
+      {
+        cardId: "checked-outcome-card",
+        card: {
+          header: { title: `Your Checked Outcomes, ${userName}` },
+          sections: [
+            {
+              widgets: [
+                {
+                  decoratedText: {
+                    icon: {
+                      iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png",
+                      altText: "Learning icon",
+                    },
+                    text: `<b><font color='#7A3BBB'>Learning</font></b>`,
+                  },
+                },
+                ...(outcomes.Learning.length > 0
+                  ? [
+                      {
+                        selectionInput: {
+                          name: "learningOutcomes",
+                          type: "CHECK_BOX",
+                          items: outcomes.Learning.map((item) => ({
+                            text: `${item.text} 💰 ${item.coins}`,
+                            value: JSON.stringify({ id: item.id, type: "Learning" }),
+                            selected: true,
+                          })),
+                        },
+                      },
+                    ]
+                  : [
+                      { textParagraph: { text: "No checked Learning outcomes." } },
+                    ]),
+              ],
+            },
+            {
+              widgets: [
+                {
+                  decoratedText: {
+                    icon: {
+                      iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Medal+(1).png",
+                      altText: "Earning icon",
+                    },
+                    text: `<b><font color='#FF6C6C'>Earning</font></b>`,
+                  },
+                },
+                ...(outcomes.Earning.length > 0
+                  ? [
+                      {
+                        selectionInput: {
+                          name: "earningOutcomes",
+                          type: "CHECK_BOX",
+                          items: outcomes.Earning.map((item) => ({
+                            text: `${item.text} 💰 ${item.coins}`,
+                            value: JSON.stringify({
+                              id: item.id,
+                              type: "Earning",
+                              text: item.text,
+                              isCustom: false,
+                            }),
+                            selected: true,
+                          })),
+                        },
+                      },
+                    ]
+                  : [
+                      { textParagraph: { text: "No checked Earning outcomes." } },
+                    ]),
+              ],
+            },
+            {
+              widgets: [
+                {
+                  decoratedText: {
+                    icon: {
+                      iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Shield+(1).png",
+                      altText: "Contribution icon",
+                    },
+                    text: `<b><font color='#3CAF91'>Contribution</font></b>`,
+                  },
+                },
+                ...(outcomes.Contribution.length > 0
+                  ? [
+                      {
+                        selectionInput: {
+                          name: "contributionOutcomes",
+                          type: "CHECK_BOX",
+                          items: outcomes.Contribution.map((item) => ({
+                            text: `${item.text} 💰 ${item.coins}`,
+                            value: JSON.stringify({ id: item.id, type: "Contribution" }),
+                            selected: true,
+                          })),
+                        },
+                      },
+                    ]
+                  : [
+                      { textParagraph: { text: "No checked Contribution outcomes." } },
+                    ]),
+              ],
+            },
+          ],
+        },
+      },
+    ],
+  };
+}
+
 app.post("/", async (req, res) => {
   try {
     console.log("[REQUEST]", JSON.stringify(req.body, null, 2));
