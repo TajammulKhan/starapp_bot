@@ -64,7 +64,10 @@ async function getUserOutcomes() {
 }
 // Add these new database functions
 async function insertCustomOutcome(text) {
-  const bcode = `CUSTOM_${text.replace(/\s+/g, '_').toUpperCase().slice(0, 10)}`; // e.g., "CUSTOM_STARAPP_BO"
+  const bcode = `CUSTOM_${text
+    .replace(/\s+/g, "_")
+    .toUpperCase()
+    .slice(0, 10)}`; // e.g., "CUSTOM_STARAPP_BO"
   const query = `
     INSERT INTO registry.badges (bname, bcode, btype)
     VALUES ($1, $2, 'Earning')
@@ -90,22 +93,26 @@ async function updateOutcomeStatus(bid, userId) {
 }
 
 async function logBadgeProgress(userId, bid) {
-  console.log(`Logging badge progress for User ID: ${userId}, Badge ID: ${bid}`);
+  console.log(
+    `Logging badge progress for User ID: ${userId}, Badge ID: ${bid}`
+  );
   const query = `
     INSERT INTO registry.badgelog (uid, bid, bstatus, outcome_status)
     VALUES ($1, $2, 'Assigned', 'checked')
     ON CONFLICT (uid, bid) DO NOTHING`;
-    try {
-      const result = await pool.query(query, [userId, bid]);
-      if (result.rowCount === 0) {
-        console.log(`Badge log not inserted (already exists) for User ID: ${userId}, Badge ID: ${bid}`);
-      } else {
-        console.log("Badge log inserted, rows affected:", result.rowCount);
-      }
-    } catch (error) {
-      console.error("Database Insert Error:", error.message, error.stack);
-      throw error;
+  try {
+    const result = await pool.query(query, [userId, bid]);
+    if (result.rowCount === 0) {
+      console.log(
+        `Badge log not inserted (already exists) for User ID: ${userId}, Badge ID: ${bid}`
+      );
+    } else {
+      console.log("Badge log inserted, rows affected:", result.rowCount);
     }
+  } catch (error) {
+    console.error("Database Insert Error:", error.message, error.stack);
+    throw error;
+  }
 }
 
 // Construct Daily Progress Card
@@ -323,7 +330,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                       selected: false,
                     })),
                   },
-                }
+                },
               ],
             },
             // Earning Section
@@ -413,7 +420,10 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                     type: "CHECK_BOX",
                     items: outcomes.Contribution.map((item) => ({
                       text: `${item.text} 💰 ${item.coins}`,
-                      value: JSON.stringify({ id: item.id, type: "Contribution" }),
+                      value: JSON.stringify({
+                        id: item.id,
+                        type: "Contribution",
+                      }),
                       selected: false,
                     })),
                   },
@@ -479,7 +489,8 @@ async function createCheckedOutcomeCard(userName, userId) {
                 {
                   decoratedText: {
                     icon: {
-                      iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png",
+                      iconUrl:
+                        "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png",
                       altText: "Learning icon",
                     },
                     text: `<b><font color='#7A3BBB'>Learning</font></b>`,
@@ -493,14 +504,21 @@ async function createCheckedOutcomeCard(userName, userId) {
                           type: "CHECK_BOX",
                           items: outcomes.Learning.map((item) => ({
                             text: `${item.text} 💰 ${item.coins}`,
-                            value: JSON.stringify({ id: item.id, type: "Learning" }),
+                            value: JSON.stringify({
+                              id: item.id,
+                              type: "Learning",
+                            }),
                             selected: true,
                           })),
                         },
                       },
                     ]
                   : [
-                      { textParagraph: { text: "No checked Learning outcomes." } },
+                      {
+                        textParagraph: {
+                          text: "No checked Learning outcomes.",
+                        },
+                      },
                     ]),
               ],
             },
@@ -509,7 +527,8 @@ async function createCheckedOutcomeCard(userName, userId) {
                 {
                   decoratedText: {
                     icon: {
-                      iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Medal+(1).png",
+                      iconUrl:
+                        "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Medal+(1).png",
                       altText: "Earning icon",
                     },
                     text: `<b><font color='#FF6C6C'>Earning</font></b>`,
@@ -535,7 +554,9 @@ async function createCheckedOutcomeCard(userName, userId) {
                       },
                     ]
                   : [
-                      { textParagraph: { text: "No checked Earning outcomes." } },
+                      {
+                        textParagraph: { text: "No checked Earning outcomes." },
+                      },
                     ]),
               ],
             },
@@ -544,7 +565,8 @@ async function createCheckedOutcomeCard(userName, userId) {
                 {
                   decoratedText: {
                     icon: {
-                      iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Shield+(1).png",
+                      iconUrl:
+                        "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Shield+(1).png",
                       altText: "Contribution icon",
                     },
                     text: `<b><font color='#3CAF91'>Contribution</font></b>`,
@@ -558,14 +580,21 @@ async function createCheckedOutcomeCard(userName, userId) {
                           type: "CHECK_BOX",
                           items: outcomes.Contribution.map((item) => ({
                             text: `${item.text} 💰 ${item.coins}`,
-                            value: JSON.stringify({ id: item.id, type: "Contribution" }),
+                            value: JSON.stringify({
+                              id: item.id,
+                              type: "Contribution",
+                            }),
                             selected: true,
                           })),
                         },
                       },
                     ]
                   : [
-                      { textParagraph: { text: "No checked Contribution outcomes." } },
+                      {
+                        textParagraph: {
+                          text: "No checked Contribution outcomes.",
+                        },
+                      },
                     ]),
               ],
             },
@@ -625,9 +654,12 @@ async function handleCardAction(req, res) {
 
   switch (action.actionMethodName) {
     case "addEarningOutcome":
-      const customOutcomeText = req.body.common?.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
+      const customOutcomeText =
+        req.body.common?.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
       let existingOutcomes = [];
-      const existingParam = action.parameters.find(p => p.key === "existingOutcomes");
+      const existingParam = action.parameters.find(
+        (p) => p.key === "existingOutcomes"
+      );
       if (existingParam) {
         try {
           existingOutcomes = JSON.parse(existingParam.value);
@@ -640,7 +672,8 @@ async function handleCardAction(req, res) {
       if (!customOutcomeText) {
         return res.json({
           actionResponse: { type: "UPDATE_MESSAGE" },
-          cardsV2: (await createOutcomeCard(userName, existingOutcomes)).cardsV2,
+          cardsV2: (await createOutcomeCard(userName, existingOutcomes))
+            .cardsV2,
           text: "Please enter a valid outcome!",
         });
       }
@@ -655,12 +688,17 @@ async function handleCardAction(req, res) {
 
       return res.json({
         actionResponse: { type: "UPDATE_MESSAGE" },
-        cardsV2: (await createOutcomeCard(userName, [...existingOutcomes, newOutcome])).cardsV2,
+        cardsV2: (
+          await createOutcomeCard(userName, [...existingOutcomes, newOutcome])
+        ).cardsV2,
       });
 
     case "submitOutcomes":
       try {
-        console.log("Submit action triggered with body:", JSON.stringify(req.body, null, 2));
+        console.log(
+          "Submit action triggered with body:",
+          JSON.stringify(req.body, null, 2)
+        );
         const userId = await getUserIdByEmail(email);
         if (!userId) {
           console.error("User not found for email:", email);
@@ -669,13 +707,20 @@ async function handleCardAction(req, res) {
 
         const formInputs = req.body.common?.formInputs || {};
         console.log("Full formInputs:", JSON.stringify(formInputs, null, 2));
-        
+
         // Aggregate selections from all sections
-    const learningItems = formInputs.learningOutcomes?.stringInputs?.value || [];
-    const earningItems = formInputs.earningOutcomes?.stringInputs?.value || [];
-    const contributionItems = formInputs.contributionOutcomes?.stringInputs?.value || [];
-    const selectedItems = [...learningItems, ...earningItems, ...contributionItems];
-    console.log("Raw selected items:", selectedItems);
+        const learningItems =
+          formInputs.learningOutcomes?.stringInputs?.value || [];
+        const earningItems =
+          formInputs.earningOutcomes?.stringInputs?.value || [];
+        const contributionItems =
+          formInputs.contributionOutcomes?.stringInputs?.value || [];
+        const selectedItems = [
+          ...learningItems,
+          ...earningItems,
+          ...contributionItems,
+        ];
+        console.log("Raw selected items:", selectedItems);
 
         const selectedOutcomes = selectedItems
           .map((item) => {
@@ -719,16 +764,30 @@ async function handleCardAction(req, res) {
               await updateOutcomeStatus(bid, userId); // Pass userId
             }
 
-            console.log(`Logging badge progress for ${bid} (${outcome.text || "Existing Badge"})`);
+            console.log(
+              `Logging badge progress for ${bid} (${
+                outcome.text || "Existing Badge"
+              })`
+            );
             await logBadgeProgress(userId, bid);
           } catch (error) {
-            console.error("Error processing outcome:", error.message, error.stack);
+            console.error(
+              "Error processing outcome:",
+              error.message,
+              error.stack
+            );
             throw error;
           }
         }
 
-        console.log("Successfully processed", selectedOutcomes.length, "outcomes");
-        return res.json(createOutcomeConfirmationCard(userName, selectedOutcomes.length));
+        console.log(
+          "Successfully processed",
+          selectedOutcomes.length,
+          "outcomes"
+        );
+        return res.json(
+          createOutcomeConfirmationCard(userName, selectedOutcomes.length)
+        );
       } catch (error) {
         console.error("Submission error:", error.message);
         console.error("Error stack:", error.stack);
@@ -767,6 +826,13 @@ async function handleTextMessage(req, res) {
 
     case "outcomes":
       return res.json(await createOutcomeCard(userName));
+
+    case "selected":
+      const userIdChecked = await getUserIdByEmail(email);
+      if (!userIdChecked) {
+        return res.status(400).json({ text: "User not found" });
+      }
+      return res.json(await createCheckedOutcomeCard(userName, userIdChecked));
 
     default:
       return res.json({ text: `Unsupported command: ${messageText}` });
