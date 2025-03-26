@@ -82,17 +82,17 @@ async function updateOutcomeStatus(bid) {
 
 async function logBadgeProgress(userId, bid) {
   console.log(`Logging badge progress for User ID: ${userId}, Badge ID: ${bid}`);
-  
   const query = `
     INSERT INTO registry.badgelog (uid, bid, bstatus, outcome_status)
     VALUES ($1, $2, 'Assigned', 'checked')
-  `;
+    ON CONFLICT DO NOTHING`; // Prevent duplicate entries if applicable
 
   try {
-    await pool.query(query, [userId, bid]);
-    console.log("Badge log successfully inserted.");
+    const result = await pool.query(query, [userId, bid]);
+    console.log("Badge log inserted, rows affected:", result.rowCount);
   } catch (error) {
-    console.error("Database Insert Error:", error);
+    console.error("Database Insert Error:", error.message, error.stack);
+    throw error; // Re-throw to be caught by caller
   }
 }
 
@@ -429,12 +429,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                         onClick: {
                           action: {
                             function: "submitOutcomes",
-                            parameters: [
-                              {
-                                key: "selectedOutcomes",
-                                value: "${formInputs.selectedOutcomes}",
-                              },
-                            ],
+                            parameters: [],
                           },
                         },
                       },
