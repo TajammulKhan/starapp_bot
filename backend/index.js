@@ -457,7 +457,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
   };
 }
 
-async function createCheckedOutcomeCard(userName, userId) {
+async function createCheckedOutcomeCard(userName, userId, customOutcomes = []) {
   const query = `
     SELECT b.bid, b.bname, b.btype
     FROM registry.badges b
@@ -475,7 +475,10 @@ async function createCheckedOutcomeCard(userName, userId) {
     });
   });
 
-  // Calculate total number of checked outcomes
+  // Merge custom outcomes into Earning section
+  outcomes.Earning.push(...customOutcomes);
+
+  // Calculate total number of checked outcomes (including custom ones)
   const totalCheckedOutcomes =
     outcomes.Learning.length +
     outcomes.Earning.length +
@@ -552,7 +555,7 @@ async function createCheckedOutcomeCard(userName, userId) {
                               id: item.id,
                               type: "Earning",
                               text: item.text,
-                              isCustom: false,
+                              isCustom: item.isCustom || false,
                             }),
                             selected: true,
                           })),
@@ -564,6 +567,47 @@ async function createCheckedOutcomeCard(userName, userId) {
                         textParagraph: { text: "No submitted Earning outcomes." },
                       },
                     ]),
+                {
+                  textInput: {
+                    name: "customEarningOutcome",
+                    label: "Add your own Earning outcome",
+                  },
+                },
+                {
+                  buttonList: {
+                    buttons: [
+                      {
+                        text: "ADD",
+                        onClick: {
+                          action: {
+                            function: "addEarningOutcome",
+                            parameters: [
+                              {
+                                key: "customEarningOutcome",
+                                value: "${formInputs.customEarningOutcome}",
+                              },
+                              {
+                                key: "existingOutcomes",
+                                value: JSON.stringify(
+                                  customOutcomes.map((oc) => ({
+                                    id: oc.id,
+                                    text: oc.text,
+                                    coins: oc.coins,
+                                    isCustom: oc.isCustom,
+                                  }))
+                                ),
+                              },
+                              {
+                                key: "cardType",
+                                value: "checkedOutcomeCard", // To identify which card to update
+                              },
+                            ],
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
               ],
             },
             {
