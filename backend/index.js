@@ -74,7 +74,9 @@ async function insertCustomOutcome(text) {
 }
 // New function to update existing outcomes
 async function updateOutcomeStatus(bid) {
-  const query = ``;
+  const query = `UPDATE registry.badgelog
+    SET outcome_status = 'checked' 
+    WHERE bid = $1`;
   await pool.query(query, [bid]);
 }
 
@@ -82,8 +84,8 @@ async function logBadgeProgress(userId, bid) {
   console.log(`Logging badge progress for User ID: ${userId}, Badge ID: ${bid}`);
   
   const query = `
-    INSERT INTO registry.badgelog (uid, bid, bstatus)
-    VALUES ($1, $2, 'Assigned')
+    INSERT INTO registry.badgelog (uid, bid, bstatus, outcome_status)
+    VALUES ($1, $2, 'Assigned', 'checked')
   `;
 
   try {
@@ -500,12 +502,14 @@ async function handleCardAction(req, res) {
     case "addEarningOutcome":
       const customOutcomeText =
         req.body.common?.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
+      // const existingOutcomes = action.parameters
+      //   ? JSON.parse(action.parameters.find(p => p.key === "existingOutcomes")?.value || "[]")
+      //   : [];
 
       // Retrieve existing outcomes with error handling
-      let existingOutcomes = [];
-      const existingParam = action.parameters?.find(
-        (p) => p.key === "existingOutcomes"
-      );
+      // let existingOutcomes = [];
+      const existingParam = action.parameters.find(p => p.key === "existingOutcomes");
+      const existingOutcomes = existingParam ? JSON.parse(existingParam.value) : [];
       if (existingParam) {
         try {
           existingOutcomes = JSON.parse(existingParam.value);
