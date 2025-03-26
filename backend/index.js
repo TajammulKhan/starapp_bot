@@ -457,8 +457,6 @@ async function createOutcomeCard(userName, customOutcomes = []) {
   };
 }
 
-// ... (after createOutcomeCard)
-
 async function createCheckedOutcomeCard(userName, userId) {
   const query = `
     SELECT b.bid, b.bname, b.btype
@@ -477,14 +475,22 @@ async function createCheckedOutcomeCard(userName, userId) {
     });
   });
 
+  // Calculate total number of checked outcomes
+  const totalCheckedOutcomes =
+    outcomes.Learning.length +
+    outcomes.Earning.length +
+    outcomes.Contribution.length;
+  const formattedCount = totalCheckedOutcomes.toString().padStart(2, "0"); // e.g., "06"
+
   return {
     cardsV2: [
       {
         cardId: "checked-outcome-card",
         card: {
-          header: { title: `Submit your completed outcomes` },
+          header: { title: `Good evening, ${userName}!` },
           sections: [
             {
+              header: `Submit your completed outcomes <b><font color='#4CAF50'>${formattedCount}</font></b>`,
               widgets: [
                 {
                   decoratedText: {
@@ -596,6 +602,26 @@ async function createCheckedOutcomeCard(userName, userId) {
                         },
                       },
                     ]),
+              ],
+            },
+            // Submit Button
+            {
+              widgets: [
+                {
+                  buttonList: {
+                    buttons: [
+                      {
+                        text: "SUBMIT",
+                        onClick: {
+                          action: {
+                            function: "submitCompletedOutcomes",
+                            parameters: [],
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
               ],
             },
           ],
