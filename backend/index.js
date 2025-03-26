@@ -43,13 +43,15 @@ async function getUserBadges(userId) {
     : { completedBadges: 0, assignedBadges: 0 };
 }
 
-async function getUserOutcomes() {
+async function getUserOutcomes(userId) {
   const query = `
-    SELECT bid, bname, btype 
-    FROM registry.badges 
-    WHERE btype IN ('Learning', 'Earning', 'Contribution')
+    SELECT b.bid, b.bname, b.btype 
+    FROM registry.badges b
+    LEFT JOIN registry.badgelog bl ON b.bid = bl.bid AND bl.uid = $1
+    WHERE b.btype IN ('Learning', 'Earning', 'Contribution')
+    AND (bl.outcome_status IS NULL OR bl.outcome_status != 'completed')
   `;
-  const result = await pool.query(query);
+  const result = await pool.query(query, [userId]);
   const outcomes = { Learning: [], Earning: [], Contribution: [] };
 
   result.rows.forEach((row) => {
@@ -292,8 +294,13 @@ app.get("/", (req, res) => {
 
 // Handle Google Chat Webhook Requests
 
-async function createOutcomeCard(userName, customOutcomes = []) {
-  const outcomes = await getUserOutcomes();
+async function createOutcomeCard(userName, email, customOutcomes = []) {
+  const userId = await getUserIdByEmail(email);
+  if (!userId) {
+    throw new Error("User not found");
+  }
+
+  const outcomes = await getUserOutcomes(userId);
 
   // Merge custom outcomes into Earning section
   outcomes.Earning.push(...customOutcomes);
@@ -899,41 +906,179 @@ async function handleCardAction(req, res) {
   }
 }
 
-async function handleTextMessage(req, res) {
-  const { message } = req.body;
-  const messageText = message?.text?.toLowerCase().trim();
-  const userName = message?.sender?.displayName || "User";
-  const email = message?.sender?.email;
+async function handleCardAction(req, res) {
+  const { action, user } = req.body;
+  const userName = user?.displayName || "User";
+  const email = user?.email;
 
-  switch (messageText) {
-    case "progress":
-      // Return daily progress summary
-      const userId = await getUserIdByEmail(email);
-      const totalCoins = await getTotalCoins(userId);
-      const { completedBadges, assignedBadges } = await getUserBadges(userId);
-
-      return res.json(
-        createGoogleChatCard(
-          userName,
-          totalCoins,
-          10, // coinsDifference
-          completedBadges,
-          assignedBadges
-        )
+  switch (action.actionMethodName) {
+    case "addEarningOutcome":
+      const customOutcomeText =
+        req.body.common?.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
+      let existingOutcomes = [];
+      const existingParam = action.parameters.find(
+        (p) => p.key === "existingOutcomes"
       );
-
-    case "outcomes":
-      return res.json(await createOutcomeCard(userName));
-
-    case "selected":
-      const userIdChecked = await getUserIdByEmail(email);
-      if (!userIdChecked) {
-        return res.status(400).json({ text: "User not found" });
+      const cardTypeParam = action.parameters.find((p) => p.key === "cardType");
+      const cardType = cardTypeParam ? cardTypeParam.value : "outcomeCard";
+      if (existingParam) {
+        try {
+          existingOutcomes = JSON.parse(existingParam.value);
+        } catch (e) {
+          console.error("Error parsing existingOutcomes:", e);
+          existingOutcomes = [];
+        }
       }
-      return res.json(await createCheckedOutcomeCard(userName, userIdChecked));
+
+      if (!customOutcomeText) {
+        return res.json({
+          actionResponse: { type: "UPDATE_MESSAGE" },
+          cardsV2:
+            cardType === "checkedOutcomeCard"
+              ? (
+                  await createCheckedOutcomeCard(
+                    userName,
+                    await getUserIdByEmail(email),
+                    existingOutcomes
+                  )
+                ).cardsV2
+              : (await createOutcomeCard(userName, email, existingOutcomes))
+                  .cardsV2,
+          text: "Please enter a valid outcome!",
+        });
+      }
+
+      const newOutcome = {
+        id: `custom_${Date.now()}`,
+        text: customOutcomeText,
+        coins: 10,
+        type: "Earning",
+        isCustom: true,
+      };
+
+      return res.json({
+        actionResponse: { type: "UPDATE_MESSAGE" },
+        cardsV2:
+          cardType === "checkedOutcomeCard"
+            ? (
+                await createCheckedOutcomeCard(
+                  userName,
+                  await getUserIdByEmail(email),
+                  [...existingOutcomes, newOutcome]
+                )
+              ).cardsV2
+            : (
+                await createOutcomeCard(userName, email, [
+                  ...existingOutcomes,
+                  newOutcome,
+                ])
+              ).cardsV2,
+      });
+
+    case "submitOutcomes":
+      try {
+        console.log(
+          "Submit action triggered with body:",
+          JSON.stringify(req.body, null, 2)
+        );
+        const userId = await getUserIdByEmail(email);
+        if (!userId) {
+          console.error("User not found for email:", email);
+          return res.status(400).json({ text: "User not found" });
+        }
+
+        const formInputs = req.body.common?.formInputs || {};
+        console.log("Full formInputs:", JSON.stringify(formInputs, null, 2));
+
+        const learningItems =
+          formInputs.learningOutcomes?.stringInputs?.value || [];
+        const earningItems =
+          formInputs.earningOutcomes?.stringInputs?.value || [];
+        const contributionItems =
+          formInputs.contributionOutcomes?.stringInputs?.value || [];
+        const selectedItems = [
+          ...learningItems,
+          ...earningItems,
+          ...contributionItems,
+        ];
+        console.log("Raw selected items:", selectedItems);
+
+        const selectedOutcomes = selectedItems
+          .map((item) => {
+            try {
+              return JSON.parse(item);
+            } catch (e) {
+              console.error("Failed to parse outcome:", item, e);
+              return null;
+            }
+          })
+          .filter(Boolean);
+
+        console.log("Parsed outcomes:", selectedOutcomes);
+
+        if (selectedOutcomes.length === 0) {
+          console.log("No valid outcomes selected");
+          return res.json(createOutcomeConfirmationCard(userName, 0));
+        }
+
+        for (const outcome of selectedOutcomes) {
+          try {
+            console.log("Processing outcome:", JSON.stringify(outcome));
+
+            if (!outcome.id && !outcome.isCustom) {
+              console.error("Invalid outcome structure:", outcome);
+              continue;
+            }
+
+            let bid;
+            if (outcome.isCustom) {
+              console.log("Inserting custom outcome:", outcome.text);
+              bid = await insertCustomOutcome(outcome.text);
+              console.log("Custom outcome inserted with bid:", bid);
+            } else {
+              bid = parseInt(outcome.id);
+              if (isNaN(bid)) {
+                console.error("Invalid bid format:", outcome.id);
+                continue;
+              }
+              console.log("Updating status for existing outcome:", bid);
+              await updateOutcomeStatus(bid, userId);
+            }
+
+            console.log(
+              `Logging badge progress for ${bid} (${
+                outcome.text || "Existing Badge"
+              })`
+            );
+            await logBadgeProgress(userId, bid);
+          } catch (error) {
+            console.error(
+              "Error processing outcome:",
+              error.message,
+              error.stack
+            );
+            throw error;
+          }
+        }
+
+        console.log(
+          "Successfully processed",
+          selectedOutcomes.length,
+          "outcomes"
+        );
+        return res.json(
+          createOutcomeConfirmationCard(userName, selectedOutcomes.length)
+        );
+      } catch (error) {
+        console.error("Submission error:", error.message);
+        console.error("Error stack:", error.stack);
+        return res.status(500).json({
+          text: "⚠️ Failed to save outcomes. Please try again later.",
+        });
+      }
 
     default:
-      return res.json({ text: `Unsupported command: ${messageText}` });
+      return res.status(400).json({ text: "Unsupported action" });
   }
 }
 
