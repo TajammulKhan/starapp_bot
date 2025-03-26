@@ -564,7 +564,9 @@ async function createCheckedOutcomeCard(userName, userId, customOutcomes = []) {
                     ]
                   : [
                       {
-                        textParagraph: { text: "No submitted Earning outcomes." },
+                        textParagraph: {
+                          text: "No submitted Earning outcomes.",
+                        },
                       },
                     ]),
                 {
@@ -730,6 +732,8 @@ async function handleCardAction(req, res) {
       const existingParam = action.parameters.find(
         (p) => p.key === "existingOutcomes"
       );
+      const cardTypeParam = action.parameters.find((p) => p.key === "cardType");
+      const cardType = cardTypeParam ? cardTypeParam.value : "outcomeCard"; // Default to outcomeCard
       if (existingParam) {
         try {
           existingOutcomes = JSON.parse(existingParam.value);
@@ -742,8 +746,16 @@ async function handleCardAction(req, res) {
       if (!customOutcomeText) {
         return res.json({
           actionResponse: { type: "UPDATE_MESSAGE" },
-          cardsV2: (await createOutcomeCard(userName, existingOutcomes))
-            .cardsV2,
+          cardsV2:
+            cardType === "checkedOutcomeCard"
+              ? (
+                  await createCheckedOutcomeCard(
+                    userName,
+                    await getUserIdByEmail(email),
+                    existingOutcomes
+                  )
+                ).cardsV2
+              : (await createOutcomeCard(userName, existingOutcomes)).cardsV2,
           text: "Please enter a valid outcome!",
         });
       }
@@ -758,9 +770,21 @@ async function handleCardAction(req, res) {
 
       return res.json({
         actionResponse: { type: "UPDATE_MESSAGE" },
-        cardsV2: (
-          await createOutcomeCard(userName, [...existingOutcomes, newOutcome])
-        ).cardsV2,
+        cardsV2:
+          cardType === "checkedOutcomeCard"
+            ? (
+                await createCheckedOutcomeCard(
+                  userName,
+                  await getUserIdByEmail(email),
+                  [...existingOutcomes, newOutcome]
+                )
+              ).cardsV2
+            : (
+                await createOutcomeCard(userName, [
+                  ...existingOutcomes,
+                  newOutcome,
+                ])
+              ).cardsV2,
       });
 
     case "submitOutcomes":
