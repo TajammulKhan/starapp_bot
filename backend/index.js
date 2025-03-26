@@ -1082,5 +1082,45 @@ async function handleCardAction(req, res) {
   }
 }
 
+// Add the handleTextMessage function to handle user prompts
+async function handleTextMessage(req, res) {
+  const { message } = req.body;
+  const messageText = message?.text?.toLowerCase().trim();
+  const userName = message?.sender?.displayName || "User";
+  const email = message?.sender?.email;
+
+  switch (messageText) {
+    case "greet":
+      const userIdGreet = await getUserIdByEmail(email);
+      if (!userIdGreet) {
+        return res.status(400).json({ text: "User not found" });
+      }
+      const totalCoins = await getTotalCoins(userIdGreet);
+      const { completedBadges, assignedBadges } = await getUserBadges(userIdGreet);
+      return res.json(
+        createGoogleChatCard(
+          userName,
+          totalCoins,
+          10, // coinsDifference (hardcoded as per original code)
+          completedBadges,
+          assignedBadges
+        )
+      );
+
+    case "outcomes":
+      return res.json(await createOutcomeCard(userName, email));
+
+    case "selected":
+      const userIdChecked = await getUserIdByEmail(email);
+      if (!userIdChecked) {
+        return res.status(400).json({ text: "User not found" });
+      }
+      return res.json(await createCheckedOutcomeCard(userName, userIdChecked));
+
+    default:
+      return res.json({ text: `Unsupported command: ${messageText}` });
+  }
+}
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
