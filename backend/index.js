@@ -7,62 +7,83 @@ app.use(express.json());
 
 // Fetch User ID from Keycloak User Table
 async function getUserIdByEmail(email) {
-  const query = `SELECT id FROM keycloak.user_entity WHERE email = $1`;
-  const result = await pool.query(query, [email]);
-  return result.rows.length > 0 ? result.rows[0].id : null;
+  try {
+    const query = `SELECT id FROM keycloak.user_entity WHERE email = $1`;
+    const result = await pool.query(query, [email]);
+    return result.rows.length > 0 ? result.rows[0].id : null;
+  } catch (error) {
+    console.error("Error in getUserIdByEmail:", error.message, error.stack);
+    throw new Error("Failed to fetch user ID");
+  }
 }
 
 // Fetch Total Coins from badgelog table
+// Fetch Total Coins from user_coins table
 async function getTotalCoins(userId) {
-  const query = `
-    SELECT COALESCE(
-      total_learning_coins + total_earning_coins + total_contribution_coins, 0
-    ) AS total
-    FROM registry.user_coins
-    WHERE uid = $1
-  `;
-  const result = await pool.query(query, [userId]);
-  return result.rows.length > 0 ? result.rows[0].total : 0;
+  try {
+    const query = `
+      SELECT COALESCE(
+        total_learning_coins + total_earning_coins + total_contribution_coins, 0
+      ) AS total
+      FROM registry.user_coins
+      WHERE uid = $1
+    `;
+    const result = await pool.query(query, [userId]);
+    return result.rows.length > 0 ? result.rows[0].total : 0;
+  } catch (error) {
+    console.error("Error in getTotalCoins:", error.message, error.stack);
+    return 0; // Fallback to 0 if the query fails
+  }
 }
 
 // Fetch Total Badges from badgelog table
 async function getUserBadges(userId) {
-  const query = `
-    SELECT 
-      COUNT(CASE WHEN bstatus = 'Completed' THEN 1 END) AS "completedBadges",
-      COUNT(CASE WHEN bstatus IN ('Assigned', 'In Progress') THEN 1 END) AS "assignedBadges"
-    FROM registry.badgelog
-    WHERE uid = $1
-  `;
-  const result = await pool.query(query, [userId]);
-  return result.rows.length > 0
-    ? {
-        completedBadges: result.rows[0].completedBadges || 0,
-        assignedBadges: result.rows[0].assignedBadges || 0,
-      }
-    : { completedBadges: 0, assignedBadges: 0 };
+  try {
+    const query = `
+      SELECT 
+        COUNT(CASE WHEN bstatus = 'Completed' THEN 1 END) AS "completedBadges",
+        COUNT(CASE WHEN bstatus IN ('Assigned', 'In Progress') THEN 1 END) AS "assignedBadges"
+      FROM registry.badgelog
+      WHERE uid = $1
+    `;
+    const result = await pool.query(query, [userId]);
+    return result.rows.length > 0
+      ? {
+          completedBadges: result.rows[0].completedBadges || 0,
+          assignedBadges: result.rows[0].assignedBadges || 0,
+        }
+      : { completedBadges: 0, assignedBadges: 0 };
+  } catch (error) {
+    console.error("Error in getUserBadges:", error.message, error.stack);
+    return { completedBadges: 0, assignedBadges: 0 }; // Fallback to 0 if the query fails
+  }
 }
 
 async function getUserOutcomes(userId) {
-  const query = `
-    SELECT b.bid, b.bname, b.btype 
-    FROM registry.badges b
-    LEFT JOIN registry.badgelog bl ON b.bid = bl.bid AND bl.uid = $1
-    WHERE b.btype IN ('Learning', 'Earning', 'Contribution')
-    AND (bl.outcome_status IS NULL OR bl.outcome_status != 'completed')
-  `;
-  const result = await pool.query(query, [userId]);
-  const outcomes = { Learning: [], Earning: [], Contribution: [] };
+  try {
+    const query = `
+      SELECT b.bid, b.bname, b.btype 
+      FROM registry.badges b
+      LEFT JOIN registry.badgelog bl ON b.bid = bl.bid AND bl.uid = $1
+      WHERE b.btype IN ('Learning', 'Earning', 'Contribution')
+      AND (bl.outcome_status IS NULL OR bl.outcome_status != 'completed')
+    `;
+    const result = await pool.query(query, [userId]);
+    const outcomes = { Learning: [], Earning: [], Contribution: [] };
 
-  result.rows.forEach((row) => {
-    outcomes[row.btype].push({
-      id: row.bid,
-      text: row.bname,
-      coins: 10,
+    result.rows.forEach((row) => {
+      outcomes[row.btype].push({
+        id: row.bid,
+        text: row.bname,
+        coins: 10,
+      });
     });
-  });
 
-  return outcomes;
+    return outcomes;
+  } catch (error) {
+    console.error("Error in getUserOutcomes:", error.message, error.stack);
+    return { Learning: [], Earning: [], Contribution: [] }; // Fallback to empty outcomes
+  }
 }
 // Add these new database functions
 async function insertCustomOutcome(text) {
@@ -83,15 +104,21 @@ async function insertCustomOutcome(text) {
     throw error;
   }
 }
+
 // New function to update existing outcomes
 async function updateOutcomeStatus(bid, userId) {
-  const query = `
-    INSERT INTO registry.badgelog (uid, bid, bstatus, outcome_status)
-    VALUES ($1, $2, 'Assigned', 'checked')
-    ON CONFLICT (uid, bid) DO UPDATE
-    SET outcome_status = 'checked'
-  `;
-  await pool.query(query, [userId, bid]);
+  try {
+    const query = `
+      INSERT INTO registry.badgelog (uid, bid, bstatus, outcome_status)
+      VALUES ($1, $2, 'Assigned', 'checked')
+      ON CONFLICT (uid, bid) DO UPDATE
+      SET outcome_status = 'checked'
+    `;
+    await pool.query(query, [userId, bid]);
+  } catch (error) {
+    console.error("Error in updateOutcomeStatus:", error.message, error.stack);
+    throw error;
+  }
 }
 
 async function logBadgeProgress(userId, bid) {
@@ -228,7 +255,7 @@ function createGoogleChatCard(
                       {
                         text: "Go to Star App →",
                         onClick: {
-                          openLink: { url: "https://starapp.example.com" },
+                          openLink: { url: "https://starapp-frontend.web.app/" },
                         },
                       },
                     ],
@@ -1082,43 +1109,50 @@ async function handleCardAction(req, res) {
   }
 }
 
-// Add the handleTextMessage function to handle user prompts
+// Updated handleTextMessage function with improved error handling
 async function handleTextMessage(req, res) {
   const { message } = req.body;
   const messageText = message?.text?.toLowerCase().trim();
   const userName = message?.sender?.displayName || "User";
   const email = message?.sender?.email;
 
-  switch (messageText) {
-    case "greet":
-      const userIdGreet = await getUserIdByEmail(email);
-      if (!userIdGreet) {
-        return res.status(400).json({ text: "User not found" });
-      }
-      const totalCoins = await getTotalCoins(userIdGreet);
-      const { completedBadges, assignedBadges } = await getUserBadges(userIdGreet);
-      return res.json(
-        createGoogleChatCard(
-          userName,
-          totalCoins,
-          10, // coinsDifference (hardcoded as per original code)
-          completedBadges,
-          assignedBadges
-        )
-      );
+  try {
+    switch (messageText) {
+      case "greet":
+        const userIdGreet = await getUserIdByEmail(email);
+        if (!userIdGreet) {
+          console.log(`User not found for email: ${email}`);
+          return res.status(400).json({ text: "User not found. Please register with StarApp to get started!" });
+        }
 
-    case "outcomes":
-      return res.json(await createOutcomeCard(userName, email));
+        const totalCoins = await getTotalCoins(userIdGreet);
+        const { completedBadges, assignedBadges } = await getUserBadges(userIdGreet);
+        return res.json(
+          createGoogleChatCard(
+            userName,
+            totalCoins,
+            10, // coinsDifference (hardcoded as per original code)
+            completedBadges,
+            assignedBadges
+          )
+        );
 
-    case "selected":
-      const userIdChecked = await getUserIdByEmail(email);
-      if (!userIdChecked) {
-        return res.status(400).json({ text: "User not found" });
-      }
-      return res.json(await createCheckedOutcomeCard(userName, userIdChecked));
+      case "outcomes":
+        return res.json(await createOutcomeCard(userName, email));
 
-    default:
-      return res.json({ text: `Unsupported command: ${messageText}` });
+      case "selected":
+        const userIdChecked = await getUserIdByEmail(email);
+        if (!userIdChecked) {
+          return res.status(400).json({ text: "User not found. Please register with StarApp to get started!" });
+        }
+        return res.json(await createCheckedOutcomeCard(userName, userIdChecked));
+
+      default:
+        return res.json({ text: `Unsupported command: ${messageText}` });
+    }
+  } catch (error) {
+    console.error("Error in handleTextMessage:", error.message, error.stack);
+    return res.status(500).json({ text: "⚠️ An error occurred while processing your request. Please try again later." });
   }
 }
 
