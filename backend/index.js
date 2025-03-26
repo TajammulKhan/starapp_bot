@@ -82,10 +82,11 @@ async function updateOutcomeStatus(bid) {
   await pool.query(query, [bid]);
 }
 
+// Update badge log to mark outcome_status as checked
 async function logBadgeProgress(userId, bid) {
   const query = `
-    INSERT INTO registry.badgelog (uid, bid, bstatus)
-    VALUES ($1, $2, 'Assigned')
+    INSERT INTO registry.badgelog (uid, bid, bstatus, outcome_status)
+    VALUES ($1, $2, 'Assigned', 'checked')
   `;
   await pool.query(query, [userId, bid]);
 }
