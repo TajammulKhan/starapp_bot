@@ -89,13 +89,17 @@ async function logBadgeProgress(userId, bid) {
     INSERT INTO registry.badgelog (uid, bid, bstatus, outcome_status)
     VALUES ($1, $2, 'Assigned', 'checked')
     ON CONFLICT (uid, bid) DO NOTHING`;
-  try {
-    const result = await pool.query(query, [userId, bid]);
-    console.log("Badge log inserted, rows affected:", result.rowCount);
-  } catch (error) {
-    console.error("Database Insert Error:", error.message, error.stack);
-    throw error;
-  }
+    try {
+      const result = await pool.query(query, [userId, bid]);
+      if (result.rowCount === 0) {
+        console.log(`Badge log not inserted (already exists) for User ID: ${userId}, Badge ID: ${bid}`);
+      } else {
+        console.log("Badge log inserted, rows affected:", result.rowCount);
+      }
+    } catch (error) {
+      console.error("Database Insert Error:", error.message, error.stack);
+      throw error;
+    }
 }
 
 // Construct Daily Progress Card
@@ -339,7 +343,7 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                         id: item.id,
                         type: "Earning",
                         text: item.text,
-                        isCustom: item.isCustom,
+                        isCustom: item.isCustom || false,
                       }),
                       selected: false,
                     })),
@@ -528,6 +532,7 @@ async function handleCardAction(req, res) {
         }
 
         const formInputs = req.body.common?.formInputs || {};
+        console.log("Full formInputs:", JSON.stringify(formInputs, null, 2));
         const selectedItems = formInputs.selectedOutcomes?.stringInputs?.value || [];
         console.log("Raw selected items:", selectedItems);
 
@@ -562,6 +567,7 @@ async function handleCardAction(req, res) {
             if (outcome.isCustom) {
               console.log("Inserting custom outcome:", outcome.text);
               bid = await insertCustomOutcome(outcome.text);
+              console.log("Custom outcome inserted with bid:", bid);
             } else {
               bid = parseInt(outcome.id);
               if (isNaN(bid)) {
