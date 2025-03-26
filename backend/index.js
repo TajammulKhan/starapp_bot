@@ -544,93 +544,79 @@ async function handleCardAction(req, res) {
         ).cardsV2,
       });
 
-    case "submitOutcomes":
-      try {
-        console.log(
-          "Submit action triggered with body:",
-          JSON.stringify(req.body, null, 2)
-        );
-        const userId = await getUserIdByEmail(email);
-        if (!userId) {
-          console.error("User not found for email:", email);
-          return res.status(400).json({ text: "User not found" });
-        }
-
-        // Get selected outcomes from formInputs
-        const selectedItems =
-          req.body.action?.formInputs?.selectedOutcomes?.selectedItems?.value ||
-          [];
-        console.log("Raw selected items:", selectedItems);
-
-        const selectedOutcomes = selectedItems
-          .map((item) => {
+      case "submitOutcomes":
+        try {
+          console.log("Submit action triggered with body:", JSON.stringify(req.body, null, 2));
+          const userId = await getUserIdByEmail(email);
+          if (!userId) {
+            console.error("User not found for email:", email);
+            return res.status(400).json({ text: "User not found" });
+          }
+      
+          // Correct way to get selected outcomes from Google Chat form
+          const formInputs = req.body.common?.formInputs || {};
+          const selectedItems = formInputs.selectedOutcomes?.multiSelectInputs?.value || [];
+          console.log("Raw selected items:", selectedItems);
+      
+          const selectedOutcomes = selectedItems
+            .map((item) => {
+              try {
+                return JSON.parse(item);
+              } catch (e) {
+                console.error("Failed to parse outcome:", item, e);
+                return null;
+              }
+            })
+            .filter(Boolean);
+      
+          console.log("Parsed outcomes:", selectedOutcomes);
+      
+          if (selectedOutcomes.length === 0) {
+            console.log("No valid outcomes selected");
+            return res.json(createOutcomeConfirmationCard(userName, 0));
+          }
+      
+          // Process outcomes
+          for (const outcome of selectedOutcomes) {
             try {
-              return JSON.parse(item.value);
-            } catch (e) {
-              console.error("Failed to parse outcome:", item.value);
-              return null;
-            }
-          })
-          .filter(Boolean);
-
-        console.log("Parsed outcomes:", selectedOutcomes);
-
-        if (selectedOutcomes.length === 0) {
-          console.log("No valid outcomes selected");
-          return res.json(createOutcomeConfirmationCard(userName, 0));
-        }
-
-        // Process outcomes
-        for (const outcome of selectedOutcomes) {
-          try {
-            console.log("Processing outcome:", JSON.stringify(outcome));
-
-            if (!outcome.text || !(outcome.id || outcome.isCustom)) {
-              console.error("Invalid outcome structure:", outcome);
-              continue;
-            }
-
-            let bid;
-            if (outcome.isCustom) {
-              console.log("Inserting custom outcome:", outcome.text);
-              bid = await insertCustomOutcome(outcome.text);
-            } else {
-              bid = parseInt(outcome.id);
-              if (isNaN(bid)) {
-                console.error("Invalid bid format:", outcome.id);
+              console.log("Processing outcome:", JSON.stringify(outcome));
+      
+              if (!outcome.id && !outcome.isCustom) {
+                console.error("Invalid outcome structure:", outcome);
                 continue;
               }
-              console.log("Updating status for existing outcome:", bid);
-              await updateOutcomeStatus(bid);
+      
+              let bid;
+              if (outcome.isCustom) {
+                console.log("Inserting custom outcome:", outcome.text);
+                bid = await insertCustomOutcome(outcome.text);
+              } else {
+                bid = parseInt(outcome.id);
+                if (isNaN(bid)) {
+                  console.error("Invalid bid format:", outcome.id);
+                  continue;
+                }
+                console.log("Updating status for existing outcome:", bid);
+                await updateOutcomeStatus(bid);
+              }
+      
+              console.log(`Logging badge progress for ${bid} (${outcome.text})`);
+              await logBadgeProgress(userId, bid);
+            } catch (error) {
+              console.error("Error processing outcome:", error);
+              throw error; // Re-throw to catch in outer try-catch
             }
-
-            console.log(`Logging badge progress for ${bid} (${outcome.text})`);
-            await logBadgeProgress(userId, bid);
-          } catch (error) {
-            console.error("Error processing outcome:", error);
-            console.error("Error details:", {
-              message: error.message,
-              stack: error.stack,
-              outcome,
-            });
           }
+      
+          console.log("Successfully processed", selectedOutcomes.length, "outcomes");
+          return res.json(createOutcomeConfirmationCard(userName, selectedOutcomes.length));
+        } catch (error) {
+          console.error("Submission error:", error.message);
+          console.error("Error stack:", error.stack);
+          return res.status(500).json({
+            text: "⚠️ Failed to save outcomes. Please try again later.",
+          });
         }
-
-        console.log(
-          "Successfully processed",
-          selectedOutcomes.length,
-          "outcomes"
-        );
-        return res.json(
-          createOutcomeConfirmationCard(userName, selectedOutcomes.length)
-        );
-      } catch (error) {
-        console.error("Submission error:", error.message);
-        console.error("Error stack:", error.stack);
-        return res.status(500).json({
-          text: "⚠️ Failed to save outcomes. Please try again later.",
-        });
-      }
     default:
       return res.status(400).json({ text: "Unsupported action" });
   }
