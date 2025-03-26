@@ -310,7 +310,6 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                   selectionInput: {
                     name: "selectedOutcomes",
                     type: "CHECK_BOX",
-                    multiSelect: true, // Enable multiple selections
                     items: [
                       {
                         text: `${item.text} 💰 ${item.coins}`,
@@ -341,7 +340,6 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                   selectionInput: {
                     name: "selectedOutcomes",
                     type: "CHECK_BOX",
-                    multiSelect: true, // Enable multiple selections
                     items: [
                       {
                         text: `${item.text} 💰 ${item.coins}`,
@@ -411,7 +409,6 @@ async function createOutcomeCard(userName, customOutcomes = []) {
                   selectionInput: {
                     name: "selectedOutcomes",
                     type: "CHECK_BOX",
-                    multiSelect: true,
                     items: [
                       {
                         text: `${item.text} 💰 ${item.coins}`,
