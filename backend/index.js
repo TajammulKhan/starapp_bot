@@ -64,13 +64,19 @@ async function getUserOutcomes() {
 }
 // Add these new database functions
 async function insertCustomOutcome(text) {
+  const bcode = `CUSTOM_${text.replace(/\s+/g, '_').toUpperCase().slice(0, 10)}`; // e.g., "CUSTOM_STARAPP_BO"
   const query = `
-    INSERT INTO registry.badges (bname, btype)
-    VALUES ($1, 'Earning')
+    INSERT INTO registry.badges (bname, bcode, btype)
+    VALUES ($1, $2, 'Earning')
     RETURNING bid
   `;
-  const result = await pool.query(query, [text]);
-  return result.rows[0].bid;
+  try {
+    const result = await pool.query(query, [text, bcode]);
+    return result.rows[0].bid;
+  } catch (error) {
+    console.error("Insert custom outcome error:", error.message, error.stack);
+    throw error;
+  }
 }
 // New function to update existing outcomes
 async function updateOutcomeStatus(bid, userId) {
@@ -540,7 +546,7 @@ async function handleCardAction(req, res) {
     const contributionItems = formInputs.contributionOutcomes?.stringInputs?.value || [];
     const selectedItems = [...learningItems, ...earningItems, ...contributionItems];
     console.log("Raw selected items:", selectedItems);
-    
+
         const selectedOutcomes = selectedItems
           .map((item) => {
             try {
