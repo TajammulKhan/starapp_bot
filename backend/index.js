@@ -637,7 +637,7 @@ async function createCheckedOutcomeCard(userName, userId, customOutcomes = []) {
       AND bl.outcome_status = 'checked'
       AND DATE(bl.checked_at) = $2
   `;
-  const result = await pool.query(query, [userId]);
+  const result = await pool.query(query, [userId, currentDate]);
   const outcomes = { Learning: [], Earning: [], Contribution: [] };
 
   result.rows.forEach((row) => {
