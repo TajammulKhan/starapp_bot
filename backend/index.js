@@ -109,10 +109,11 @@ async function insertCustomOutcome(text) {
 async function updateOutcomeStatus(bid, userId) {
   try {
     const query = `
-      INSERT INTO registry.badgelog (uid, bid, bstatus, outcome_status)
-      VALUES ($1, $2, 'Assigned', 'checked')
+      INSERT INTO registry.badgelog (uid, bid, bstatus, outcome_status, checked_at)
+      VALUES ($1, $2, 'Assigned', 'checked', NOW())
       ON CONFLICT (uid, bid) DO UPDATE
-      SET outcome_status = 'checked'
+      SET outcome_status = 'checked',
+          checked_at = NOW()
     `;
     await pool.query(query, [userId, bid]);
   } catch (error) {
@@ -122,19 +123,15 @@ async function updateOutcomeStatus(bid, userId) {
 }
 
 async function logBadgeProgress(userId, bid) {
-  console.log(
-    `Logging badge progress for User ID: ${userId}, Badge ID: ${bid}`
-  );
+  console.log(`Logging badge progress for User ID: ${userId}, Badge ID: ${bid}`);
   const query = `
-    INSERT INTO registry.badgelog (uid, bid, bstatus, outcome_status)
-    VALUES ($1, $2, 'Assigned', 'checked')
+    INSERT INTO registry.badgelog (uid, bid, bstatus, outcome_status, checked_at)
+    VALUES ($1, $2, 'Assigned', 'checked', NOW())
     ON CONFLICT (uid, bid) DO NOTHING`;
   try {
     const result = await pool.query(query, [userId, bid]);
     if (result.rowCount === 0) {
-      console.log(
-        `Badge log not inserted (already exists) for User ID: ${userId}, Badge ID: ${bid}`
-      );
+      console.log(`Badge log not inserted (already exists) for User ID: ${userId}, Badge ID: ${bid}`);
     } else {
       console.log("Badge log inserted, rows affected:", result.rowCount);
     }
@@ -319,7 +316,140 @@ app.get("/", (req, res) => {
   res.status(200).json({ message: "StarApp Bot is running!" });
 });
 
-// Handle Google Chat Webhook Requests
+// New function to create the Smiley Meter Card
+function createSmileyMeterCard(userName, coinsEarned = 10) {
+  return {
+    cardsV2: [
+      {
+        cardId: "smiley-meter-card",
+        card: {
+          header: { title: "Today's Performance" },
+          sections: [
+            {
+              widgets: [
+                {
+                  textParagraph: {
+                    text: "<b>Smiley Meter</b>",
+                  },
+                },
+                {
+                  columns: {
+                    columnItems: [
+                      {
+                        horizontalAlignment: "CENTER",
+                        verticalAlignment: "CENTER",
+                        widgets: [
+                          {
+                            decoratedText: {
+                              icon: {
+                                iconUrl:
+                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/sad-smiley.png", // Replace with actual sad smiley URL
+                                altText: "Sad Smiley",
+                              },
+                            },
+                          },
+                        ],
+                      },
+                      {
+                        horizontalAlignment: "CENTER",
+                        verticalAlignment: "CENTER",
+                        widgets: [
+                          {
+                            decoratedText: {
+                              icon: {
+                                iconUrl:
+                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/neutral-smiley.png", // Replace with actual neutral smiley URL
+                                altText: "Neutral Smiley",
+                              },
+                            },
+                          },
+                        ],
+                      },
+                      {
+                        horizontalAlignment: "CENTER",
+                        verticalAlignment: "CENTER",
+                        widgets: [
+                          {
+                            decoratedText: {
+                              icon: {
+                                iconUrl:
+                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-smiley.png", // Replace with actual happy smiley URL
+                                altText: "Happy Smiley",
+                              },
+                            },
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+            {
+              widgets: [
+                {
+                  textParagraph: {
+                    text: `<b>Impressive!! Keep up the performance!</b>`,
+                  },
+                },
+                {
+                  textParagraph: {
+                    text: `Well done! You have completed more outcomes today than yesterday!`,
+                  },
+                },
+              ],
+            },
+            {
+              widgets: [
+                {
+                  decoratedText: {
+                    topLabel: "Coins Earned",
+                    icon: {
+                      iconUrl:
+                        "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png", // Reuse coin icon
+                      altText: "Coin Icon",
+                    },
+                    text: `<b>${coinsEarned}</b>`,
+                  },
+                },
+              ],
+            },
+            {
+              widgets: [
+                {
+                  buttonList: {
+                    buttons: [
+                      {
+                        text: "Go to Star App →",
+                        onClick: {
+                          openLink: { url: "https://starapp-frontend.web.app/" },
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+            {
+              widgets: [
+                {
+                  textParagraph: {
+                    text: `<b>Have a happy evening!</b>`,
+                  },
+                },
+                {
+                  textParagraph: {
+                    text: `<font color='#D4A017'>"What do you call a factory that makes good products? A satisfactory!"</font>`,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    ],
+  };
+}
 
 async function createOutcomeCard(userName, email, customOutcomes = []) {
   const userId = await getUserIdByEmail(email);
@@ -496,11 +626,16 @@ async function createOutcomeCard(userName, email, customOutcomes = []) {
 }
 
 async function createCheckedOutcomeCard(userName, userId, customOutcomes = []) {
+  // Get the current date in YYYY-MM-DD format for comparison
+  const currentDate = new Date().toISOString().split('T')[0]; // e.g., "2025-03-27"
+
   const query = `
     SELECT b.bid, b.bname, b.btype
     FROM registry.badges b
     JOIN registry.badgelog bl ON b.bid = bl.bid
-    WHERE bl.uid = $1 AND bl.outcome_status = 'checked'
+    WHERE bl.uid = $1 
+      AND bl.outcome_status = 'checked'
+      AND DATE(bl.checked_at) = $2
   `;
   const result = await pool.query(query, [userId]);
   const outcomes = { Learning: [], Earning: [], Contribution: [] };
@@ -1146,6 +1281,9 @@ async function handleTextMessage(req, res) {
           return res.status(400).json({ text: "User not found. Please register with StarApp to get started!" });
         }
         return res.json(await createCheckedOutcomeCard(userName, userIdChecked));
+
+      case "smiley":
+        return res.json(createSmileyMeterCard(userName));  
 
       default:
         return res.json({ text: `Unsupported command: ${messageText}` });
