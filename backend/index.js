@@ -17,7 +17,6 @@ async function getUserIdByEmail(email) {
   }
 }
 
-// Fetch Total Coins from badgelog table
 // Fetch Total Coins from user_coins table
 async function getTotalCoins(userId) {
   try {
@@ -343,7 +342,7 @@ function createSmileyMeterCard(userName, coinsEarned = 10) {
                             decoratedText: {
                               icon: {
                                 iconUrl:
-                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/sad-smiley.png", // Replace with actual sad smiley URL
+                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png", // Replace with actual sad smiley URL
                                 altText: "Sad Smiley",
                               },
                             },
@@ -358,7 +357,7 @@ function createSmileyMeterCard(userName, coinsEarned = 10) {
                             decoratedText: {
                               icon: {
                                 iconUrl:
-                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/neutral-smiley.png", // Replace with actual neutral smiley URL
+                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Medal+(1).png", // Replace with actual neutral smiley URL
                                 altText: "Neutral Smiley",
                               },
                             },
@@ -373,7 +372,7 @@ function createSmileyMeterCard(userName, coinsEarned = 10) {
                             decoratedText: {
                               icon: {
                                 iconUrl:
-                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-smiley.png", // Replace with actual happy smiley URL
+                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Shield+(1).png", // Replace with actual happy smiley URL
                                 altText: "Happy Smiley",
                               },
                             },
