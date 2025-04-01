@@ -140,6 +140,44 @@ async function logBadgeProgress(userId, bid) {
   }
 }
 
+// Fetch the number of checked outcomes for the current day
+async function getCheckedOutcomesCount(userId) {
+  try {
+    const currentDate = new Date().toISOString().split('T')[0]; // e.g., "2025-03-28"
+    const query = `
+      SELECT COUNT(*) AS checked_count
+      FROM registry.badgelog
+      WHERE uid = $1
+        AND outcome_status = 'checked'
+        AND DATE(checked_at) = $2
+    `;
+    const result = await pool.query(query, [userId, currentDate]);
+    return parseInt(result.rows[0].checked_count) || 0;
+  } catch (error) {
+    console.error("Error in getCheckedOutcomesCount:", error.message, error.stack);
+    return 0; // Fallback to 0 if the query fails
+  }
+}
+
+// Fetch the number of completed outcomes for the current day
+async function getCompletedOutcomesCount(userId) {
+  try {
+    const currentDate = new Date().toISOString().split('T')[0]; // e.g., "2025-03-28"
+    const query = `
+      SELECT COUNT(*) AS completed_count
+      FROM registry.badgelog
+      WHERE uid = $1
+        AND outcome_status = 'completed'
+        AND DATE(checked_at) = $2
+    `;
+    const result = await pool.query(query, [userId, currentDate]);
+    return parseInt(result.rows[0].completed_count) || 0;
+  } catch (error) {
+    console.error("Error in getCompletedOutcomesCount:", error.message, error.stack);
+    return 0; // Fallback to 0 if the query fails
+  }
+}
+
 // Construct Daily Progress Card
 function createGoogleChatCard(
   userName,
@@ -316,138 +354,117 @@ app.get("/", (req, res) => {
 });
 
 // New function to create the Smiley Meter Card
-function createSmileyMeterCard(userName, coinsEarned = 10) {
-  return {
-    cardsV2: [
-      {
-        cardId: "smiley-meter-card",
-        card: {
-          header: { title: "Today's Performance" },
-          sections: [
-            {
-              widgets: [
+function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
+  const checkedCountPromise = getCheckedOutcomesCount(userId);
+  const completedCountPromise = getCompletedOutcomesCount(userId);
+
+  return Promise.all([checkedCountPromise, completedCountPromise]).then(
+    ([checkedCount, completedCount]) => {
+      const completionRatio =
+        checkedCount > 0 ? (completedCount / checkedCount) * 100 : 0;
+
+      let smileyMeterUrl;
+      if (completionRatio <= 33) {
+        smileyMeterUrl =
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Shield+(1).png";
+      } else if (completionRatio <= 66) {
+        smileyMeterUrl =
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png";
+      } else {
+        smileyMeterUrl =
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Medal+(1).png";
+      }
+
+      return {
+        cardsV2: [
+          {
+            cardId: "smiley-meter-card",
+            card: {
+              header: { title: "Today's Performance" },
+              sections: [
                 {
-                  textParagraph: {
-                    text: "<b>Smiley Meter</b>",
-                  },
-                },
-                {
-                  columns: {
-                    columnItems: [
-                      {
-                        horizontalAlignment: "CENTER",
-                        verticalAlignment: "CENTER",
-                        widgets: [
-                          {
-                            decoratedText: {
-                              icon: {
-                                iconUrl:
-                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png", // Replace with actual sad smiley URL
-                                altText: "Sad Smiley",
-                              },
-                            },
-                          },
-                        ],
+                  widgets: [
+                    {
+                      textParagraph: {
+                        text: "<b>Smiley Meter</b>",
                       },
-                      {
-                        horizontalAlignment: "CENTER",
-                        verticalAlignment: "CENTER",
-                        widgets: [
-                          {
-                            decoratedText: {
-                              icon: {
-                                iconUrl:
-                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Medal+(1).png", // Replace with actual neutral smiley URL
-                                altText: "Neutral Smiley",
-                              },
-                            },
-                          },
-                        ],
-                      },
-                      {
-                        horizontalAlignment: "CENTER",
-                        verticalAlignment: "CENTER",
-                        widgets: [
-                          {
-                            decoratedText: {
-                              icon: {
-                                iconUrl:
-                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Shield+(1).png", // Replace with actual happy smiley URL
-                                altText: "Happy Smiley",
-                              },
-                            },
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-            {
-              widgets: [
-                {
-                  textParagraph: {
-                    text: `<b>Impressive!! Keep up the performance!</b>`,
-                  },
-                },
-                {
-                  textParagraph: {
-                    text: `Well done! You have completed more outcomes today than yesterday!`,
-                  },
-                },
-              ],
-            },
-            {
-              widgets: [
-                {
-                  decoratedText: {
-                    topLabel: "Coins Earned",
-                    icon: {
-                      iconUrl:
-                        "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png", // Reuse coin icon
-                      altText: "Coin Icon",
                     },
-                    text: `<b>${coinsEarned}</b>`,
-                  },
-                },
-              ],
-            },
-            {
-              widgets: [
-                {
-                  buttonList: {
-                    buttons: [
-                      {
-                        text: "Go to Star App →",
-                        onClick: {
-                          openLink: { url: "https://starapp-frontend.web.app/" },
-                        },
+                    {
+                      image: {
+                        imageUrl: smileyMeterUrl,
+                        altText: "Smiley Meter",
                       },
-                    ],
-                  },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      textParagraph: {
+                        text: `<b>Impressive!! Keep up the performance!</b>`,
+                      },
+                    },
+                    {
+                      textParagraph: {
+                        text: `Well done! You have completed more outcomes today than yesterday!`,
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      decoratedText: {
+                        topLabel: "Coins Earned",
+                        icon: {
+                          iconUrl:
+                            "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                          altText: "Coin Icon",
+                        },
+                        text: `<b>${coinsEarned}</b>`,
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      buttonList: {
+                        buttons: [
+                          {
+                            text: "Go to Star App →",
+                            onClick: {
+                              openLink: {
+                                url: "https://starapp-frontend.web.app/",
+                              },
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      textParagraph: {
+                        text: `<b>Have a happy evening!</b>`,
+                      },
+                    },
+                    {
+                      textParagraph: {
+                        text: `<font color='#D4A017'>"What do you call a factory that makes good products? A satisfactory!"</font>`,
+                      },
+                    },
+                  ],
                 },
               ],
             },
-            {
-              widgets: [
-                {
-                  textParagraph: {
-                    text: `<b>Have a happy evening!</b>`,
-                  },
-                },
-                {
-                  textParagraph: {
-                    text: `<font color='#D4A017'>"What do you call a factory that makes good products? A satisfactory!"</font>`,
-                  },
-                },
-              ],
-            },
-          ],
-        },
-      },
-    ],
-  };
+          },
+        ],
+      };
+    }
+  );
 }
 
 async function createOutcomeCard(userName, email, customOutcomes = []) {
@@ -1282,7 +1299,11 @@ async function handleTextMessage(req, res) {
         return res.json(await createCheckedOutcomeCard(userName, userIdChecked));
 
       case "smiley":
-        return res.json(createSmileyMeterCard(userName));  
+        const userIdSmiley = await getUserIdByEmail(email);
+        if (!userIdSmiley) {
+          return res.status(400).json({ text: "User not found. Please register with StarApp to get started!" });
+        }
+        return res.json(await createSmileyMeterCard(userName, userIdSmiley));
 
       default:
         return res.json({ text: `Unsupported command: ${messageText}` });
