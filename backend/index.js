@@ -491,7 +491,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                             ],
                           },
                           {
-                            horizontalAlignment: "CENTER",
+                            horizontalAlignment: "CENTER",   
                             widgets: [
                               {
                                 decoratedText: {
