@@ -365,7 +365,8 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
       console.log("Checked outcomes:", checkedCount, "Completed outcomes:", completedCount);
       const completionRatio =
         checkedCount > 0 ? (completedCount / checkedCount) * 100 : 0;
-        console.log("Smiley URLs:", { sadSmileyUrl, neutralSmileyTrl, happySmileyUrl });
+      console.log("Completion ratio:", completionRatio); // Log the ratio for debugging
+
       let sadSmileyUrl, neutralSmileyUrl, happySmileyUrl;
       if (completionRatio <= 33) {
         // Sad smiley is active (in color), others are greyed out
@@ -392,6 +393,9 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
         happySmileyUrl =
           "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-Best.png";
       }
+
+      // Move the console.log statement here, after the variables are initialized
+      console.log("Smiley URLs:", { sadSmileyUrl, neutralSmileyUrl, happySmileyUrl });
 
       return {
         cardsV2: [
@@ -527,7 +531,10 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
         ],
       };
     }
-  );
+  ).catch((error) => {
+    console.error("Error in createSmileyMeterCard:", error.message, error.stack);
+    throw error; // Re-throw the error to be caught by the calling function
+  });
 }
 
 async function createOutcomeCard(userName, email, customOutcomes = []) {
