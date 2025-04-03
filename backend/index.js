@@ -480,26 +480,10 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                             horizontalAlignment: "CENTER",
                             widgets: [
                               {
-                                decoratedText: {
-                                  icon: {
-                                    iconUrl: sadSmileyUrl,
-                                    altText: "Sad Smiley",
-                                  },
-                                  text: "", // No text needed, just the icon
-                                },
-                              },
-                            ],
-                          },
-                          {
-                            horizontalAlignment: "CENTER",   
-                            widgets: [
-                              {
-                                decoratedText: {
-                                  icon: {
-                                    iconUrl: neutralSmileyUrl,
-                                    altText: "Neutral Smiley",
-                                  },
-                                  text: "",
+                                image: {
+                                  imageUrl: sadSmileyUrl,
+                                  altText: "Sad Smiley",
+                                  imageWidth: "20px", // Smaller size to reduce spacing
                                 },
                               },
                             ],
@@ -508,12 +492,22 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                             horizontalAlignment: "CENTER",
                             widgets: [
                               {
-                                decoratedText: {
-                                  icon: {
-                                    iconUrl: happySmileyUrl,
-                                    altText: "Happy Smiley",
-                                  },
-                                  text: "",
+                                image: {
+                                  imageUrl: neutralSmileyUrl,
+                                  altText: "Neutral Smiley",
+                                  imageWidth: "20px",
+                                },
+                              },
+                            ],
+                          },
+                          {
+                            horizontalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                image: {
+                                  imageUrl: happySmileyUrl,
+                                  altText: "Happy Smiley",
+                                  imageWidth: "20px",
                                 },
                               },
                             ],
