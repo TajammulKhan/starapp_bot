@@ -471,7 +471,6 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                               {
                                 image: {
                                   imageUrl: sadSmileyUrl,
-                                  altText: "Sad Smiley",
                                   aspectRatio: 1,
                                   imageWidth: "40px",
                                 },
@@ -486,7 +485,6 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                               {
                                 image: {
                                   imageUrl: neutralSmileyUrl,
-                                  altText: "Neutral Smiley",
                                   aspectRatio: 1,
                                   imageWidth: "40px",
                                 },
@@ -501,7 +499,6 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                               {
                                 image: {
                                   imageUrl: happySmileyUrl,
-                                  altText: "Happy Smiley",
                                   aspectRatio: 1,
                                   imageWidth: "40px",
                                 },
