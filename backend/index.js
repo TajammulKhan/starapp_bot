@@ -475,7 +475,6 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                       columns: {
                         columnItems: [
                           {
-                            horizontalSizeStyle: "MEDIUM",
                             widgets: [
                               {
                                 decoratedText: {
@@ -489,7 +488,6 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                             ],
                           },
                           {
-                            horizontalSizeStyle: "MEDIUM",
                             widgets: [
                               {
                                 decoratedText: {
@@ -503,7 +501,6 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                             ],
                           },
                           {
-                            horizontalSizeStyle: "MEDIUM",
                             widgets: [
                               {
                                 decoratedText: {
