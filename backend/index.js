@@ -456,6 +456,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
 
       console.log("Smiley URLs:", { sadSmileyUrl, neutralSmileyUrl, happySmileyUrl });
 
+      // Updated columns to ensure all three smileys are visible
       return {
         cardsV2: [
           {
@@ -474,9 +475,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                       columns: {
                         columnItems: [
                           {
-                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
-                            horizontalAlignment: "END", // Align right
-                            verticalAlignment: "CENTER",
+                            horizontalSizeStyle: "MEDIUM",
                             widgets: [
                               {
                                 decoratedText: {
@@ -484,15 +483,13 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                                     iconUrl: sadSmileyUrl,
                                     altText: "Sad Smiley",
                                   },
-                                  text: "", // No text, just icon
+                                  text: "",
                                 },
                               },
                             ],
                           },
                           {
-                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
-                            horizontalAlignment: "CENTER", // Center middle emoji
-                            verticalAlignment: "CENTER",
+                            horizontalSizeStyle: "MEDIUM",
                             widgets: [
                               {
                                 decoratedText: {
@@ -506,9 +503,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                             ],
                           },
                           {
-                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
-                            horizontalAlignment: "START", // Align left
-                            verticalAlignment: "CENTER",
+                            horizontalSizeStyle: "MEDIUM",
                             widgets: [
                               {
                                 decoratedText: {
@@ -602,7 +597,6 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
       return { text: "⚠️ Failed to generate smiley card due to an internal error." };
     });
 }
-
 async function createOutcomeCard(userName, email, customOutcomes = []) {
   const userId = await getUserIdByEmail(email);
   if (!userId) {
