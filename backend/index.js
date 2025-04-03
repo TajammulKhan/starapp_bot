@@ -356,13 +356,16 @@ app.get("/", (req, res) => {
 // New function to create the Smiley Meter Card
 // Updated function to create the Smiley Meter Card
 function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
+  console.log("Starting createSmileyMeterCard for user:", userName, "with userId:", userId);
   const checkedCountPromise = getCheckedOutcomesCount(userId);
   const completedCountPromise = getCompletedOutcomesCount(userId);
 
   return Promise.all([checkedCountPromise, completedCountPromise]).then(
     ([checkedCount, completedCount]) => {
+      console.log("Checked outcomes:", checkedCount, "Completed outcomes:", completedCount);
       const completionRatio =
         checkedCount > 0 ? (completedCount / checkedCount) * 100 : 0;
+        console.log("Smiley URLs:", { sadSmileyUrl, neutralSmileyTrl, happySmileyUrl });
       let sadSmileyUrl, neutralSmileyUrl, happySmileyUrl;
       if (completionRatio <= 33) {
         // Sad smiley is active (in color), others are greyed out
@@ -417,6 +420,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                                   imageUrl: sadSmileyUrl,
                                   altText: "Sad Smiley",
                                   aspectRatio: 1, // Ensure consistent sizing
+                                  imageWidth: "40px",
                                 },
                               },
                             ],
@@ -431,6 +435,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                                   imageUrl: neutralSmileyUrl,
                                   altText: "Neutral Smiley",
                                   aspectRatio: 1, // Ensure consistent sizing
+                                  imageWidth: "40px",
                                 },
                               },
                             ],
@@ -445,6 +450,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                                   imageUrl: happySmileyUrl,
                                   altText: "Happy Smiley",
                                   aspectRatio: 1, // Ensure consistent sizing
+                                  imageWidth: "40px",
                                 },
                               },
                             ],
