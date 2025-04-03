@@ -478,7 +478,6 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                         columnItems: [
                           {
                             horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
                             widgets: [
                               {
                                 decoratedText: {
@@ -493,7 +492,6 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                           },
                           {
                             horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
                             widgets: [
                               {
                                 decoratedText: {
@@ -508,7 +506,6 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                           },
                           {
                             horizontalAlignment: "CENTER",
-                            verticalAlignment: "CENTER",
                             widgets: [
                               {
                                 decoratedText: {
