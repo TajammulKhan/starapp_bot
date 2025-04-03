@@ -147,7 +147,7 @@ async function logBadgeProgress(userId, bid) {
 // Fetch the number of checked outcomes for the current day
 async function getCheckedOutcomesCount(userId) {
   try {
-    const currentDate = new Date().toISOString().split("T")[0]; // e.g., "2025-03-28"
+    const currentDate = new Date().toISOString().split("T")[0]; // e.g., "2025-04-03"
     const query = `
       SELECT COUNT(*) AS checked_count
       FROM registry.badgelog
@@ -156,7 +156,9 @@ async function getCheckedOutcomesCount(userId) {
         AND DATE(checked_at) = $2
     `;
     const result = await pool.query(query, [userId, currentDate]);
-    return parseInt(result.rows[0].checked_count) || 0;
+    const checkedCount = parseInt(result.rows[0].checked_count) || 0;
+    console.log(`Checked outcomes count for ${userId} on ${currentDate}: ${checkedCount}`); // Debug log
+    return checkedCount;
   } catch (error) {
     console.error(
       "Error in getCheckedOutcomesCount:",
@@ -167,10 +169,9 @@ async function getCheckedOutcomesCount(userId) {
   }
 }
 
-// Fetch the number of completed outcomes for the current day
 async function getCompletedOutcomesCount(userId) {
   try {
-    const currentDate = new Date().toISOString().split("T")[0]; // e.g., "2025-03-28"
+    const currentDate = new Date().toISOString().split("T")[0]; // e.g., "2025-04-03"
     const query = `
       SELECT COUNT(*) AS completed_count
       FROM registry.badgelog
@@ -179,7 +180,9 @@ async function getCompletedOutcomesCount(userId) {
         AND DATE(checked_at) = $2
     `;
     const result = await pool.query(query, [userId, currentDate]);
-    return parseInt(result.rows[0].completed_count) || 0;
+    const completedCount = parseInt(result.rows[0].completed_count) || 0;
+    console.log(`Completed outcomes count for ${userId} on ${currentDate}: ${completedCount}`); // Debug log
+    return completedCount;
   } catch (error) {
     console.error(
       "Error in getCompletedOutcomesCount:",
@@ -583,7 +586,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
         error.message,
         error.stack
       );
-      throw error; // Re-throw the error to be caught by the calling function
+      return { text: "⚠️ Failed to generate smiley card due to an internal error." }; // Return a fallback response
     });
 }
 
@@ -1353,16 +1356,27 @@ async function handleTextMessage(req, res) {
           await createCheckedOutcomeCard(userName, userIdChecked)
         );
 
-      case "smiley":
-        const userIdSmiley = await getUserIdByEmail(email);
-        if (!userIdSmiley) {
-          return res
-            .status(400)
-            .json({
-              text: "User not found. Please register with StarApp to get started!",
-            });
-        }
-        return res.json(await createSmileyMeterCard(userName, userIdSmiley));
+        case "smiley":
+          const userIdSmiley = await getUserIdByEmail(email);
+          if (!userIdSmiley) {
+            return res
+              .status(400)
+              .json({
+                text: "User not found. Please register with StarApp to get started!",
+              });
+          }
+          try {
+            const smileyCard = await createSmileyMeterCard(userName, userIdSmiley);
+            console.log("Smiley card generated:", smileyCard); // Log the card for debugging
+            return res.json(smileyCard);
+          } catch (error) {
+            console.error("Error generating smiley card:", error.message, error.stack);
+            return res
+              .status(500)
+              .json({
+                text: "⚠️ An error occurred while generating the smiley card. Please try again later.",
+              });
+          }
 
       default:
         return res.json({ text: `Unsupported command: ${messageText}` });
