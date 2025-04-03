@@ -362,17 +362,31 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
     ([checkedCount, completedCount]) => {
       const completionRatio =
         checkedCount > 0 ? (completedCount / checkedCount) * 100 : 0;
-
-      let smileyMeterUrl;
+      let sadSmileyUrl, neutralSmileyUrl, happySmileyUrl;
       if (completionRatio <= 33) {
-        smileyMeterUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Shield+(1).png";
+        // Sad smiley is active (in color), others are greyed out
+        sadSmileyUrl =
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-low.png";
+        neutralSmileyUrl =
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-neutral-face.png";
+        happySmileyUrl =
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-happy-face.png";
       } else if (completionRatio <= 66) {
-        smileyMeterUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Reward+(2).png";
+        // Neutral smiley is active (in color), others are greyed out
+        sadSmileyUrl =
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-sad-face.png";
+        neutralSmileyUrl =
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-average.png";
+        happySmileyUrl =
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-happy-face.png";
       } else {
-        smileyMeterUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Medal+(1).png";
+        // Happy smiley is active (in color), others are greyed out
+        sadSmileyUrl =
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-sad-face.png";
+        neutralSmileyUrl =
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-neutral-face.png";
+        happySmileyUrl =
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-Best.png";
       }
 
       return {
@@ -390,9 +404,48 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                       },
                     },
                     {
-                      image: {
-                        imageUrl: smileyMeterUrl,
-                        altText: "Smiley Meter",
+                      columns: {
+                        columnItems: [
+                          {
+                            horizontalSizeStyle: "FILL_MINIMUM_SPACE", // Minimize spacing
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                image: {
+                                  imageUrl: sadSmileyUrl,
+                                  altText: "Sad Smiley",
+                                },
+                              },
+                            ],
+                          },
+                          {
+                            horizontalSizeStyle: "FILL_MINIMUM_SPACE", // Minimize spacing
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                image: {
+                                  imageUrl: neutralSmileyUrl,
+                                  altText: "Neutral Smiley",
+                                },
+                              },
+                            ],
+                          },
+                          {
+                            horizontalSizeStyle: "FILL_MINIMUM_SPACE", // Minimize spacing
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                image: {
+                                  imageUrl: happySmileyUrl,
+                                  altText: "Happy Smiley",
+                                },
+                              },
+                            ],
+                          },
+                        ],
                       },
                     },
                   ],
