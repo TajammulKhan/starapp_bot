@@ -456,7 +456,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
 
       console.log("Smiley URLs:", { sadSmileyUrl, neutralSmileyUrl, happySmileyUrl });
 
-      // Use a single section with multiple decoratedText widgets to display all three smileys
+      // Use a single textParagraph with HTML img tags to display all three smileys without spaces
       return {
         cardsV2: [
           {
@@ -472,25 +472,12 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                       },
                     },
                     {
-                      decoratedText: {
-                        startIcon: {
-                          iconUrl: sadSmileyUrl,
-                          altText: "Sad Smiley",
-                        },
-                        text: "  ", // Minimal spacing to ensure icons are close
-                        endIcon: {
-                          iconUrl: neutralSmileyUrl,
-                          altText: "Neutral Smiley",
-                        },
-                      },
-                    },
-                    {
-                      decoratedText: {
-                        startIcon: {
-                          iconUrl: happySmileyUrl,
-                          altText: "Happy Smiley",
-                        },
-                        text: "", // No text to minimize spacing
+                      textParagraph: {
+                        text: `
+                          <img src="${sadSmileyUrl}" alt="Sad Smiley" style="width:32px;height:32px;margin:0;padding:0;border:0;vertical-align:middle;">
+                          <img src="${neutralSmileyUrl}" alt="Neutral Smiley" style="width:32px;height:32px;margin:0;padding:0;border:0;vertical-align:middle;">
+                          <img src="${happySmileyUrl}" alt="Happy Smiley" style="width:32px;height:32px;margin:0;padding:0;border:0;vertical-align:middle;">
+                        `,
                       },
                     },
                   ],
