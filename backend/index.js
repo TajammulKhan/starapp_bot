@@ -122,7 +122,9 @@ async function updateOutcomeStatus(bid, userId) {
 }
 
 async function logBadgeProgress(userId, bid) {
-  console.log(`Logging badge progress for User ID: ${userId}, Badge ID: ${bid}`);
+  console.log(
+    `Logging badge progress for User ID: ${userId}, Badge ID: ${bid}`
+  );
   const query = `
     INSERT INTO registry.badgelog (uid, bid, bstatus, outcome_status, checked_at)
     VALUES ($1, $2, 'Assigned', 'checked', NOW())
@@ -130,7 +132,9 @@ async function logBadgeProgress(userId, bid) {
   try {
     const result = await pool.query(query, [userId, bid]);
     if (result.rowCount === 0) {
-      console.log(`Badge log not inserted (already exists) for User ID: ${userId}, Badge ID: ${bid}`);
+      console.log(
+        `Badge log not inserted (already exists) for User ID: ${userId}, Badge ID: ${bid}`
+      );
     } else {
       console.log("Badge log inserted, rows affected:", result.rowCount);
     }
@@ -143,7 +147,7 @@ async function logBadgeProgress(userId, bid) {
 // Fetch the number of checked outcomes for the current day
 async function getCheckedOutcomesCount(userId) {
   try {
-    const currentDate = new Date().toISOString().split('T')[0]; // e.g., "2025-03-28"
+    const currentDate = new Date().toISOString().split("T")[0]; // e.g., "2025-03-28"
     const query = `
       SELECT COUNT(*) AS checked_count
       FROM registry.badgelog
@@ -154,7 +158,11 @@ async function getCheckedOutcomesCount(userId) {
     const result = await pool.query(query, [userId, currentDate]);
     return parseInt(result.rows[0].checked_count) || 0;
   } catch (error) {
-    console.error("Error in getCheckedOutcomesCount:", error.message, error.stack);
+    console.error(
+      "Error in getCheckedOutcomesCount:",
+      error.message,
+      error.stack
+    );
     return 0; // Fallback to 0 if the query fails
   }
 }
@@ -162,7 +170,7 @@ async function getCheckedOutcomesCount(userId) {
 // Fetch the number of completed outcomes for the current day
 async function getCompletedOutcomesCount(userId) {
   try {
-    const currentDate = new Date().toISOString().split('T')[0]; // e.g., "2025-03-28"
+    const currentDate = new Date().toISOString().split("T")[0]; // e.g., "2025-03-28"
     const query = `
       SELECT COUNT(*) AS completed_count
       FROM registry.badgelog
@@ -173,7 +181,11 @@ async function getCompletedOutcomesCount(userId) {
     const result = await pool.query(query, [userId, currentDate]);
     return parseInt(result.rows[0].completed_count) || 0;
   } catch (error) {
-    console.error("Error in getCompletedOutcomesCount:", error.message, error.stack);
+    console.error(
+      "Error in getCompletedOutcomesCount:",
+      error.message,
+      error.stack
+    );
     return 0; // Fallback to 0 if the query fails
   }
 }
@@ -191,7 +203,11 @@ async function updateOutcomeToCompleted(userId, bid) {
     const result = await pool.query(query, [userId, bid]);
     return result.rowCount > 0; // Return true if update was successful
   } catch (error) {
-    console.error("Error in updateOutcomeToCompleted:", error.message, error.stack);
+    console.error(
+      "Error in updateOutcomeToCompleted:",
+      error.message,
+      error.stack
+    );
     throw error;
   }
 }
@@ -307,7 +323,9 @@ function createGoogleChatCard(
                       {
                         text: "Go to Star App →",
                         onClick: {
-                          openLink: { url: "https://starapp-frontend.web.app/" },
+                          openLink: {
+                            url: "https://starapp-frontend.web.app/",
+                          },
                         },
                       },
                     ],
@@ -363,6 +381,7 @@ app.use(
 
 app.use((req, res, next) => {
   console.log("Raw Request Body:", req.rawBody);
+  console.log("Parsed Request Body:", req.body); // Add this to debug the parsed body
   next();
 });
 
@@ -374,20 +393,31 @@ app.get("/", (req, res) => {
 // New function to create the Smiley Meter Card
 // Updated function to create the Smiley Meter Card
 function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
-  console.log("Starting createSmileyMeterCard for user:", userName, "with userId:", userId);
+  console.log(
+    "Starting createSmileyMeterCard for user:",
+    userName,
+    "with userId:",
+    userId
+  );
   const checkedCountPromise = getCheckedOutcomesCount(userId);
   const completedCountPromise = getCompletedOutcomesCount(userId);
 
-  return Promise.all([checkedCountPromise, completedCountPromise]).then(
-    ([checkedCount, completedCount]) => {
-      console.log("Checked outcomes:", checkedCount, "Completed outcomes:", completedCount);
+  return Promise.all([checkedCountPromise, completedCountPromise])
+    .then(([checkedCount, completedCount]) => {
+      console.log(
+        "Checked outcomes:",
+        checkedCount,
+        "Completed outcomes:",
+        completedCount
+      );
       const completionRatio =
-        checkedCount > 0 ? (completedCount / checkedCount) * 100 : 0;
+        checkedCount > 0
+          ? Math.min((completedCount / checkedCount) * 100, 100)
+          : 0;
       console.log("Completion ratio:", completionRatio); // Log the ratio for debugging
 
       let sadSmileyUrl, neutralSmileyUrl, happySmileyUrl;
       if (completionRatio <= 33) {
-        // Sad smiley is active (in color), others are greyed out
         sadSmileyUrl =
           "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-low.png";
         neutralSmileyUrl =
@@ -395,7 +425,6 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
         happySmileyUrl =
           "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-happy-face.png";
       } else if (completionRatio <= 66) {
-        // Neutral smiley is active (in color), others are greyed out
         sadSmileyUrl =
           "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-sad-face.png";
         neutralSmileyUrl =
@@ -403,7 +432,6 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
         happySmileyUrl =
           "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-happy-face.png";
       } else {
-        // Happy smiley is active (in color), others are greyed out
         sadSmileyUrl =
           "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-sad-face.png";
         neutralSmileyUrl =
@@ -412,8 +440,11 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
           "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-Best.png";
       }
 
-      // Move the console.log statement here, after the variables are initialized
-      console.log("Smiley URLs:", { sadSmileyUrl, neutralSmileyUrl, happySmileyUrl });
+      console.log("Smiley URLs:", {
+        sadSmileyUrl,
+        neutralSmileyUrl,
+        happySmileyUrl,
+      });
 
       return {
         cardsV2: [
@@ -433,7 +464,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                       columns: {
                         columnItems: [
                           {
-                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE", // Ensure equal spacing
+                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
                             horizontalAlignment: "CENTER",
                             verticalAlignment: "CENTER",
                             widgets: [
@@ -441,14 +472,14 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                                 image: {
                                   imageUrl: sadSmileyUrl,
                                   altText: "Sad Smiley",
-                                  aspectRatio: 1, // Ensure consistent sizing
+                                  aspectRatio: 1,
                                   imageWidth: "40px",
                                 },
                               },
                             ],
                           },
                           {
-                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE", // Ensure equal spacing
+                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
                             horizontalAlignment: "CENTER",
                             verticalAlignment: "CENTER",
                             widgets: [
@@ -456,14 +487,14 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                                 image: {
                                   imageUrl: neutralSmileyUrl,
                                   altText: "Neutral Smiley",
-                                  aspectRatio: 1, // Ensure consistent sizing
+                                  aspectRatio: 1,
                                   imageWidth: "40px",
                                 },
                               },
                             ],
                           },
                           {
-                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE", // Ensure equal spacing
+                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
                             horizontalAlignment: "CENTER",
                             verticalAlignment: "CENTER",
                             widgets: [
@@ -471,7 +502,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                                 image: {
                                   imageUrl: happySmileyUrl,
                                   altText: "Happy Smiley",
-                                  aspectRatio: 1, // Ensure consistent sizing
+                                  aspectRatio: 1,
                                   imageWidth: "40px",
                                 },
                               },
@@ -548,11 +579,15 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
           },
         ],
       };
-    }
-  ).catch((error) => {
-    console.error("Error in createSmileyMeterCard:", error.message, error.stack);
-    throw error; // Re-throw the error to be caught by the calling function
-  });
+    })
+    .catch((error) => {
+      console.error(
+        "Error in createSmileyMeterCard:",
+        error.message,
+        error.stack
+      );
+      throw error; // Re-throw the error to be caught by the calling function
+    });
 }
 
 async function createOutcomeCard(userName, email, customOutcomes = []) {
@@ -731,7 +766,7 @@ async function createOutcomeCard(userName, email, customOutcomes = []) {
 
 async function createCheckedOutcomeCard(userName, userId, customOutcomes = []) {
   // Get the current date in YYYY-MM-DD format for comparison
-  const currentDate = new Date().toISOString().split('T')[0]; // e.g., "2025-03-27"
+  const currentDate = new Date().toISOString().split("T")[0]; // e.g., "2025-03-27"
 
   const query = `
     SELECT b.bid, b.bname, b.btype
@@ -1225,30 +1260,42 @@ async function handleCardAction(req, res) {
             }
 
             const query = `
-              UPDATE registry.badgelog
-              SET outcome_status = 'completed',
-                  checked_at = NOW()
-              WHERE uid = $1
-                AND bid = $2
-                AND outcome_status = 'checked'
-            `;
+                UPDATE registry.badgelog
+                SET outcome_status = 'completed',
+                    checked_at = NOW()
+                WHERE uid = $1
+                  AND bid = $2
+                  AND outcome_status = 'checked'
+              `;
             const result = await pool.query(query, [userId, bid]);
             if (result.rowCount === 0) {
-              console.log(`No record updated for bid ${bid} (already completed or not checked)`);
+              console.log(
+                `No record updated for bid ${bid} (already completed or not checked)`
+              );
             } else {
               console.log(`Marked bid ${bid} as completed for user ${userId}`);
             }
           } catch (error) {
-            console.error("Error updating outcome status:", error.message, error.stack);
+            console.error(
+              "Error updating outcome status:",
+              error.message,
+              error.stack
+            );
             throw error;
           }
         }
 
         // Return the smiley-meter-card with updated completion ratio
         const smileyCard = await createSmileyMeterCard(userName, userId);
-        return res.json(smileyCard);
+        return res.json(
+          smileyCard || { text: "Failed to generate smiley card." }
+        ); // Fallback response
       } catch (error) {
-        console.error("Error in submitCompletedOutcomes:", error.message, error.stack);
+        console.error(
+          "Error in submitCompletedOutcomes:",
+          error.message,
+          error.stack
+        );
         return res.status(500).json({
           text: "⚠️ StarApp Bot is unable to process your request. Please try again later.",
         });
@@ -1272,11 +1319,17 @@ async function handleTextMessage(req, res) {
         const userIdGreet = await getUserIdByEmail(email);
         if (!userIdGreet) {
           console.log(`User not found for email: ${email}`);
-          return res.status(400).json({ text: "User not found. Please register with StarApp to get started!" });
+          return res
+            .status(400)
+            .json({
+              text: "User not found. Please register with StarApp to get started!",
+            });
         }
 
         const totalCoins = await getTotalCoins(userIdGreet);
-        const { completedBadges, assignedBadges } = await getUserBadges(userIdGreet);
+        const { completedBadges, assignedBadges } = await getUserBadges(
+          userIdGreet
+        );
         return res.json(
           createGoogleChatCard(
             userName,
@@ -1293,14 +1346,24 @@ async function handleTextMessage(req, res) {
       case "selected":
         const userIdChecked = await getUserIdByEmail(email);
         if (!userIdChecked) {
-          return res.status(400).json({ text: "User not found. Please register with StarApp to get started!" });
+          return res
+            .status(400)
+            .json({
+              text: "User not found. Please register with StarApp to get started!",
+            });
         }
-        return res.json(await createCheckedOutcomeCard(userName, userIdChecked));
+        return res.json(
+          await createCheckedOutcomeCard(userName, userIdChecked)
+        );
 
       case "smiley":
         const userIdSmiley = await getUserIdByEmail(email);
         if (!userIdSmiley) {
-          return res.status(400).json({ text: "User not found. Please register with StarApp to get started!" });
+          return res
+            .status(400)
+            .json({
+              text: "User not found. Please register with StarApp to get started!",
+            });
         }
         return res.json(await createSmileyMeterCard(userName, userIdSmiley));
 
@@ -1309,7 +1372,11 @@ async function handleTextMessage(req, res) {
     }
   } catch (error) {
     console.error("Error in handleTextMessage:", error.message, error.stack);
-    return res.status(500).json({ text: "⚠️ An error occurred while processing your request. Please try again later." });
+    return res
+      .status(500)
+      .json({
+        text: "⚠️ An error occurred while processing your request. Please try again later.",
+      });
   }
 }
 
