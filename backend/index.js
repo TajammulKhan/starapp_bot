@@ -482,9 +482,12 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                             verticalAlignment: "CENTER",
                             widgets: [
                               {
-                                image: {
-                                  imageUrl: sadSmileyUrl,
-                                  altText: "Sad Smiley",
+                                decoratedText: {
+                                  icon: {
+                                    iconUrl: sadSmileyUrl,
+                                    altText: "Sad Smiley",
+                                  },
+                                  text: "", // No text needed, just the icon
                                 },
                               },
                             ],
@@ -495,9 +498,12 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                             verticalAlignment: "CENTER",
                             widgets: [
                               {
-                                image: {
-                                  imageUrl: neutralSmileyUrl,
-                                  altText: "Neutral Smiley",
+                                decoratedText: {
+                                  icon: {
+                                    iconUrl: neutralSmileyUrl,
+                                    altText: "Neutral Smiley",
+                                  },
+                                  text: "",
                                 },
                               },
                             ],
@@ -508,9 +514,12 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                             verticalAlignment: "CENTER",
                             widgets: [
                               {
-                                image: {
-                                  imageUrl: happySmileyUrl,
-                                  altText: "Happy Smiley",
+                                decoratedText: {
+                                  icon: {
+                                    iconUrl: happySmileyUrl,
+                                    altText: "Happy Smiley",
+                                  },
+                                  text: "",
                                 },
                               },
                             ],
