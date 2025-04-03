@@ -354,6 +354,7 @@ app.get("/", (req, res) => {
 });
 
 // New function to create the Smiley Meter Card
+// Updated function to create the Smiley Meter Card
 function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
   const checkedCountPromise = getCheckedOutcomesCount(userId);
   const completedCountPromise = getCompletedOutcomesCount(userId);
@@ -407,7 +408,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                       columns: {
                         columnItems: [
                           {
-                            horizontalSizeStyle: "FILL_MINIMUM_SPACE", // Minimize spacing
+                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE", // Ensure equal spacing
                             horizontalAlignment: "CENTER",
                             verticalAlignment: "CENTER",
                             widgets: [
@@ -415,12 +416,13 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                                 image: {
                                   imageUrl: sadSmileyUrl,
                                   altText: "Sad Smiley",
+                                  aspectRatio: 1, // Ensure consistent sizing
                                 },
                               },
                             ],
                           },
                           {
-                            horizontalSizeStyle: "FILL_MINIMUM_SPACE", // Minimize spacing
+                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE", // Ensure equal spacing
                             horizontalAlignment: "CENTER",
                             verticalAlignment: "CENTER",
                             widgets: [
@@ -428,12 +430,13 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                                 image: {
                                   imageUrl: neutralSmileyUrl,
                                   altText: "Neutral Smiley",
+                                  aspectRatio: 1, // Ensure consistent sizing
                                 },
                               },
                             ],
                           },
                           {
-                            horizontalSizeStyle: "FILL_MINIMUM_SPACE", // Minimize spacing
+                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE", // Ensure equal spacing
                             horizontalAlignment: "CENTER",
                             verticalAlignment: "CENTER",
                             widgets: [
@@ -441,6 +444,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                                 image: {
                                   imageUrl: happySmileyUrl,
                                   altText: "Happy Smiley",
+                                  aspectRatio: 1, // Ensure consistent sizing
                                 },
                               },
                             ],
