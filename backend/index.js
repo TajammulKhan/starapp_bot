@@ -417,6 +417,13 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
         "Completed outcomes:",
         completedCount
       );
+      if (completedCount > checkedCount) {
+        console.warn(
+          `Inconsistent counts detected: Completed (${completedCount}) exceeds Checked (${checkedCount}) for user ${userId}`
+        );
+        // Optionally adjust counts or return a fallback response
+        completedCount = checkedCount; // Temporary fix to ensure logical consistency
+      }
       const completionRatio =
         checkedCount > 0
           ? Math.min((completedCount / checkedCount) * 100, 100)
@@ -478,7 +485,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                               {
                                 image: {
                                   imageUrl: sadSmileyUrl,
-                                  altText: "Sad Smiley", // Added required altText
+                                  altText: "Sad Smiley",
                                   aspectRatio: 1,
                                   imageWidth: "40px",
                                 },
@@ -493,7 +500,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                               {
                                 image: {
                                   imageUrl: neutralSmileyUrl,
-                                  altText: "Neutral Smiley", // Added required altText
+                                  altText: "Neutral Smiley",
                                   aspectRatio: 1,
                                   imageWidth: "40px",
                                 },
@@ -508,7 +515,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                               {
                                 image: {
                                   imageUrl: happySmileyUrl,
-                                  altText: "Happy Smiley", // Added required altText
+                                  altText: "Happy Smiley",
                                   aspectRatio: 1,
                                   imageWidth: "40px",
                                 },
@@ -593,9 +600,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
         error.message,
         error.stack
       );
-      return {
-        text: "⚠️ Failed to generate smiley card due to an internal error.",
-      }; // Return a fallback response
+      return { text: "⚠️ Failed to generate smiley card due to an internal error." };
     });
 }
 
