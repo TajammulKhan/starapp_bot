@@ -178,6 +178,24 @@ async function getCompletedOutcomesCount(userId) {
   }
 }
 
+async function updateOutcomeToCompleted(userId, bid) {
+  try {
+    const query = `
+      UPDATE registry.badgelog
+      SET outcome_status = 'completed',
+          checked_at = NOW()
+      WHERE uid = $1
+        AND bid = $2
+        AND outcome_status = 'checked'
+    `;
+    const result = await pool.query(query, [userId, bid]);
+    return result.rowCount > 0; // Return true if update was successful
+  } catch (error) {
+    console.error("Error in updateOutcomeToCompleted:", error.message, error.stack);
+    throw error;
+  }
+}
+
 // Construct Daily Progress Card
 function createGoogleChatCard(
   userName,
@@ -992,182 +1010,6 @@ async function handleCardAction(req, res) {
         (p) => p.key === "existingOutcomes"
       );
       const cardTypeParam = action.parameters.find((p) => p.key === "cardType");
-      const cardType = cardTypeParam ? cardTypeParam.value : "outcomeCard"; // Default to outcomeCard
-      if (existingParam) {
-        try {
-          existingOutcomes = JSON.parse(existingParam.value);
-        } catch (e) {
-          console.error("Error parsing existingOutcomes:", e);
-          existingOutcomes = [];
-        }
-      }
-
-      if (!customOutcomeText) {
-        return res.json({
-          actionResponse: { type: "UPDATE_MESSAGE" },
-          cardsV2:
-            cardType === "checkedOutcomeCard"
-              ? (
-                  await createCheckedOutcomeCard(
-                    userName,
-                    await getUserIdByEmail(email),
-                    existingOutcomes
-                  )
-                ).cardsV2
-              : (await createOutcomeCard(userName, existingOutcomes)).cardsV2,
-          text: "Please enter a valid outcome!",
-        });
-      }
-
-      const newOutcome = {
-        id: `custom_${Date.now()}`,
-        text: customOutcomeText,
-        coins: 10,
-        type: "Earning",
-        isCustom: true,
-      };
-
-      return res.json({
-        actionResponse: { type: "UPDATE_MESSAGE" },
-        cardsV2:
-          cardType === "checkedOutcomeCard"
-            ? (
-                await createCheckedOutcomeCard(
-                  userName,
-                  await getUserIdByEmail(email),
-                  [...existingOutcomes, newOutcome]
-                )
-              ).cardsV2
-            : (
-                await createOutcomeCard(userName, [
-                  ...existingOutcomes,
-                  newOutcome,
-                ])
-              ).cardsV2,
-      });
-
-    case "submitOutcomes":
-      try {
-        console.log(
-          "Submit action triggered with body:",
-          JSON.stringify(req.body, null, 2)
-        );
-        const userId = await getUserIdByEmail(email);
-        if (!userId) {
-          console.error("User not found for email:", email);
-          return res.status(400).json({ text: "User not found" });
-        }
-
-        const formInputs = req.body.common?.formInputs || {};
-        console.log("Full formInputs:", JSON.stringify(formInputs, null, 2));
-
-        // Aggregate selections from all sections
-        const learningItems =
-          formInputs.learningOutcomes?.stringInputs?.value || [];
-        const earningItems =
-          formInputs.earningOutcomes?.stringInputs?.value || [];
-        const contributionItems =
-          formInputs.contributionOutcomes?.stringInputs?.value || [];
-        const selectedItems = [
-          ...learningItems,
-          ...earningItems,
-          ...contributionItems,
-        ];
-        console.log("Raw selected items:", selectedItems);
-
-        const selectedOutcomes = selectedItems
-          .map((item) => {
-            try {
-              return JSON.parse(item);
-            } catch (e) {
-              console.error("Failed to parse outcome:", item, e);
-              return null;
-            }
-          })
-          .filter(Boolean);
-
-        console.log("Parsed outcomes:", selectedOutcomes);
-
-        if (selectedOutcomes.length === 0) {
-          console.log("No valid outcomes selected");
-          return res.json(createOutcomeConfirmationCard(userName, 0));
-        }
-
-        for (const outcome of selectedOutcomes) {
-          try {
-            console.log("Processing outcome:", JSON.stringify(outcome));
-
-            if (!outcome.id && !outcome.isCustom) {
-              console.error("Invalid outcome structure:", outcome);
-              continue;
-            }
-
-            let bid;
-            if (outcome.isCustom) {
-              console.log("Inserting custom outcome:", outcome.text);
-              bid = await insertCustomOutcome(outcome.text);
-              console.log("Custom outcome inserted with bid:", bid);
-            } else {
-              bid = parseInt(outcome.id);
-              if (isNaN(bid)) {
-                console.error("Invalid bid format:", outcome.id);
-                continue;
-              }
-              console.log("Updating status for existing outcome:", bid);
-              await updateOutcomeStatus(bid, userId); // Pass userId
-            }
-
-            console.log(
-              `Logging badge progress for ${bid} (${
-                outcome.text || "Existing Badge"
-              })`
-            );
-            await logBadgeProgress(userId, bid);
-          } catch (error) {
-            console.error(
-              "Error processing outcome:",
-              error.message,
-              error.stack
-            );
-            throw error;
-          }
-        }
-
-        console.log(
-          "Successfully processed",
-          selectedOutcomes.length,
-          "outcomes"
-        );
-        return res.json(
-          createOutcomeConfirmationCard(userName, selectedOutcomes.length)
-        );
-      } catch (error) {
-        console.error("Submission error:", error.message);
-        console.error("Error stack:", error.stack);
-        return res.status(500).json({
-          text: "⚠️ Failed to save outcomes. Please try again later.",
-        });
-      }
-
-    default:
-      return res.status(400).json({ text: "Unsupported action" });
-  }
-}
-
-async function handleCardAction(req, res) {
-  const { action, user } = req.body;
-  const userName = user?.displayName || "User";
-  const email = user?.email;
-
-  switch (action.actionMethodName) {
-    case "addEarningOutcome":
-      const customOutcomeText =
-        req.body.common?.formInputs?.customEarningOutcome?.stringInputs?.value?.[0]?.trim();
-      let existingOutcomes = [];
-      const existingParam = action.parameters.find(
-        (p) => p.key === "existingOutcomes"
-      );
-      const cardTypeParam = action.parameters.find((p) => p.key === "cardType");
       const cardType = cardTypeParam ? cardTypeParam.value : "outcomeCard";
       if (existingParam) {
         try {
@@ -1322,6 +1164,93 @@ async function handleCardAction(req, res) {
         console.error("Error stack:", error.stack);
         return res.status(500).json({
           text: "⚠️ Failed to save outcomes. Please try again later.",
+        });
+      }
+
+    case "submitCompletedOutcomes":
+      try {
+        console.log(
+          "Submit completed outcomes triggered with body:",
+          JSON.stringify(req.body, null, 2)
+        );
+        const userId = await getUserIdByEmail(email);
+        if (!userId) {
+          console.error("User not found for email:", email);
+          return res.status(400).json({ text: "User not found" });
+        }
+
+        const formInputs = req.body.common?.formInputs || {};
+        console.log("Full formInputs:", JSON.stringify(formInputs, null, 2));
+
+        const learningItems =
+          formInputs.learningOutcomes?.stringInputs?.value || [];
+        const earningItems =
+          formInputs.earningOutcomes?.stringInputs?.value || [];
+        const contributionItems =
+          formInputs.contributionOutcomes?.stringInputs?.value || [];
+        const selectedItems = [
+          ...learningItems,
+          ...earningItems,
+          ...contributionItems,
+        ];
+        console.log("Raw selected items:", selectedItems);
+
+        const selectedOutcomes = selectedItems
+          .map((item) => {
+            try {
+              return JSON.parse(item);
+            } catch (e) {
+              console.error("Failed to parse outcome:", item, e);
+              return null;
+            }
+          })
+          .filter(Boolean);
+
+        console.log("Parsed completed outcomes:", selectedOutcomes);
+
+        if (selectedOutcomes.length === 0) {
+          console.log("No outcomes selected for completion");
+          return res.json({
+            text: "Please select at least one outcome to mark as completed.",
+          });
+        }
+
+        // Update outcome_status to "completed" for selected outcomes
+        for (const outcome of selectedOutcomes) {
+          try {
+            const bid = parseInt(outcome.id);
+            if (isNaN(bid)) {
+              console.error("Invalid bid format:", outcome.id);
+              continue;
+            }
+
+            const query = `
+              UPDATE registry.badgelog
+              SET outcome_status = 'completed',
+                  checked_at = NOW()
+              WHERE uid = $1
+                AND bid = $2
+                AND outcome_status = 'checked'
+            `;
+            const result = await pool.query(query, [userId, bid]);
+            if (result.rowCount === 0) {
+              console.log(`No record updated for bid ${bid} (already completed or not checked)`);
+            } else {
+              console.log(`Marked bid ${bid} as completed for user ${userId}`);
+            }
+          } catch (error) {
+            console.error("Error updating outcome status:", error.message, error.stack);
+            throw error;
+          }
+        }
+
+        // Return the smiley-meter-card with updated completion ratio
+        const smileyCard = await createSmileyMeterCard(userName, userId);
+        return res.json(smileyCard);
+      } catch (error) {
+        console.error("Error in submitCompletedOutcomes:", error.message, error.stack);
+        return res.status(500).json({
+          text: "⚠️ StarApp Bot is unable to process your request. Please try again later.",
         });
       }
 
