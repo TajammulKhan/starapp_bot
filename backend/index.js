@@ -427,8 +427,9 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
         checkedCount > 0
           ? Math.min((completedCount / checkedCount) * 100, 100)
           : 0;
-      console.log("Completion ratio:", completionRatio); // Log the ratio for debugging
+      console.log("Completion ratio:", completionRatio);
 
+      // Define smiley URLs based on completion ratio
       let sadSmileyUrl, neutralSmileyUrl, happySmileyUrl;
       if (completionRatio <= 33) {
         sadSmileyUrl =
@@ -453,45 +454,50 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
           "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-Best.png";
       }
 
-      console.log("Smiley URLs:", {
-        sadSmileyUrl,
-        neutralSmileyUrl,
-        happySmileyUrl,
-      });
+      console.log("Smiley URLs:", { sadSmileyUrl, neutralSmileyUrl, happySmileyUrl });
 
       return {
         cardsV2: [
           {
-            cardId: "test-card",
+            cardId: "smiley-meter-card",
             card: {
-              header: { title: "Test Card" },
+              header: { title: "Today's Performance" },
               sections: [
                 {
                   widgets: [
                     {
+                      textParagraph: {
+                        text: "<b>Smiley Meter</b>",
+                      },
+                    },
+                    {
                       columns: {
                         columnItems: [
                           {
-                            horizontalAlignment: "CENTER",
+                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
+                            horizontalAlignment: "END", // Align right
+                            verticalAlignment: "CENTER",
                             widgets: [
                               {
                                 decoratedText: {
                                   icon: {
-                                    iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-sad-face.png",
+                                    iconUrl: sadSmileyUrl,
                                     altText: "Sad Smiley",
                                   },
-                                  text: "",
+                                  text: "", // No text, just icon
                                 },
                               },
                             ],
                           },
                           {
-                            horizontalAlignment: "CENTER",
+                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
+                            horizontalAlignment: "CENTER", // Center middle emoji
+                            verticalAlignment: "CENTER",
                             widgets: [
                               {
                                 decoratedText: {
                                   icon: {
-                                    iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-average.png",
+                                    iconUrl: neutralSmileyUrl,
                                     altText: "Neutral Smiley",
                                   },
                                   text: "",
@@ -500,12 +506,14 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                             ],
                           },
                           {
-                            horizontalAlignment: "CENTER",
+                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
+                            horizontalAlignment: "START", // Align left
+                            verticalAlignment: "CENTER",
                             widgets: [
                               {
                                 decoratedText: {
                                   icon: {
-                                    iconUrl: "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-Best.png",
+                                    iconUrl: happySmileyUrl,
                                     altText: "Happy Smiley",
                                   },
                                   text: "",
@@ -514,6 +522,67 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                             ],
                           },
                         ],
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      textParagraph: {
+                        text: `<b>Impressive!! Keep up the performance!</b>`,
+                      },
+                    },
+                    {
+                      textParagraph: {
+                        text: `Well done! You have completed more outcomes today than yesterday!`,
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      decoratedText: {
+                        topLabel: "Coins Earned",
+                        icon: {
+                          iconUrl:
+                            "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                          altText: "Coin Icon",
+                        },
+                        text: `<b>${coinsEarned}</b>`,
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      buttonList: {
+                        buttons: [
+                          {
+                            text: "Go to Star App →",
+                            onClick: {
+                              openLink: {
+                                url: "https://starapp-frontend.web.app/",
+                              },
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      textParagraph: {
+                        text: `<b>Have a happy evening!</b>`,
+                      },
+                    },
+                    {
+                      textParagraph: {
+                        text: `<font color='#D4A017'>"What do you call a factory that makes good products? A satisfactory!"</font>`,
                       },
                     },
                   ],
