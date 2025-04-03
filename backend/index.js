@@ -462,15 +462,127 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
       return {
         cardsV2: [
           {
-            cardId: "test-card",
+            cardId: "smiley-meter-card",
             card: {
-              header: { title: "Test Card" },
+              header: { title: "Today's Performance" },
               sections: [
                 {
                   widgets: [
                     {
                       textParagraph: {
-                        text: "This is a test card.",
+                        text: "<b>Smiley Meter</b>",
+                      },
+                    },
+                    {
+                      columns: {
+                        columnItems: [
+                          {
+                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                image: {
+                                  imageUrl: sadSmileyUrl,
+                                  altText: "Sad Smiley",
+                                  aspectRatio: 1,
+                                  imageWidth: "40px",
+                                },
+                              },
+                            ],
+                          },
+                          {
+                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                image: {
+                                  imageUrl: neutralSmileyUrl,
+                                  altText: "Neutral Smiley",
+                                  aspectRatio: 1,
+                                  imageWidth: "40px",
+                                },
+                              },
+                            ],
+                          },
+                          {
+                            horizontalSizeStyle: "FILL_AVAILABLE_SPACE",
+                            horizontalAlignment: "CENTER",
+                            verticalAlignment: "CENTER",
+                            widgets: [
+                              {
+                                image: {
+                                  imageUrl: happySmileyUrl,
+                                  altText: "Happy Smiley",
+                                  aspectRatio: 1,
+                                  imageWidth: "40px",
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      textParagraph: {
+                        text: `<b>Impressive!! Keep up the performance!</b>`,
+                      },
+                    },
+                    {
+                      textParagraph: {
+                        text: `Well done! You have completed more outcomes today than yesterday!`,
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      decoratedText: {
+                        topLabel: "Coins Earned",
+                        icon: {
+                          iconUrl:
+                            "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/star-bot.png",
+                          altText: "Coin Icon",
+                        },
+                        text: `<b>${coinsEarned}</b>`,
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      buttonList: {
+                        buttons: [
+                          {
+                            text: "Go to Star App →",
+                            onClick: {
+                              openLink: {
+                                url: "https://starapp-frontend.web.app/",
+                              },
+                            },
+                          },
+                        ],
+                      },
+                    },
+                  ],
+                },
+                {
+                  widgets: [
+                    {
+                      textParagraph: {
+                        text: `<b>Have a happy evening!</b>`,
+                      },
+                    },
+                    {
+                      textParagraph: {
+                        text: `<font color='#D4A017'>"What do you call a factory that makes good products? A satisfactory!"</font>`,
                       },
                     },
                   ],
