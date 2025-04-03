@@ -157,7 +157,9 @@ async function getCheckedOutcomesCount(userId) {
     `;
     const result = await pool.query(query, [userId, currentDate]);
     const checkedCount = parseInt(result.rows[0].checked_count) || 0;
-    console.log(`Checked outcomes count for ${userId} on ${currentDate}: ${checkedCount}`); // Debug log
+    console.log(
+      `Checked outcomes count for ${userId} on ${currentDate}: ${checkedCount}`
+    ); // Debug log
     return checkedCount;
   } catch (error) {
     console.error(
@@ -181,7 +183,9 @@ async function getCompletedOutcomesCount(userId) {
     `;
     const result = await pool.query(query, [userId, currentDate]);
     const completedCount = parseInt(result.rows[0].completed_count) || 0;
-    console.log(`Completed outcomes count for ${userId} on ${currentDate}: ${completedCount}`); // Debug log
+    console.log(
+      `Completed outcomes count for ${userId} on ${currentDate}: ${completedCount}`
+    ); // Debug log
     return completedCount;
   } catch (error) {
     console.error(
@@ -474,6 +478,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                               {
                                 image: {
                                   imageUrl: sadSmileyUrl,
+                                  altText: "Sad Smiley", // Added required altText
                                   aspectRatio: 1,
                                   imageWidth: "40px",
                                 },
@@ -488,6 +493,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                               {
                                 image: {
                                   imageUrl: neutralSmileyUrl,
+                                  altText: "Neutral Smiley", // Added required altText
                                   aspectRatio: 1,
                                   imageWidth: "40px",
                                 },
@@ -502,6 +508,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                               {
                                 image: {
                                   imageUrl: happySmileyUrl,
+                                  altText: "Happy Smiley", // Added required altText
                                   aspectRatio: 1,
                                   imageWidth: "40px",
                                 },
@@ -586,7 +593,9 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
         error.message,
         error.stack
       );
-      return { text: "⚠️ Failed to generate smiley card due to an internal error." }; // Return a fallback response
+      return {
+        text: "⚠️ Failed to generate smiley card due to an internal error.",
+      }; // Return a fallback response
     });
 }
 
@@ -1287,9 +1296,13 @@ async function handleCardAction(req, res) {
 
         // Return the smiley-meter-card with updated completion ratio
         const smileyCard = await createSmileyMeterCard(userName, userId);
+        console.log(
+          "Smiley card generated in submitCompletedOutcomes:",
+          JSON.stringify(smileyCard, null, 2)
+        );
         return res.json(
           smileyCard || { text: "Failed to generate smiley card." }
-        ); // Fallback response
+        );
       } catch (error) {
         console.error(
           "Error in submitCompletedOutcomes:",
@@ -1319,11 +1332,9 @@ async function handleTextMessage(req, res) {
         const userIdGreet = await getUserIdByEmail(email);
         if (!userIdGreet) {
           console.log(`User not found for email: ${email}`);
-          return res
-            .status(400)
-            .json({
-              text: "User not found. Please register with StarApp to get started!",
-            });
+          return res.status(400).json({
+            text: "User not found. Please register with StarApp to get started!",
+          });
         }
 
         const totalCoins = await getTotalCoins(userIdGreet);
@@ -1346,48 +1357,50 @@ async function handleTextMessage(req, res) {
       case "selected":
         const userIdChecked = await getUserIdByEmail(email);
         if (!userIdChecked) {
-          return res
-            .status(400)
-            .json({
-              text: "User not found. Please register with StarApp to get started!",
-            });
+          return res.status(400).json({
+            text: "User not found. Please register with StarApp to get started!",
+          });
         }
         return res.json(
           await createCheckedOutcomeCard(userName, userIdChecked)
         );
 
-        case "smiley":
-          const userIdSmiley = await getUserIdByEmail(email);
-          if (!userIdSmiley) {
-            return res
-              .status(400)
-              .json({
-                text: "User not found. Please register with StarApp to get started!",
-              });
-          }
-          try {
-            const smileyCard = await createSmileyMeterCard(userName, userIdSmiley);
-            console.log("Smiley card generated:", smileyCard); // Log the card for debugging
-            return res.json(smileyCard);
-          } catch (error) {
-            console.error("Error generating smiley card:", error.message, error.stack);
-            return res
-              .status(500)
-              .json({
-                text: "⚠️ An error occurred while generating the smiley card. Please try again later.",
-              });
-          }
+      case "smiley":
+        const userIdSmiley = await getUserIdByEmail(email);
+        if (!userIdSmiley) {
+          return res.status(400).json({
+            text: "User not found. Please register with StarApp to get started!",
+          });
+        }
+        try {
+          const smileyCard = await createSmileyMeterCard(
+            userName,
+            userIdSmiley
+          );
+          console.log(
+            "Smiley card generated:",
+            JSON.stringify(smileyCard, null, 2)
+          ); // Detailed log
+          return res.json(smileyCard);
+        } catch (error) {
+          console.error(
+            "Error generating smiley card:",
+            error.message,
+            error.stack
+          );
+          return res.status(500).json({
+            text: "⚠️ An error occurred while generating the smiley card. Please try again later.",
+          });
+        }
 
       default:
         return res.json({ text: `Unsupported command: ${messageText}` });
     }
   } catch (error) {
     console.error("Error in handleTextMessage:", error.message, error.stack);
-    return res
-      .status(500)
-      .json({
-        text: "⚠️ An error occurred while processing your request. Please try again later.",
-      });
+    return res.status(500).json({
+      text: "⚠️ An error occurred while processing your request. Please try again later.",
+    });
   }
 }
 
