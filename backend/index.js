@@ -456,7 +456,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
 
       console.log("Smiley URLs:", { sadSmileyUrl, neutralSmileyUrl, happySmileyUrl });
 
-      // Updated columns to ensure all three smileys are visible
+      // Use a single section with multiple decoratedText widgets to display all three smileys
       return {
         cardsV2: [
           {
@@ -472,48 +472,25 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                       },
                     },
                     {
-                      columns: {
-                        columnItems: [
-                          {
-                            widgets: [
-                              {
-                                decoratedText: {
-                                  icon: {
-                                    iconUrl: sadSmileyUrl,
-                                    altText: "Sad Smiley",
-                                  },
-                                  text: "",
-                                },
-                              },
-                            ],
-                          },
-                          {
-                            widgets: [
-                              {
-                                decoratedText: {
-                                  icon: {
-                                    iconUrl: neutralSmileyUrl,
-                                    altText: "Neutral Smiley",
-                                  },
-                                  text: "",
-                                },
-                              },
-                            ],
-                          },
-                          {
-                            widgets: [
-                              {
-                                decoratedText: {
-                                  icon: {
-                                    iconUrl: happySmileyUrl,
-                                    altText: "Happy Smiley",
-                                  },
-                                  text: "",
-                                },
-                              },
-                            ],
-                          },
-                        ],
+                      decoratedText: {
+                        startIcon: {
+                          iconUrl: sadSmileyUrl,
+                          altText: "Sad Smiley",
+                        },
+                        text: "  ", // Minimal spacing to ensure icons are close
+                        endIcon: {
+                          iconUrl: neutralSmileyUrl,
+                          altText: "Neutral Smiley",
+                        },
+                      },
+                    },
+                    {
+                      decoratedText: {
+                        startIcon: {
+                          iconUrl: happySmileyUrl,
+                          altText: "Happy Smiley",
+                        },
+                        text: "", // No text to minimize spacing
                       },
                     },
                   ],
@@ -594,6 +571,7 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
       return { text: "⚠️ Failed to generate smiley card due to an internal error." };
     });
 }
+
 async function createOutcomeCard(userName, email, customOutcomes = []) {
   const userId = await getUserIdByEmail(email);
   if (!userId) {
