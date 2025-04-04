@@ -121,6 +121,32 @@ async function updateOutcomeStatus(bid, userId) {
   }
 }
 
+// Add this helper function to fetch yesterday's total coins
+async function getYesterdayTotalCoins(userId) {
+  try {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1); // Get yesterday's date
+    const formattedYesterday = yesterday.toISOString().split("T")[0]; // e.g., "2025-04-02"
+
+    // This assumes you have a way to track historical coin data. If not, you'll need to adjust this query.
+    const query = `
+      SELECT COALESCE(
+        total_learning_coins + total_earning_coins + total_contribution_coins, 0
+      ) AS total
+      FROM registry.user_coins
+      WHERE uid = $1
+      AND DATE(updated_at) <= $2
+      ORDER BY updated_at DESC
+      LIMIT 1
+    `;
+    const result = await pool.query(query, [userId, formattedYesterday]);
+    return result.rows.length > 0 ? result.rows[0].total : 0;
+  } catch (error) {
+    console.error("Error in getYesterdayTotalCoins:", error.message, error.stack);
+    return 0; // Fallback to 0 if the query fails
+  }
+}
+
 async function logBadgeProgress(userId, bid) {
   console.log(
     `Logging badge progress for User ID: ${userId}, Badge ID: ${bid}`
@@ -223,10 +249,35 @@ async function updateOutcomeToCompleted(userId, bid) {
 function createGoogleChatCard(
   userName,
   totalCoins,
-  coinsDifference,
+  coinsDifference, // This will now be dynamically calculated
   completedBadges,
   assignedBadges
 ) {
+  let iconUrl, message1, message2;
+
+  // Determine the icon and messages based on coinsDifference
+  if (totalCoins === 0 && coinsDifference === 0) {
+    // Condition 1: 0 coins compared to 0 coins
+    iconUrl = "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-low.png";
+    message1 = "Uh-Oh!";
+    message2 = "You haven't earned any coins yet.\nSet and complete your outcomes for the day to start!";
+  } else if (coinsDifference < 0) {
+    // Condition 2: Less coins earned than yesterday
+    iconUrl = "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-low.png";
+    message1 = "It's okay to have an off day. You can bounce back!";
+    message2 = `You've earned <b>${Math.abs(coinsDifference)}</b> coins less than yesterday`;
+  } else if (coinsDifference === 0) {
+    // Condition 3: Same number of coins as yesterday
+    iconUrl = "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-average.png";
+    message1 = "You've hit a balance! Let's see if tomorrow tips the scales";
+    message2 = "You've earned the same number of coins as yesterday!";
+  } else {
+    // Condition 4: More coins earned than yesterday
+    iconUrl = "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-Best.png";
+    message1 = "Awesome progress!";
+    message2 = `You've earned <b>${coinsDifference}</b> coins more than yesterday!`;
+  }
+
   return {
     cardsV2: [
       {
@@ -255,9 +306,8 @@ function createGoogleChatCard(
                           {
                             decoratedText: {
                               icon: {
-                                iconUrl:
-                                  "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/impressive-bot.png",
-                                altText: "Impressive Emoji",
+                                iconUrl: iconUrl,
+                                altText: "Progress Emoji",
                               },
                             },
                           },
@@ -267,10 +317,10 @@ function createGoogleChatCard(
                         horizontalAlignment: "CENTER",
                         verticalAlignment: "CENTER",
                         widgets: [
-                          { textParagraph: { text: "<b>Impressive!</b>" } },
+                          { textParagraph: { text: `<b>${message1}</b>` } },
                           {
                             textParagraph: {
-                              text: `You’ve earned <b><font color='#4CAF50'> ↑</font></b> coins more than yesterday! ✨`,
+                              text: message2,
                             },
                           },
                         ],
@@ -429,34 +479,22 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
           : 0;
       console.log("Completion ratio:", completionRatio);
 
-      // Define smiley URLs based on completion ratio
-      let sadSmileyUrl, neutralSmileyUrl, happySmileyUrl;
+      // Define composite image URL based on completion ratio
+      let compositeSmileyUrl;
       if (completionRatio <= 33) {
-        sadSmileyUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-low.png";
-        neutralSmileyUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-neutral-face.png";
-        happySmileyUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-happy-face.png";
+        compositeSmileyUrl =
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/composite-smiley-low.png"; // Replace with actual URL
       } else if (completionRatio <= 66) {
-        sadSmileyUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-sad-face.png";
-        neutralSmileyUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-average.png";
-        happySmileyUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-happy-face.png";
+        compositeSmileyUrl =
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/composite-smiley-average.png"; // Replace with actual URL
       } else {
-        sadSmileyUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-sad-face.png";
-        neutralSmileyUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/greyed-neutral-face.png";
-        happySmileyUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-Best.png";
+        compositeSmileyUrl =
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/composite-smiley-best.png"; // Replace with actual URL
       }
 
-      console.log("Smiley URLs:", { sadSmileyUrl, neutralSmileyUrl, happySmileyUrl });
+      console.log("Composite Smiley URL:", compositeSmileyUrl);
 
-      // Use a single textParagraph with HTML img tags to display all three smileys without spaces
+      // Use a single image widget to display the composite smiley image
       return {
         cardsV2: [
           {
@@ -472,12 +510,9 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                       },
                     },
                     {
-                      textParagraph: {
-                        text: `
-                          <img src="${sadSmileyUrl}" alt="Sad Smiley" style="width:32px;height:32px;margin:0;padding:0;border:0;vertical-align:middle;">
-                          <img src="${neutralSmileyUrl}" alt="Neutral Smiley" style="width:32px;height:32px;margin:0;padding:0;border:0;vertical-align:middle;">
-                          <img src="${happySmileyUrl}" alt="Happy Smiley" style="width:32px;height:32px;margin:0;padding:0;border:0;vertical-align:middle;">
-                        `,
+                      image: {
+                        imageUrl: compositeSmileyUrl,
+                        altText: "Smiley Meter",
                       },
                     },
                   ],
@@ -1298,14 +1333,15 @@ async function handleTextMessage(req, res) {
         }
 
         const totalCoins = await getTotalCoins(userIdGreet);
-        const { completedBadges, assignedBadges } = await getUserBadges(
-          userIdGreet
-        );
+        const yesterdayCoins = await getYesterdayTotalCoins(userIdGreet);
+        const coinsDifference = totalCoins - yesterdayCoins; // Calculate the difference
+        const { completedBadges, assignedBadges } = await getUserBadges(userIdGreet);
+
         return res.json(
           createGoogleChatCard(
             userName,
             totalCoins,
-            10, // coinsDifference (hardcoded as per original code)
+            coinsDifference,
             completedBadges,
             assignedBadges
           )
