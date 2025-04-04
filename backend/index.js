@@ -483,13 +483,13 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
       let compositeSmileyUrl;
       if (completionRatio <= 33) {
         compositeSmileyUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/composite-smiley-low.png"; // Replace with actual URL
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/poor+perfomance.png"; // Replace with actual URL
       } else if (completionRatio <= 66) {
         compositeSmileyUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/composite-smiley-average.png"; // Replace with actual URL
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/neutral+perfomance.png"; // Replace with actual URL
       } else {
         compositeSmileyUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/composite-smiley-best.png"; // Replace with actual URL
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/great+perfomance.png"; // Replace with actual URL
       }
 
       console.log("Composite Smiley URL:", compositeSmileyUrl);
