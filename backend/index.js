@@ -441,7 +441,6 @@ app.get("/", (req, res) => {
   res.status(200).json({ message: "StarApp Bot is running!" });
 });
 
-// New function to create the Smiley Meter Card
 // Updated function to create the Smiley Meter Card
 function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
   console.log(
@@ -473,19 +472,25 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
           : 0;
       console.log(`Completion ratio for user ${userId}: ${completionRatio}%`);
 
-      // Define composite image URL based on completion ratio
-      let compositeSmileyUrl;
+      // Define composite image URL and messages based on completion ratio
+      let compositeSmileyUrl, message1, message2;
       if (completionRatio <= 33) {
         compositeSmileyUrl =
           "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/poor+perfomance.png";
+        message1 = "<b>Keep your chin up!</b>";
+        message2 = "Tomorrow is a new day, you can do better!";
         console.log("Selected poor performance image (0-33%)");
       } else if (completionRatio <= 66) {
         compositeSmileyUrl =
           "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/neutral+perfomance.png";
+        message1 = "<b>Good going. Keep up the efforts</b>";
+        message2 = "You're on track. You've completed the same number of outcomes today as yesterday";
         console.log("Selected neutral performance image (34-66%)");
       } else {
         compositeSmileyUrl =
           "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/great+perfomance.png";
+        message1 = "<b>Impressive! Consistency is key!</b>";
+        message2 = "Well done! You've completed the more outcomes today than yesterday";
         console.log("Selected great performance image (67-100%)");
       }
 
@@ -518,12 +523,12 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
                   widgets: [
                     {
                       textParagraph: {
-                        text: `<b>Impressive!! Keep up the performance!</b>`,
+                        text: message1,
                       },
                     },
                     {
                       textParagraph: {
-                        text: `Well done! You have completed more outcomes today than yesterday!`,
+                        text: message2,
                       },
                     },
                   ],
