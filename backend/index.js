@@ -188,11 +188,7 @@ async function getCheckedOutcomesCount(userId) {
     ); // Debug log
     return checkedCount;
   } catch (error) {
-    console.error(
-      "Error in getCheckedOutcomesCount:",
-      error.message,
-      error.stack
-    );
+    console.error("Error in getCheckedOutcomesCount:", error.message, error.stack);
     return 0; // Fallback to 0 if the query fails
   }
 }
@@ -214,11 +210,7 @@ async function getCompletedOutcomesCount(userId) {
     ); // Debug log
     return completedCount;
   } catch (error) {
-    console.error(
-      "Error in getCompletedOutcomesCount:",
-      error.message,
-      error.stack
-    );
+    console.error("Error in getCompletedOutcomesCount:", error.message, error.stack);
     return 0; // Fallback to 0 if the query fails
   }
 }
@@ -232,15 +224,17 @@ async function updateOutcomeToCompleted(userId, bid) {
       WHERE uid = $1
         AND bid = $2
         AND outcome_status = 'checked'
+      RETURNING *;
     `;
     const result = await pool.query(query, [userId, bid]);
+    if (result.rowCount > 0) {
+      console.log(`Successfully marked bid ${bid} as completed for user ${userId}:`, result.rows[0]);
+    } else {
+      console.log(`No update for bid ${bid} for user ${userId} - already completed or not checked.`);
+    }
     return result.rowCount > 0; // Return true if update was successful
   } catch (error) {
-    console.error(
-      "Error in updateOutcomeToCompleted:",
-      error.message,
-      error.stack
-    );
+    console.error("Error in updateOutcomeToCompleted:", error.message, error.stack);
     throw error;
   }
 }
@@ -477,19 +471,22 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
         checkedCount > 0
           ? Math.min((completedCount / checkedCount) * 100, 100)
           : 0;
-      console.log("Completion ratio:", completionRatio);
+      console.log(`Completion ratio for user ${userId}: ${completionRatio}%`);
 
       // Define composite image URL based on completion ratio
       let compositeSmileyUrl;
       if (completionRatio <= 33) {
         compositeSmileyUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/poor+perfomance.png"; // Replace with actual URL
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/poor+perfomance.png";
+        console.log("Selected poor performance image (0-33%)");
       } else if (completionRatio <= 66) {
         compositeSmileyUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/neutral+perfomance.png"; // Replace with actual URL
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/neutral+perfomance.png";
+        console.log("Selected neutral performance image (34-66%)");
       } else {
         compositeSmileyUrl =
-          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/great+perfomance.png"; // Replace with actual URL
+          "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/great+perfomance.png";
+        console.log("Selected great performance image (67-100%)");
       }
 
       console.log("Composite Smiley URL:", compositeSmileyUrl);
@@ -1206,108 +1203,105 @@ async function handleCardAction(req, res) {
         });
       }
 
-    case "submitCompletedOutcomes":
-      try {
-        console.log(
-          "Submit completed outcomes triggered with body:",
-          JSON.stringify(req.body, null, 2)
-        );
-        const userId = await getUserIdByEmail(email);
-        if (!userId) {
-          console.error("User not found for email:", email);
-          return res.status(400).json({ text: "User not found" });
-        }
-
-        const formInputs = req.body.common?.formInputs || {};
-        console.log("Full formInputs:", JSON.stringify(formInputs, null, 2));
-
-        const learningItems =
-          formInputs.learningOutcomes?.stringInputs?.value || [];
-        const earningItems =
-          formInputs.earningOutcomes?.stringInputs?.value || [];
-        const contributionItems =
-          formInputs.contributionOutcomes?.stringInputs?.value || [];
-        const selectedItems = [
-          ...learningItems,
-          ...earningItems,
-          ...contributionItems,
-        ];
-        console.log("Raw selected items:", selectedItems);
-
-        const selectedOutcomes = selectedItems
-          .map((item) => {
+      case "submitCompletedOutcomes":
+        try {
+          console.log(
+            "Submit completed outcomes triggered with body:",
+            JSON.stringify(req.body, null, 2)
+          );
+          const userId = await getUserIdByEmail(email);
+          if (!userId) {
+            console.error("User not found for email:", email);
+            return res.status(400).json({ text: "User not found" });
+          }
+      
+          const formInputs = req.body.common?.formInputs || {};
+          console.log("Full formInputs:", JSON.stringify(formInputs, null, 2));
+      
+          const learningItems =
+            formInputs.learningOutcomes?.stringInputs?.value || [];
+          const earningItems =
+            formInputs.earningOutcomes?.stringInputs?.value || [];
+          const contributionItems =
+            formInputs.contributionOutcomes?.stringInputs?.value || [];
+          const selectedItems = [
+            ...learningItems,
+            ...earningItems,
+            ...contributionItems,
+          ];
+          console.log("Raw selected items:", selectedItems);
+      
+          const selectedOutcomes = selectedItems
+            .map((item) => {
+              try {
+                return JSON.parse(item);
+              } catch (e) {
+                console.error("Failed to parse outcome:", item, e);
+                return null;
+              }
+            })
+            .filter(Boolean);
+      
+          console.log("Parsed completed outcomes:", selectedOutcomes);
+      
+          if (selectedOutcomes.length === 0) {
+            console.log("No outcomes selected for completion");
+            return res.json({
+              text: "Please select at least one outcome to mark as completed.",
+            });
+          }
+      
+          // Update outcome_status to "completed" for selected outcomes
+          for (const outcome of selectedOutcomes) {
             try {
-              return JSON.parse(item);
-            } catch (e) {
-              console.error("Failed to parse outcome:", item, e);
-              return null;
+              const bid = parseInt(outcome.id);
+              if (isNaN(bid)) {
+                console.error("Invalid bid format:", outcome.id);
+                continue;
+              }
+      
+              const updated = await updateOutcomeToCompleted(userId, bid);
+              if (updated) {
+                console.log(`Successfully marked bid ${bid} as completed for user ${userId}`);
+              } else {
+                console.log(`No update for bid ${bid} - already completed or not checked`);
+              }
+            } catch (error) {
+              console.error(
+                "Error updating outcome status:",
+                error.message,
+                error.stack
+              );
+              throw error;
             }
-          })
-          .filter(Boolean);
-
-        console.log("Parsed completed outcomes:", selectedOutcomes);
-
-        if (selectedOutcomes.length === 0) {
-          console.log("No outcomes selected for completion");
-          return res.json({
-            text: "Please select at least one outcome to mark as completed.",
+          }
+      
+          // Fetch updated counts for debugging
+          const updatedCheckedCount = await getCheckedOutcomesCount(userId);
+          const updatedCompletedCount = await getCompletedOutcomesCount(userId);
+          console.log(
+            `After submission - Checked: ${updatedCheckedCount}, Completed: ${updatedCompletedCount}`
+          );
+      
+          // Return the smiley-meter-card with updated completion ratio
+          const smileyCard = await createSmileyMeterCard(userName, userId);
+          console.log(
+            "Smiley card generated in submitCompletedOutcomes:",
+            JSON.stringify(smileyCard, null, 2)
+          );
+          return res.json(
+            smileyCard || { text: "Failed to generate smiley card." }
+          );
+        } catch (error) {
+          console.error(
+            "Error in submitCompletedOutcomes:",
+            error.message,
+            error.stack
+          );
+          return res.status(500).json({
+            text: "⚠️ StarApp Bot is unable to process your request. Please try again later.",
           });
         }
-
-        // Update outcome_status to "completed" for selected outcomes
-        for (const outcome of selectedOutcomes) {
-          try {
-            const bid = parseInt(outcome.id);
-            if (isNaN(bid)) {
-              console.error("Invalid bid format:", outcome.id);
-              continue;
-            }
-
-            const query = `
-                UPDATE registry.badgelog
-                SET outcome_status = 'completed',
-                    checked_at = NOW()
-                WHERE uid = $1
-                  AND bid = $2
-                  AND outcome_status = 'checked'
-              `;
-            const result = await pool.query(query, [userId, bid]);
-            if (result.rowCount === 0) {
-              console.log(
-                `No record updated for bid ${bid} (already completed or not checked)`
-              );
-            } else {
-              console.log(`Marked bid ${bid} as completed for user ${userId}`);
-            }
-          } catch (error) {
-            console.error(
-              "Error updating outcome status:",
-              error.message,
-              error.stack
-            );
-            throw error;
-          }
-        }
-
-        // Return the smiley-meter-card with updated completion ratio
-        const smileyCard = await createSmileyMeterCard(userName, userId);
-        console.log(
-          "Smiley card generated in submitCompletedOutcomes:",
-          JSON.stringify(smileyCard, null, 2)
-        );
-        return res.json(
-          smileyCard || { text: "Failed to generate smiley card." }
-        );
-      } catch (error) {
-        console.error(
-          "Error in submitCompletedOutcomes:",
-          error.message,
-          error.stack
-        );
-        return res.status(500).json({
-          text: "⚠️ StarApp Bot is unable to process your request. Please try again later.",
-        });
-      }
 
     default:
       return res.status(400).json({ text: "Unsupported action" });
