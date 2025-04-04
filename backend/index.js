@@ -173,18 +173,18 @@ async function logBadgeProgress(userId, bid) {
 // Fetch the number of checked outcomes for the current day
 async function getCheckedOutcomesCount(userId) {
   try {
-    const currentDate = new Date().toISOString().split("T")[0]; // e.g., "2025-04-03"
+    const currentDate = new Date().toISOString().split("T")[0]; // e.g., "2025-04-04"
     const query = `
       SELECT COUNT(*) AS checked_count
       FROM registry.badgelog
       WHERE uid = $1
-        AND outcome_status = 'checked'
+        AND (outcome_status = 'checked' OR outcome_status = 'completed')
         AND DATE(checked_at) = $2
     `;
     const result = await pool.query(query, [userId, currentDate]);
     const checkedCount = parseInt(result.rows[0].checked_count) || 0;
     console.log(
-      `Checked outcomes count for ${userId} on ${currentDate}: ${checkedCount}`
+      `Total checked outcomes (including completed) for ${userId} on ${currentDate}: ${checkedCount}`
     ); // Debug log
     return checkedCount;
   } catch (error) {
@@ -456,14 +456,14 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
   return Promise.all([checkedCountPromise, completedCountPromise])
     .then(([checkedCount, completedCount]) => {
       console.log(
-        "Checked outcomes:",
+        "Total outcomes initially checked (including completed):",
         checkedCount,
         "Completed outcomes:",
         completedCount
       );
       if (completedCount > checkedCount) {
         console.warn(
-          `Inconsistent counts detected: Completed (${completedCount}) exceeds Checked (${checkedCount}) for user ${userId}`
+          `Inconsistent counts detected: Completed (${completedCount}) exceeds Total Checked (${checkedCount}) for user ${userId}`
         );
         completedCount = checkedCount; // Temporary fix to ensure logical consistency
       }
