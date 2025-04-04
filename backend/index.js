@@ -259,8 +259,8 @@ function createGoogleChatCard(
   if (totalCoins === 0 && coinsDifference === 0) {
     // Condition 1: 0 coins compared to 0 coins
     iconUrl = "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-low.png";
-    message1 = "Uh-Oh!";
-    message2 = "You haven't earned any coins yet.\nSet and complete your outcomes for the day to start!";
+    message1 = "Uh-Oh! You haven't earned any coins yet.";
+    message2 = "Set and complete your outcomes for the day to start!";
   } else if (coinsDifference < 0) {
     // Condition 2: Less coins earned than yesterday
     iconUrl = "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/happy-face-low.png";
