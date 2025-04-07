@@ -65,7 +65,10 @@ async function getUserOutcomes(userId) {
       FROM registry.badges b
       LEFT JOIN registry.badgelog bl ON b.bid = bl.bid AND bl.uid = $1
       WHERE b.btype IN ('Learning', 'Earning', 'Contribution')
-      AND (bl.outcome_status IS NULL OR bl.outcome_status != 'completed')
+      AND (
+        (b.btype = 'Learning' AND bl.bstatus = 'Assigned' AND bl.uid = $1)
+        OR (b.btype IN ('Earning', 'Contribution') AND (bl.outcome_status IS NULL OR bl.outcome_status != 'completed'))
+      )
     `;
     const result = await pool.query(query, [userId]);
     const outcomes = { Learning: [], Earning: [], Contribution: [] };
