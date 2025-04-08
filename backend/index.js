@@ -1,8 +1,11 @@
 const express = require("express");
 const pool = require("./db"); // Import database connection
+const { google } = require('googleapis');
+const { JWT } = require('google-auth-library');
 require("dotenv").config(); // Load environment variables
 
 const app = express();
+const cron = require('node-cron');
 app.use(express.json());
 
 // Fetch User ID from Keycloak User Table
@@ -1401,6 +1404,105 @@ async function handleTextMessage(req, res) {
     });
   }
 }
+
+async function sendCardToUser(userEmail, cardFunction, userName) {
+  try {
+    const userId = await getUserIdByEmail(userEmail);
+    if (!userId) {
+      console.log(`User not found for email: ${userEmail}`);
+      return;
+    }
+
+    let card;
+    switch (cardFunction.name) {
+      case 'createGoogleChatCard':
+        const totalCoins = await getTotalCoins(userId);
+        const yesterdayCoins = await getYesterdayTotalCoins(userId);
+        const coinsDifference = totalCoins - yesterdayCoins;
+        const { completedBadges, assignedBadges } = await getUserBadges(userId);
+        card = cardFunction(userName, totalCoins, coinsDifference, completedBadges, assignedBadges);
+        break;
+      case 'createOutcomeCard':
+        card = await cardFunction(userName, userEmail);
+        break;
+      case 'createCheckedOutcomeCard':
+        card = await cardFunction(userName, userId);
+        break;
+      case 'createSmileyMeterCard':
+        card = await cardFunction(userName, userId);
+        break;
+      default:
+        throw new Error('Unsupported card function');
+    }
+
+    // Initialize Google Chat API client
+    const auth = new JWT({
+      email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      key: process.env.GOOGLE_SERVICE_ACCOUNT_KEY.replace(/\\n/g, '\n'), // Ensure newlines are handled
+      scopes: ['https://www.googleapis.com/auth/chat.bot'],
+    });
+
+    const chat = google.chat({ version: 'v1', auth });
+
+    // Send the card to the user
+    await chat.spaces.messages.create({
+      parent: `users/${userEmail}`, // Direct message to user; use a space ID for group chats
+      requestBody: {
+        cardsV2: card.cardsV2,
+      },
+    });
+
+    console.log(`Successfully sent ${cardFunction.name} to ${userEmail}`);
+  } catch (error) {
+    console.error(`Error sending card to ${userEmail}:`, error.message, error.stack);
+  }
+}
+
+// Function to get all users (replace with your user retrieval logic)
+async function getAllUsers() {
+  try {
+    const query = `SELECT email, id, username FROM keycloak.user_entity`;
+    const result = await pool.query(query);
+    return result.rows.map(row => ({
+      email: row.email,
+      userName: row.username || row.email.split('@')[0], // Fallback to email prefix if no username
+    }));
+  } catch (error) {
+    console.error('Error fetching users:', error.message, error.stack);
+    return [];
+  }
+}
+
+// Schedule cron jobs
+cron.schedule('0 0 9 * * *', async () => {
+  console.log('Running daily progress card cron job at 8:00 AM');
+  const users = await getAllUsers();
+  for (const user of users) {
+    await sendCardToUser(user.email, createGoogleChatCard, user.userName);
+  }
+}, {
+  timezone: 'UTC', // Adjust timezone as needed
+});
+
+cron.schedule('0 0 9 * * *', async () => {
+  console.log('Running outcome card cron job at 10:00 AM');
+  const users = await getAllUsers();
+  for (const user of users) {
+    await sendCardToUser(user.email, createOutcomeCard, user.userName);
+  }
+}, {
+  timezone: 'UTC', // Adjust timezone as needed
+});
+
+cron.schedule('0 0 18 * * *', async () => {
+  console.log('Running checked outcome card cron job at 6:00 PM');
+  const users = await getAllUsers();
+  for (const user of users) {
+    await sendCardToUser(user.email, createCheckedOutcomeCard, user.userName);
+  }
+}, {
+  timezone: 'UTC', // Adjust timezone as needed
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
