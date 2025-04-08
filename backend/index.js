@@ -130,23 +130,35 @@ async function updateOutcomeStatus(bid, userId) {
 // Add this helper function to fetch yesterday's total coins
 async function getYesterdayTotalCoins(userId) {
   try {
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1); // Get yesterday's date
-    const formattedYesterday = yesterday.toISOString().split("T")[0]; // e.g., "2025-04-02"
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const formattedToday = today.toISOString().split("T")[0]; // e.g., "2025-04-07"
+    const formattedYesterday = yesterday.toISOString().split("T")[0]; // e.g., "2025-04-06"
 
-    // This assumes you have a way to track historical coin data. If not, you'll need to adjust this query.
-    const query = `
+    // Fetch the current total coins
+    const currentQuery = `
       SELECT COALESCE(
         total_learning_coins + total_earning_coins + total_contribution_coins, 0
-      ) AS total
+      ) AS total,
+      last_updated
       FROM registry.user_coins
       WHERE uid = $1
-      AND DATE(updated_at) <= $2
-      ORDER BY updated_at DESC
-      LIMIT 1
     `;
-    const result = await pool.query(query, [userId, formattedYesterday]);
-    return result.rows.length > 0 ? result.rows[0].total : 0;
+    const currentResult = await pool.query(currentQuery, [userId]);
+    if (currentResult.rows.length === 0) return 0;
+
+    const { total: currentTotal, last_updated } = currentResult.rows[0];
+    const lastUpdatedDate = new Date(last_updated).toISOString().split("T")[0];
+
+    // If last_updated is yesterday or earlier, use current total as yesterday's value
+    if (lastUpdatedDate <= formattedYesterday) {
+      return currentTotal;
+    }
+
+    // If last_updated is today, we need a better way to estimate yesterday's total
+    // This is a simplification; ideally, you'd track daily changes
+    return 0; // Fallback to 0 if no historical data is available
   } catch (error) {
     console.error("Error in getYesterdayTotalCoins:", error.message, error.stack);
     return 0; // Fallback to 0 if the query fails
