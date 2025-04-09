@@ -1,18 +1,22 @@
+require("dotenv").config(); // Load environment variables
+console.log("All environment variables:", JSON.stringify(process.env, null, 2));
+console.log("Loaded env vars:", process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL, process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+
+if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+  console.error("Error: One or both Google service account environment variables are missing.");
+  process.exit(1);
+}
+
 const express = require("express");
 const pool = require("./db"); // Import database connection
 const { google } = require('googleapis');
 const { JWT } = require('google-auth-library');
-require("dotenv").config(); // Load environment variables
 
 const app = express();
 const cron = require('node-cron');
 app.use(express.json());
 
-console.log("Loaded env vars:", process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL, process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
-if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
-  console.error("Error: One or both Google service account environment variables are missing.");
-  process.exit(1); // Exit if variables are not loaded
-}
+
 
 // Fetch User ID from Keycloak User Table
 async function getUserIdByEmail(email) {
@@ -1498,7 +1502,7 @@ async function getAllUsers() {
 }
 
 // Schedule cron jobs
-cron.schedule('0 47 11 * * *', async () => {
+cron.schedule('0 59 11 * * *', async () => {
   console.log('Running daily progress card cron job at 8:00 AM');
   const users = await getAllUsers();
   for (const user of users) {
