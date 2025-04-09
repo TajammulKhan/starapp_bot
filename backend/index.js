@@ -1461,10 +1461,12 @@ async function sendCardToUser(userEmail, cardFunction, userName) {
     }
 
     console.log(`Authenticating with email: ${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL}`);
+    // Impersonate a user with domain-wide delegation
     const auth = new JWT({
       email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       key: process.env.GOOGLE_SERVICE_ACCOUNT_KEY.replace(/\\n/g, '\n'),
       scopes: ['https://www.googleapis.com/auth/chat.bot'],
+      subject: 'tajammul.khan@tibilsolutions.com', // Impersonate this user (or an admin user)
     });
 
     // Debug authentication
@@ -1478,13 +1480,13 @@ async function sendCardToUser(userEmail, cardFunction, userName) {
     // Find the direct message space
     console.log(`Finding direct message space for user: ${userEmail}`);
     const findDirectMessageRequest = {
-      name: `users/${userEmail}`, // Format: users/{user}, where {user} can be email
+      name: `users/${userEmail}`, // Using email alias, now supported with impersonation
     };
     const [space] = await chat.spaces.findDirectMessage(findDirectMessageRequest);
     if (!space || !space.name) {
       throw new Error(`Direct message space not found for ${userEmail}`);
     }
-    const spaceId = space.name.split('/').pop(); // Extract space ID from full resource name
+    const spaceId = space.name.split('/').pop(); // Extract space ID
     console.log(`Found space ID: ${spaceId} for user ${userEmail}`);
 
     // Send the message to the space
