@@ -1490,13 +1490,13 @@ async function sendCardToUser(userEmail, cardFunction, userName) {
 // Function to get all users (replace with your user retrieval logic)
 async function getAllUsers() {
   try {
-    const query = `SELECT email, id, username FROM keycloak.user_entity`;
-    const result = await pool.query(query);
+    const query = `SELECT email, id, username FROM keycloak.user_entity WHERE email = $1`;
+    const result = await pool.query(query, ['tajammul.khan@tibilsolutions.com']);
     return result.rows
-      .filter(row => row.email) // Filter out rows where email is null
+      .filter(row => row.email)
       .map(row => ({
-        email: 'tajammul.khan@tibilsolutions.com',
-        userName: row.username || row.email.split('@')[0], // Fallback to email prefix if no username
+        email: row.email,
+        userName: row.username || row.email.split('@')[0],
       }));
   } catch (error) {
     console.error('Error fetching users:', error.message, error.stack);
