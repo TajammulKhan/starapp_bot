@@ -1504,14 +1504,15 @@ async function getAllUsers() {
 }
 
 // Schedule cron jobs
-cron.schedule('0 53 12 * * *', async () => {
-  console.log('Running daily progress card cron job at 8:00 AM');
+cron.schedule('* * * * *', async () => {
+  const now = new Date().toISOString();
+  console.log(`Running daily progress card cron job at ${now} (12:53 PM UTC)`);
   const users = await getAllUsers();
   for (const user of users) {
     await sendCardToUser(user.email, createGoogleChatCard, user.userName);
   }
 }, {
-  timezone: 'UTC', // Adjust timezone as needed
+  timezone: 'UTC',
 });
 
 cron.schedule('0 0 10 * * *', async () => {
