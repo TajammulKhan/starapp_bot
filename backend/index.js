@@ -1467,7 +1467,8 @@ async function sendCardToUser(userEmail, cardFunction, userName) {
       scopes: ['https://www.googleapis.com/auth/chat.bot'],
     });
 
-    // Test authentication
+    // Debug authentication
+    console.log('Attempting to get access token...');
     const token = await auth.getAccessToken();
     console.log(`Access token retrieved: ${token.token}`);
 
