@@ -1428,12 +1428,12 @@ async function handleTextMessage(req, res) {
 }
 
 async function sendCardToUser(userEmail, cardFunction, userName) {
-  console.log(`Starting sendCardToUser for ${userEmail} with function ${cardFunction.name}`);
+  console.log(`Starting sendCardToUser for ${userEmail} with function ${cardFunction.name} at ${new Date().toISOString()}`);
   try {
     const userId = await getUserIdByEmail(userEmail);
     console.log(`Retrieved userId: ${userId} for email: ${userEmail}`);
     if (!userId) {
-      console.log(`User not found for email: ${userEmail}`);
+      console.log(`User not found for email: ${userEmail}, skipping`);
       return;
     }
 
@@ -1467,16 +1467,20 @@ async function sendCardToUser(userEmail, cardFunction, userName) {
       scopes: ['https://www.googleapis.com/auth/chat.bot'],
     });
 
+    // Test authentication
+    const token = await auth.getAccessToken();
+    console.log(`Access token retrieved: ${token.token}`);
+
     console.log(`Sending message to parent: users/${userEmail}`);
     const chat = google.chat({ version: 'v1', auth });
 
-    await chat.spaces.messages.create({
+    const response = await chat.spaces.messages.create({
       parent: `users/${userEmail}`,
       requestBody: {
         cardsV2: card.cardsV2,
       },
     });
-
+    console.log(`API response: ${JSON.stringify(response.data)}`);
     console.log(`Successfully sent ${cardFunction.name} to ${userEmail}`);
   } catch (error) {
     console.error(`Error sending card to ${userEmail}:`, error.message, error.stack);
@@ -1500,7 +1504,7 @@ async function getAllUsers() {
 }
 
 // Schedule cron jobs
-cron.schedule('0 16 12 * * *', async () => {
+cron.schedule('0 53 12 * * *', async () => {
   console.log('Running daily progress card cron job at 8:00 AM');
   const users = await getAllUsers();
   for (const user of users) {
