@@ -1472,11 +1472,25 @@ async function sendCardToUser(userEmail, cardFunction, userName) {
     const token = await auth.getAccessToken();
     console.log(`Access token retrieved: ${token.token}`);
 
-    console.log(`Sending message to parent: users/${userEmail}`);
+    // Initialize the Chat API client
     const chat = google.chat({ version: 'v1', auth });
 
+    // Find the direct message space
+    console.log(`Finding direct message space for user: ${userEmail}`);
+    const findDirectMessageRequest = {
+      name: `users/${userEmail}`, // Format: users/{user}, where {user} can be email
+    };
+    const [space] = await chat.spaces.findDirectMessage(findDirectMessageRequest);
+    if (!space || !space.name) {
+      throw new Error(`Direct message space not found for ${userEmail}`);
+    }
+    const spaceId = space.name.split('/').pop(); // Extract space ID from full resource name
+    console.log(`Found space ID: ${spaceId} for user ${userEmail}`);
+
+    // Send the message to the space
+    console.log(`Sending message to parent: spaces/${spaceId}`);
     const response = await chat.spaces.messages.create({
-      parent: `${userEmail}`,
+      parent: `spaces/${spaceId}`,
       requestBody: {
         cardsV2: card.cardsV2,
       },
