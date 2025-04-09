@@ -1,6 +1,6 @@
 require("dotenv").config(); // Load environment variables
-console.log("All environment variables:", JSON.stringify(process.env, null, 2));
-console.log("Loaded env vars:", process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL, process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+// console.log("All environment variables:", JSON.stringify(process.env, null, 2));
+// console.log("Loaded env vars:", process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL, process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
 
 if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
   console.error("Error: One or both Google service account environment variables are missing.");
@@ -1502,7 +1502,7 @@ async function getAllUsers() {
 }
 
 // Schedule cron jobs
-cron.schedule('0 59 11 * * *', async () => {
+cron.schedule('0 02 12 * * *', async () => {
   console.log('Running daily progress card cron job at 8:00 AM');
   const users = await getAllUsers();
   for (const user of users) {
