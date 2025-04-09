@@ -1428,8 +1428,10 @@ async function handleTextMessage(req, res) {
 }
 
 async function sendCardToUser(userEmail, cardFunction, userName) {
+  console.log(`Starting sendCardToUser for ${userEmail} with function ${cardFunction.name}`);
   try {
     const userId = await getUserIdByEmail(userEmail);
+    console.log(`Retrieved userId: ${userId} for email: ${userEmail}`);
     if (!userId) {
       console.log(`User not found for email: ${userEmail}`);
       return;
@@ -1443,6 +1445,7 @@ async function sendCardToUser(userEmail, cardFunction, userName) {
         const coinsDifference = totalCoins - yesterdayCoins;
         const { completedBadges, assignedBadges } = await getUserBadges(userId);
         card = cardFunction(userName, totalCoins, coinsDifference, completedBadges, assignedBadges);
+        console.log(`Generated card data: ${JSON.stringify(card, null, 2)}`);
         break;
       case 'createOutcomeCard':
         card = await cardFunction(userName, userEmail);
@@ -1457,18 +1460,14 @@ async function sendCardToUser(userEmail, cardFunction, userName) {
         throw new Error('Unsupported card function');
     }
 
-    // Check if the environment variable is defined
-    if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
-      console.error('GOOGLE_SERVICE_ACCOUNT_KEY is not set in environment variables');
-      return;
-    }
-
+    console.log(`Authenticating with email: ${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL}`);
     const auth = new JWT({
       email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
       key: process.env.GOOGLE_SERVICE_ACCOUNT_KEY.replace(/\\n/g, '\n'),
       scopes: ['https://www.googleapis.com/auth/chat.bot'],
     });
 
+    console.log(`Sending message to parent: users/${userEmail}`);
     const chat = google.chat({ version: 'v1', auth });
 
     await chat.spaces.messages.create({
@@ -1483,7 +1482,6 @@ async function sendCardToUser(userEmail, cardFunction, userName) {
     console.error(`Error sending card to ${userEmail}:`, error.message, error.stack);
   }
 }
-
 // Function to get all users (replace with your user retrieval logic)
 async function getAllUsers() {
   try {
@@ -1492,7 +1490,7 @@ async function getAllUsers() {
     return result.rows
       .filter(row => row.email) // Filter out rows where email is null
       .map(row => ({
-        email: row.email,
+        email: 'tajammul.khan@tibilsolutions.com',
         userName: row.username || row.email.split('@')[0], // Fallback to email prefix if no username
       }));
   } catch (error) {
@@ -1502,7 +1500,7 @@ async function getAllUsers() {
 }
 
 // Schedule cron jobs
-cron.schedule('0 02 12 * * *', async () => {
+cron.schedule('0 16 12 * * *', async () => {
   console.log('Running daily progress card cron job at 8:00 AM');
   const users = await getAllUsers();
   for (const user of users) {
