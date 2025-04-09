@@ -8,6 +8,8 @@ const app = express();
 const cron = require('node-cron');
 app.use(express.json());
 
+console.log("Loaded env vars:", process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL, process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+
 // Fetch User ID from Keycloak User Table
 async function getUserIdByEmail(email) {
   try {
@@ -1447,18 +1449,22 @@ async function sendCardToUser(userEmail, cardFunction, userName) {
         throw new Error('Unsupported card function');
     }
 
-    // Initialize Google Chat API client
+    // Check if the environment variable is defined
+    if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+      console.error('GOOGLE_SERVICE_ACCOUNT_KEY is not set in environment variables');
+      return;
+    }
+
     const auth = new JWT({
       email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      key: process.env.GOOGLE_SERVICE_ACCOUNT_KEY.replace(/\\n/g, '\n'), // Ensure newlines are handled
+      key: process.env.GOOGLE_SERVICE_ACCOUNT_KEY.replace(/\\n/g, '\n'),
       scopes: ['https://www.googleapis.com/auth/chat.bot'],
     });
 
     const chat = google.chat({ version: 'v1', auth });
 
-    // Send the card to the user
     await chat.spaces.messages.create({
-      parent: `users/${userEmail}`, // Direct message to user; use a space ID for group chats
+      parent: `users/${userEmail}`,
       requestBody: {
         cardsV2: card.cardsV2,
       },
@@ -1475,10 +1481,12 @@ async function getAllUsers() {
   try {
     const query = `SELECT email, id, username FROM keycloak.user_entity`;
     const result = await pool.query(query);
-    return result.rows.map(row => ({
-      email: row.email,
-      userName: row.username || row.email.split('@')[0], // Fallback to email prefix if no username
-    }));
+    return result.rows
+      .filter(row => row.email) // Filter out rows where email is null
+      .map(row => ({
+        email: row.email,
+        userName: row.username || row.email.split('@')[0], // Fallback to email prefix if no username
+      }));
   } catch (error) {
     console.error('Error fetching users:', error.message, error.stack);
     return [];
@@ -1486,7 +1494,7 @@ async function getAllUsers() {
 }
 
 // Schedule cron jobs
-cron.schedule('0 0 9 * * *', async () => {
+cron.schedule('0 38 11 * * *', async () => {
   console.log('Running daily progress card cron job at 8:00 AM');
   const users = await getAllUsers();
   for (const user of users) {
@@ -1496,7 +1504,7 @@ cron.schedule('0 0 9 * * *', async () => {
   timezone: 'UTC', // Adjust timezone as needed
 });
 
-cron.schedule('0 0 9 * * *', async () => {
+cron.schedule('0 0 10 * * *', async () => {
   console.log('Running outcome card cron job at 10:00 AM');
   const users = await getAllUsers();
   for (const user of users) {
