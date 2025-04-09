@@ -9,6 +9,10 @@ const cron = require('node-cron');
 app.use(express.json());
 
 console.log("Loaded env vars:", process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL, process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+if (!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL || !process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+  console.error("Error: One or both Google service account environment variables are missing.");
+  process.exit(1); // Exit if variables are not loaded
+}
 
 // Fetch User ID from Keycloak User Table
 async function getUserIdByEmail(email) {
