@@ -1498,7 +1498,7 @@ async function getAllUsers() {
 }
 
 // Schedule cron jobs
-cron.schedule('0 38 11 * * *', async () => {
+cron.schedule('0 47 11 * * *', async () => {
   console.log('Running daily progress card cron job at 8:00 AM');
   const users = await getAllUsers();
   for (const user of users) {
