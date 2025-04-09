@@ -1476,7 +1476,7 @@ async function sendCardToUser(userEmail, cardFunction, userName) {
     const chat = google.chat({ version: 'v1', auth });
 
     const response = await chat.spaces.messages.create({
-      parent: `users/${userEmail}`,
+      parent: `${userEmail}`,
       requestBody: {
         cardsV2: card.cardsV2,
       },
