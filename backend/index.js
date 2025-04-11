@@ -877,125 +877,125 @@ async function createCheckedOutcomeCard(userName, userId, customOutcomes = []) {
                     ]),
               ],
             },
-            {
-              widgets: [
-                {
-                  decoratedText: {
-                    icon: {
-                      iconUrl:
-                        "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Medal+(1).png",
-                      altText: "Earning icon",
-                    },
-                    text: `<b><font color='#FF6C6C'>Earning</font></b>`,
-                  },
-                },
-                ...(outcomes.Earning.length > 0
-                  ? [
-                      {
-                        selectionInput: {
-                          name: "earningOutcomes",
-                          type: "CHECK_BOX",
-                          items: outcomes.Earning.map((item) => ({
-                            text: `${item.text} 💰 ${item.coins}`,
-                            value: JSON.stringify({
-                              id: item.id,
-                              type: "Earning",
-                              text: item.text,
-                              isCustom: item.isCustom || false,
-                            }),
-                            selected: true,
-                          })),
-                        },
-                      },
-                    ]
-                  : [
-                      {
-                        textParagraph: {
-                          text: "No submitted Earning outcomes.",
-                        },
-                      },
-                    ]),
-                {
-                  textInput: {
-                    name: "customEarningOutcome",
-                    label: "Add your own Earning outcome",
-                  },
-                },
-                {
-                  buttonList: {
-                    buttons: [
-                      {
-                        text: "ADD",
-                        onClick: {
-                          action: {
-                            function: "addEarningOutcome",
-                            parameters: [
-                              {
-                                key: "customEarningOutcome",
-                                value: "${formInputs.customEarningOutcome}",
-                              },
-                              {
-                                key: "existingOutcomes",
-                                value: JSON.stringify(
-                                  customOutcomes.map((oc) => ({
-                                    id: oc.id,
-                                    text: oc.text,
-                                    coins: oc.coins,
-                                    isCustom: oc.isCustom,
-                                  }))
-                                ),
-                              },
-                              {
-                                key: "cardType",
-                                value: "checkedOutcomeCard", // To identify which card to update
-                              },
-                            ],
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              ],
-            },
-            {
-              widgets: [
-                {
-                  decoratedText: {
-                    icon: {
-                      iconUrl:
-                        "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Shield+(1).png",
-                      altText: "Contribution icon",
-                    },
-                    text: `<b><font color='#3CAF91'>Contribution</font></b>`,
-                  },
-                },
-                ...(outcomes.Contribution.length > 0
-                  ? [
-                      {
-                        selectionInput: {
-                          name: "contributionOutcomes",
-                          type: "CHECK_BOX",
-                          items: outcomes.Contribution.map((item) => ({
-                            text: `${item.text} 💰 ${item.coins}`,
-                            value: JSON.stringify({
-                              id: item.id,
-                              type: "Contribution",
-                            }),
-                            selected: true,
-                          })),
-                        },
-                      },
-                    ]
-                  : [
-                      {
-                        textParagraph: {
-                          text: "No submitted Contribution outcomes.",
-                        },
-                      },
-                    ]),
-              ],
-            },
+            // {
+            //   widgets: [
+            //     {
+            //       decoratedText: {
+            //         icon: {
+            //           iconUrl:
+            //             "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Medal+(1).png",
+            //           altText: "Earning icon",
+            //         },
+            //         text: `<b><font color='#FF6C6C'>Earning</font></b>`,
+            //       },
+            //     },
+            //     ...(outcomes.Earning.length > 0
+            //       ? [
+            //           {
+            //             selectionInput: {
+            //               name: "earningOutcomes",
+            //               type: "CHECK_BOX",
+            //               items: outcomes.Earning.map((item) => ({
+            //                 text: `${item.text} 💰 ${item.coins}`,
+            //                 value: JSON.stringify({
+            //                   id: item.id,
+            //                   type: "Earning",
+            //                   text: item.text,
+            //                   isCustom: item.isCustom || false,
+            //                 }),
+            //                 selected: true,
+            //               })),
+            //             },
+            //           },
+            //         ]
+            //       : [
+            //           {
+            //             textParagraph: {
+            //               text: "No submitted Earning outcomes.",
+            //             },
+            //           },
+            //         ]),
+            //     {
+            //       textInput: {
+            //         name: "customEarningOutcome",
+            //         label: "Add your own Earning outcome",
+            //       },
+            //     },
+            //     {
+            //       buttonList: {
+            //         buttons: [
+            //           {
+            //             text: "ADD",
+            //             onClick: {
+            //               action: {
+            //                 function: "addEarningOutcome",
+            //                 parameters: [
+            //                   {
+            //                     key: "customEarningOutcome",
+            //                     value: "${formInputs.customEarningOutcome}",
+            //                   },
+            //                   {
+            //                     key: "existingOutcomes",
+            //                     value: JSON.stringify(
+            //                       customOutcomes.map((oc) => ({
+            //                         id: oc.id,
+            //                         text: oc.text,
+            //                         coins: oc.coins,
+            //                         isCustom: oc.isCustom,
+            //                       }))
+            //                     ),
+            //                   },
+            //                   {
+            //                     key: "cardType",
+            //                     value: "checkedOutcomeCard", // To identify which card to update
+            //                   },
+            //                 ],
+            //               },
+            //             },
+            //           },
+            //         ],
+            //       },
+            //     },
+            //   ],
+            // },
+            // {
+            //   widgets: [
+            //     {
+            //       decoratedText: {
+            //         icon: {
+            //           iconUrl:
+            //             "https://startapp-images-tibil.s3.us-east-1.amazonaws.com/Shield+(1).png",
+            //           altText: "Contribution icon",
+            //         },
+            //         text: `<b><font color='#3CAF91'>Contribution</font></b>`,
+            //       },
+            //     },
+            //     ...(outcomes.Contribution.length > 0
+            //       ? [
+            //           {
+            //             selectionInput: {
+            //               name: "contributionOutcomes",
+            //               type: "CHECK_BOX",
+            //               items: outcomes.Contribution.map((item) => ({
+            //                 text: `${item.text} 💰 ${item.coins}`,
+            //                 value: JSON.stringify({
+            //                   id: item.id,
+            //                   type: "Contribution",
+            //                 }),
+            //                 selected: true,
+            //               })),
+            //             },
+            //           },
+            //         ]
+            //       : [
+            //           {
+            //             textParagraph: {
+            //               text: "No submitted Contribution outcomes.",
+            //             },
+            //           },
+            //         ]),
+            //   ],
+            // },
             // Submit Button
             {
               widgets: [
