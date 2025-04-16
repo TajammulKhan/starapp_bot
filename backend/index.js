@@ -54,7 +54,7 @@ async function getUserBadges(userId) {
     const query = `
       SELECT 
         COUNT(CASE WHEN bstatus = 'Completed' THEN 1 END) AS "completedBadges",
-        COUNT(CASE WHEN bstatus IN ('Assigned', 'In Progress') THEN 1 END) AS "assignedBadges"
+        COUNT(CASE WHEN bstatus IN ('Assigned', 'In Progress','Completed') THEN 1 END) AS "assignedBadges"
       FROM registry.badgelog
       WHERE uid = $1
     `;
