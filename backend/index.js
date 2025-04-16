@@ -470,7 +470,7 @@ app.get("/", (req, res) => {
 });
 
 // Updated function to create the Smiley Meter Card
-function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
+function createSmileyMeterCard(userName, userId) {
   console.log(
     "Starting createSmileyMeterCard for user:",
     userName,
@@ -479,14 +479,20 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
   );
   const checkedCountPromise = getCheckedOutcomesCount(userId);
   const completedCountPromise = getCompletedOutcomesCount(userId);
+  const totalCoinsPromise = getTotalCoins(userId);
+  const yesterdayCoinsPromise = getYesterdayTotalCoins(userId);
 
-  return Promise.all([checkedCountPromise, completedCountPromise])
-    .then(([checkedCount, completedCount]) => {
+  return Promise.all([checkedCountPromise, completedCountPromise, totalCoinsPromise, yesterdayCoinsPromise])
+    .then(([checkedCount, completedCount, totalCoins, yesterdayCoins]) => {
       console.log(
         "Total outcomes initially checked (including completed):",
         checkedCount,
         "Completed outcomes:",
-        completedCount
+        completedCount,
+        "Total coins:",
+        totalCoins,
+        "Yesterday coins:",
+        yesterdayCoins
       );
       if (completedCount > checkedCount) {
         console.warn(
@@ -499,6 +505,10 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
           ? Math.min((completedCount / checkedCount) * 100, 100)
           : 0;
       console.log(`Completion ratio for user ${userId}: ${completionRatio}%`);
+
+      // Calculate coins earned today
+      const coinsEarned = totalCoins - yesterdayCoins;
+      console.log(`Coins earned today for user ${userId}: ${coinsEarned}`);
 
       // Define composite image URL and messages based on completion ratio
       let compositeSmileyUrl, message1, message2;
@@ -524,7 +534,6 @@ function createSmileyMeterCard(userName, userId, coinsEarned = 10) {
 
       console.log("Composite Smiley URL:", compositeSmileyUrl);
 
-      // Use a single image widget to display the composite smiley image
       return {
         cardsV2: [
           {
